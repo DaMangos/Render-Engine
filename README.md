@@ -1,4 +1,4 @@
-##MacOS prerequisite:
+MacOS prerequisite:
 
  - download homebrew 
 
@@ -28,7 +28,7 @@
 
 - download the vulkan sdk from https://vulkan.lunarg.com/sdk/home and created it in the default location
 
-##building the project:
+building the project:
 
 - build the project
 
@@ -46,7 +46,7 @@
 
     $ make help
 
-##MacOS running the project:
+MacOS running the project:
 
 - running release build
 
