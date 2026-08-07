@@ -12,31 +12,21 @@ template <class CharT, class Traits = std::char_traits<CharT>, class Allocator =
 class basic_prefixedostream : public std::basic_ostream<CharT, Traits>
 {
   public:
-    explicit basic_prefixedostream(std::nullptr_t)
+    explicit basic_prefixedostream(std::nullptr_t) noexcept
     : std::basic_ostream<CharT, Traits>(nullptr),
-      buf(nullptr)
+      buf(nullptr, [](void *) {})
     {
     }
 
     template <class Function>
-    explicit basic_prefixedostream(std::unique_ptr<basic_prefixedbuf<Function, CharT, Traits, Allocator>> && buf)
+    explicit basic_prefixedostream(std::unique_ptr<basic_prefixedbuf<Function, CharT, Traits, Allocator>> && buf) noexcept
     : std::basic_ostream<CharT, Traits>(buf.get()),
-      buf(std::move(buf))
+      buf(buf.release(), [](void * ptr) { delete static_cast<basic_prefixedbuf<Function, CharT, Traits, Allocator> *>(ptr); })
     {
     }
 
-    basic_prefixedostream(basic_prefixedostream const &) = delete;
-
-    basic_prefixedostream(basic_prefixedostream &&) = delete;
-
-    basic_prefixedostream & operator=(basic_prefixedostream const &) = delete;
-
-    basic_prefixedostream & operator=(basic_prefixedostream &&) = delete;
-
-    ~basic_prefixedostream() = default;
-
   private:
-    std::shared_ptr<void> buf;
+    std::unique_ptr<void, void (*)(void *)> buf;
 };
 
 using prefixedostream  = basic_prefixedostream<char>;

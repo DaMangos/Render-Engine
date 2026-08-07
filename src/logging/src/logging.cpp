@@ -210,7 +210,7 @@ logging::prefixedostream logging::error(std::ostream * const out)
   if(not out)
     return prefixedostream(nullptr);
 
-  return out and dynamic_cast<std::filebuf const *>(out->rdbuf())
+  return dynamic_cast<std::filebuf const *>(out->rdbuf())
          ? prefixedostream(std::make_unique<prefixedbuf<error_prefix>>(*out, error_prefix{}))
          : prefixedostream(std::make_unique<prefixedbuf<error_colour_prefix>>(*out, error_colour_prefix{}));
 }

@@ -2,6 +2,7 @@
 
 #include "glfw/create_surface.hpp"
 #include "glfw/create_window.hpp"
+#include "vulkan/create_swapchain.hpp"
 #include "vulkan/find_device.hpp"
 #include "vulkan/init_library.hpp"
 
@@ -31,12 +32,20 @@ graphics::detail::window_impl::window_impl(pixel const          width,
   self.debug_utils_messenger = debug_utils_messenger;
   self.surface               = glfw::create_surface(self.instance, self.window);
 
-  auto const & [physical_device, device, graphics_queue, present_queue] = vulkan::find_device(self.instance, self.surface, {});
+  auto const & [physical_device, device, graphics_queue, present_queue, default_swapchain_data] =
+    vulkan::find_device(self.instance, self.surface);
 
-  self.physical_device = physical_device;
-  self.device          = device;
-  self.graphics_queues = graphics_queue;
-  self.present_queues  = present_queue;
+  self.physical_device        = physical_device;
+  self.device                 = device;
+  self.graphics_queues        = graphics_queue;
+  self.present_queues         = present_queue;
+  self.default_swapchain_data = default_swapchain_data;
+
+  int framebuffer_width  = {};
+  int framebuffer_height = {};
+  glfwGetFramebufferSize(self.window.get(), &framebuffer_width, &framebuffer_height);
+
+  self.swapchain = vulkan::create_swapchain(self.device, self.default_swapchain_data, framebuffer_width, framebuffer_height);
 }
 
 graphics::detail::window_impl::window_impl(window_impl && other)

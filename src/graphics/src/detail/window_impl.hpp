@@ -42,15 +42,17 @@ class window_impl
 
     struct
     {
-        std::shared_ptr<GLFWwindow>                             window;
-        std::shared_ptr<vk::raii::Context const>                context;
-        std::shared_ptr<vk::raii::Instance const>               instance;
-        std::shared_ptr<vk::raii::DebugUtilsMessengerEXT const> debug_utils_messenger;
-        std::shared_ptr<vk::raii::SurfaceKHR const>             surface;
-        std::shared_ptr<vk::raii::PhysicalDevice const>         physical_device;
-        std::shared_ptr<vk::raii::Device const>                 device;
-        std::shared_ptr<vk::raii::Queue const>                  graphics_queues;
-        std::shared_ptr<vk::raii::Queue const>                  present_queues;
+        std::shared_ptr<GLFWwindow>                                                               window;
+        std::shared_ptr<vk::raii::Context const>                                                  context;
+        std::shared_ptr<vk::raii::Instance const>                                                 instance;
+        std::shared_ptr<vk::raii::DebugUtilsMessengerEXT const>                                   debug_utils_messenger;
+        std::shared_ptr<vk::raii::SurfaceKHR const>                                               surface;
+        std::shared_ptr<vk::raii::PhysicalDevice const>                                           physical_device;
+        std::shared_ptr<vk::raii::Device const>                                                   device;
+        std::shared_ptr<vk::raii::Queue const>                                                    graphics_queues;
+        std::shared_ptr<vk::raii::Queue const>                                                    present_queues;
+        std::shared_ptr<std::tuple<vk::SwapchainCreateInfoKHR, vk::Extent2D, vk::Extent2D> const> default_swapchain_data;
+        std::shared_ptr<vk::raii::SwapchainKHR const>                                             swapchain;
     } self;
 };
 }

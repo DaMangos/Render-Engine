@@ -7,7 +7,8 @@ CPP_FLAGS =                                                         \
 	`pkg-config --cflags gtest_main`                                \
 	-DGLFW_INCLUDE_VULKAN                                           \
 	-DVK_ENABLE_BETA_EXTENSIONS                                     \
-	-DVULKAN_HPP_ENABLE_DYNAMIC_LOADER_TOOL
+	-DVULKAN_HPP_ENABLE_DYNAMIC_LOADER_TOOL                         \
+	-DVULKAN_HPP_USE_REFLECT
 
 CXX_FLAGS =      \
 	-std=c++26   \
