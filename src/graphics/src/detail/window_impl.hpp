@@ -53,6 +53,7 @@ class window_impl
         std::shared_ptr<vk::raii::Queue const>                                                    present_queues;
         std::shared_ptr<std::tuple<vk::SwapchainCreateInfoKHR, vk::Extent2D, vk::Extent2D> const> default_swapchain_data;
         std::shared_ptr<vk::raii::SwapchainKHR const>                                             swapchain;
+        std::vector<std::shared_ptr<vk::raii::ImageView const>>                                   image_views;
     } self;
 };
 }

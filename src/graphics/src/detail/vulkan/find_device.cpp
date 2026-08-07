@@ -263,19 +263,35 @@ graphics::detail::vulkan::find_device_return_type graphics::detail::vulkan::find
                                  ? std::max(3u, surface_capabilities.minImageCount)
                                  : std::clamp(3u, surface_capabilities.minImageCount, surface_capabilities.maxImageCount);
 
+    std::vector<std::uint32_t>                  queue_family_indices;
+    static constexpr std::vector<std::uint32_t> empty_queue_family_indices;
+
+    if(auto const graphics_queue_index = find_graphics_queue_index(*physical_device); graphics_queue_index)
+      queue_family_indices.emplace_back(*graphics_queue_index);
+
+    if(auto const present_queue_index = find_present_queue_index(*physical_device, *surface); present_queue_index)
+      queue_family_indices.emplace_back(*present_queue_index);
+
     auto const swapchain_data =
       graphics::detail::make_shared_with_deleter_data<std::tuple<vk::SwapchainCreateInfoKHR, vk::Extent2D, vk::Extent2D>>(  //
-        surface,                                                                                                            //
+        std::make_tuple(surface, std::move(queue_family_indices)),                                                          //
         std::make_tuple(vk::SwapchainCreateInfoKHR{}                                                                        //
                           .setSurface(*surface)                                                                             //
                           .setMinImageCount(min_image_count)                                                                //
                           .setImageArrayLayers(1)                                                                           //
                           .setImageUsage(vk::ImageUsageFlagBits::eColorAttachment)                                          //
-                          .setImageSharingMode(vk::SharingMode::eExclusive)                                                 //
+                          .setImageSharingMode(                                                                             //
+                            queue_family_indices.size() == 2                                                                //
+                              ? vk::SharingMode::eConcurrent                                                                //
+                              : vk::SharingMode::eExclusive)                                                                //
                           .setPreTransform(surface_capabilities.currentTransform)                                           //
+                          .setQueueFamilyIndices(                                                                           //
+                            queue_family_indices.size() == 2                                                                //
+                              ? queue_family_indices                                                                        //
+                              : empty_queue_family_indices)                                                                 //
                           .setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque)                                        //
-                          .setClipped(true),
-                        surface_capabilities.minImageExtent,
+                          .setClipped(true),                                                                                //
+                        surface_capabilities.minImageExtent,                                                                //
                         surface_capabilities.maxImageExtent));
 
     auto const surface_formats = physical_device->getSurfaceFormatsKHR(*surface);

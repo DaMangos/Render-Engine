@@ -1,7 +1,6 @@
 #include "create_swapchain.hpp"
 
 #include "../make_shared_with_deleter_data.hpp"
-#include "vulkan/vulkan.hpp"
 
 std::shared_ptr<vk::raii::SwapchainKHR const> graphics::detail::vulkan::create_swapchain(
   std::shared_ptr<vk::raii::Device const> const &                                                   device,
