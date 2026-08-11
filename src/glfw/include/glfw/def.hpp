@@ -1,9 +1,7 @@
 #pragma once
 
-#include <compare>
+#include <array>
 #include <cstddef>
-#include <istream>
-#include <ostream>
 #include <span>
 
 namespace glfw
@@ -214,36 +212,6 @@ enum struct gamepad_axis
   right_trigger = 5,
 };
 
-enum struct window_attribute
-{
-  focused                 = 0x00020001,
-  iconified               = 0x00020002,
-  resizable               = 0x00020003,
-  visible                 = 0x00020004,
-  decorated               = 0x00020005,
-  auto_iconify            = 0x00020006,
-  floating                = 0x00020007,
-  maximized               = 0x00020008,
-  center_cursor           = 0x00020009,
-  transparent_framebuffer = 0x0002000A,
-  hovered                 = 0x0002000B,
-  focus_on_show           = 0x0002000C,
-  mouse_passthrough       = 0x0002000D,
-};
-
-enum struct window_position
-{
-  position_x = 0x0002000E,
-  position_y = 0x0002000F,
-};
-
-enum struct robustness
-{
-  no_robustness         = 0,
-  no_reset_notification = 0x00031001,
-  lose_context_on_reset = 0x00031002,
-};
-
 enum struct input_mode
 {
   cursor               = 0x00033001,
@@ -253,153 +221,6 @@ enum struct input_mode
   raw_mouse_motion     = 0x00033005,
 };
 
-enum struct cursor_mode
-{
-  cursor_normal   = 0x00034001,
-  cursor_hidden   = 0x00034002,
-  cursor_disabled = 0x00034003,
-};
-
-enum struct release_behavior
-{
-  any_release_behavior   = 0,
-  release_behavior_flush = 0x00035001,
-  release_behavior_none  = 0x00035002,
-};
-
-enum class pixel
-{
-};
-
-inline namespace literals
-{
-inline namespace pixel_literals
-{
-constexpr pixel operator"" _px(unsigned long long const value) noexcept
-{
-  return static_cast<pixel>(value);
-}
-}
-}
-
-constexpr std::strong_ordering operator<=>(pixel const lhs, pixel const rhs) noexcept
-{
-  return static_cast<int>(lhs) <=> static_cast<int>(rhs);
-}
-
-constexpr pixel operator+(pixel const lhs, pixel const rhs) noexcept
-{
-  return static_cast<pixel>(static_cast<int>(lhs) + static_cast<int>(rhs));
-}
-
-constexpr pixel operator-(pixel const lhs, pixel const rhs) noexcept
-{
-  return static_cast<pixel>(static_cast<int>(lhs) - static_cast<int>(rhs));
-}
-
-constexpr pixel operator*(pixel const lhs, pixel const rhs) noexcept
-{
-  return static_cast<pixel>(static_cast<int>(lhs) * static_cast<int>(rhs));
-}
-
-constexpr pixel operator/(pixel const lhs, pixel const rhs) noexcept
-{
-  return static_cast<pixel>(static_cast<int>(lhs) / static_cast<int>(rhs));
-}
-
-constexpr pixel operator%(pixel const lhs, pixel const rhs) noexcept
-{
-  return static_cast<pixel>(static_cast<int>(lhs) % static_cast<int>(rhs));
-}
-
-constexpr pixel & operator+=(pixel & lhs, pixel const rhs) noexcept
-{
-  return lhs = lhs + rhs;
-}
-
-constexpr pixel & operator-=(pixel & lhs, pixel const rhs) noexcept
-{
-  return lhs = lhs - rhs;
-}
-
-constexpr pixel & operator*=(pixel & lhs, pixel const rhs) noexcept
-{
-  return lhs = lhs * rhs;
-}
-
-constexpr pixel & operator/=(pixel & lhs, pixel const rhs) noexcept
-{
-  return lhs = lhs / rhs;
-}
-
-constexpr pixel & operator%=(pixel & lhs, pixel const rhs) noexcept
-{
-  return lhs = lhs % rhs;
-}
-
-constexpr pixel operator-(pixel const value) noexcept
-{
-  return static_cast<pixel>(-static_cast<int>(value));
-}
-
-constexpr pixel & operator++(pixel & value) noexcept
-{
-  using namespace pixel_literals;
-  return value += 1_px;
-}
-
-constexpr pixel operator++(pixel & value, int) noexcept
-{
-  auto const tmp = value;
-  ++value;
-  return tmp;
-}
-
-constexpr pixel & operator--(pixel & value) noexcept
-{
-  using namespace pixel_literals;
-  return value -= 1_px;
-}
-
-constexpr pixel operator--(pixel & value, int) noexcept
-{
-  auto const tmp = value;
-  --value;
-  return tmp;
-}
-
-template <class CharT, class Traits = std::char_traits<CharT>>
-std::basic_ostream<CharT, Traits> & operator<<(std::basic_ostream<CharT, Traits> & os, pixel const value)
-{
-  return os << static_cast<int>(value) << "px";
-}
-
-template <class CharT, class Traits = std::char_traits<CharT>>
-std::basic_istream<CharT, Traits> & operator>>(std::basic_istream<CharT, Traits> & is, pixel & value)
-{
-  int tmp = {};
-  is >> tmp;
-
-  if(is.get() == 'p' and is.get() == 'x')
-    value = static_cast<pixel>(tmp);
-  else
-    is.setstate(std::ios_base::failbit);
-
-  return is;
-}
-}
-
-template <>
-struct std::hash<glfw::pixel>
-{
-    std::size_t operator()(glfw::pixel const value) const noexcept
-    {
-      return std::hash<int>{}(static_cast<int>(value));
-    }
-};
-
-namespace glfw
-{
 template <class Type>
 struct vec2
 {
@@ -481,10 +302,6 @@ using float4 = vec4<float>;
 using double2 = vec2<double>;
 using double3 = vec3<double>;
 using double4 = vec4<double>;
-
-using pixel2 = vec2<pixel>;
-using pixel3 = vec3<pixel>;
-using pixel4 = vec4<pixel>;
 
 struct workarea
 {
