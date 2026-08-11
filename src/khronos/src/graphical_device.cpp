@@ -21,9 +21,10 @@
 namespace
 {
 [[nodiscard]]
-static int score(std::shared_ptr<vk::raii::PhysicalDevice const> const & physical_device) noexcept
+static int score(std::shared_ptr<vk::raii::PhysicalDevice const> const &   physical_device,
+                 std::shared_ptr<vk::SwapchainCreateInfoKHR const> const & swapchain_create_info)
 {
-  if(not physical_device)
+  if(not swapchain_create_info or not physical_device)
     return 0;
 
   auto const is_extension_available
@@ -32,16 +33,10 @@ static int score(std::shared_ptr<vk::raii::PhysicalDevice const> const & physica
     return std::ranges::any_of(properties, [&](auto const & property) { return property.extensionName == extension; });
   };
 
-  return is_extension_available(vk::KHRPortabilitySubsetExtensionName) ? 0 : 1;
-}
-
-[[nodiscard]]
-static int score(std::shared_ptr<vk::SwapchainCreateInfoKHR const> const & swapchain_create_info) noexcept
-{
-  if(not swapchain_create_info)
-    return 0;
-
   int score = 0;
+
+  if(not is_extension_available(vk::KHRPortabilitySubsetExtensionName))
+    score += 1;
 
   if(swapchain_create_info->imageFormat == vk::Format::eB8G8R8A8Srgb)
     score += 1;
@@ -86,8 +81,8 @@ khronos::graphical_device::graphical_device(std::shared_ptr<vk::raii::Instance c
     auto const potential_swapchain_create_info
       = detail::create_swapchain_create_info(potential_physical_device, surface);
 
-    if((score(potential_swapchain_create_info) + score(potential_physical_device))
-       > score(default_swapchain_create_info) + score(physical_device))
+    if(score(potential_physical_device, potential_swapchain_create_info)
+       > score(physical_device, default_swapchain_create_info))
     {
       physical_device               = potential_physical_device;
       default_swapchain_create_info = potential_swapchain_create_info;

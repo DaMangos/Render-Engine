@@ -56,10 +56,11 @@ test_debug: shaders
 
 .PHONY: shaders
 shaders :
-	@make -f $(CURDIR)/make/glsl.mk --warn-undefined-variables ROOTDIR="$(CURDIR)"
+	@make -f $(CURDIR)/make/slang.mk --warn-undefined-variables ROOTDIR="$(CURDIR)"
 	@echo finished shaders
 
 .PHONY: clean
 clean:
-	@rm -rf $(CURDIR)/spv $(CURDIR)/bin $(CURDIR)/dep $(CURDIR)/obj $(CURDIR)/log $(CURDIR)/compile_commands.json
+	@find $(CURDIR)/src -type d -name generate -prune -exec rm -rf {} +
+	@rm -rf $(CURDIR)/bin $(CURDIR)/spv $(CURDIR)/dep $(CURDIR)/obj $(CURDIR)/log $(CURDIR)/compile_commands.json
 	@echo finished clean

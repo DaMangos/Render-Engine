@@ -1,5 +1,6 @@
 #include "detail/create_swapchain_create_info.hpp"
 #include "detail/make_shared_with_data.hpp"
+#include "vulkan/vulkan_raii.hpp"
 
 #include <glfw/window.hpp>
 #include <khronos/render_window.hpp>
@@ -8,6 +9,9 @@
 #include <iomanip>
 #include <memory>
 #include <stdexcept>
+
+extern unsigned int  triangle_spv_len;
+extern unsigned char triangle_spv[];
 
 khronos::render_window::render_window(
   present_window &&                                         window,
@@ -74,4 +78,23 @@ khronos::render_window::render_window(
                                                                *device,
                                                                image_view_create_info));
   }
+
+  auto const shader_module_create_info = vk::ShaderModuleCreateInfo{}
+                                           .setCodeSize(triangle_spv_len)
+                                           .setPCode(reinterpret_cast<std::uint32_t *>(triangle_spv));
+
+  shader_module = detail::make_shared_with_data<vk::raii::ShaderModule const>(
+    device,
+    device->createShaderModule(shader_module_create_info));
+
+  auto const pipeline_shader_stage_create_info = std::array{
+    vk::PipelineShaderStageCreateInfo{}
+      .setStage(vk::ShaderStageFlagBits::eVertex)
+      .setModule(*shader_module)
+      .setPName("vert_main"),
+    vk::PipelineShaderStageCreateInfo{}
+      .setStage(vk::ShaderStageFlagBits::eFragment)
+      .setModule(*shader_module)
+      .setPName("frag_main"),
+  };
 }

@@ -1,12 +1,14 @@
 bin/*
 obj/*
 dep/*
-spv/*
 log/*
+spv/*
+
+**/generate/**
 
 .cache/*
 .bear/*
 
 .DS_Store
 
-compile_commands.json
+compile_commands.*

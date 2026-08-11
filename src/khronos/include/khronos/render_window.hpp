@@ -35,5 +35,6 @@ class render_window : public present_window
     std::optional<vk::SwapchainCreateInfoKHR>               swapchain_create_info;
     std::shared_ptr<vk::raii::SwapchainKHR const>           swapchain;
     std::vector<std::shared_ptr<vk::raii::ImageView const>> image_views;
+    std::shared_ptr<vk::raii::ShaderModule const>           shader_module;
 };
 }
