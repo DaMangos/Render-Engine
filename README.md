@@ -50,16 +50,16 @@ MacOS running the project:
 
 - running release build
 
-    $ source .env.darwin && ./bin/release/build
+    $ ./bin/release/build
 
 - running debug build 
 
-    $ source .env.darwin && ./bin/debug/build
+    $ ./bin/debug/build
 
 - running release test
 
-    $ source .env.darwin && ./bin/release/test
+    $ ./bin/release/test
 
 - running debug test
 
-    $ source .env.darwin && ./bin/debug/test
+    $ ./bin/debug/test

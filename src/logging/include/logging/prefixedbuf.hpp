@@ -9,7 +9,7 @@
 
 namespace logging
 {
-namespace details
+namespace detail
 {
 [[nodiscard]]
 inline constexpr std::mutex & get_mutex(void const * const buf) noexcept
@@ -60,7 +60,7 @@ class basic_prefixedbuf : public std::basic_stringbuf<CharT, Traits, Allocator>
       auto const msg = prefix();
 
       {
-        auto const lock = std::lock_guard(details::get_mutex(wrapped.get().rdbuf()));
+        auto const lock = std::lock_guard(detail::get_mutex(wrapped.get().rdbuf()));
 
         wrapped.get() << msg << this->view() << std::endl;
       }

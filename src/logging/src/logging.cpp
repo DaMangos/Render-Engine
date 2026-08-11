@@ -15,7 +15,8 @@ struct verbose_colour_prefix
     [[nodiscard]]
     std::string operator()() const
     {
-      return std::format("\033[1m[{:%Y-%m-%d %H:%M:%S}] \033[1;35m[ VERBOSE ]\033[0m ", std::chrono::system_clock::now());
+      return std::format("\033[1m[{:%Y-%m-%d %H:%M:%S}] \033[1;35m[ VERBOSE ]\033[0m ",
+                         std::chrono::system_clock::now());
     }
 };
 
@@ -33,7 +34,8 @@ struct wverbose_colour_prefix
     [[nodiscard]]
     std::wstring operator()() const
     {
-      return std::format(L"\033[1m[{:%Y-%m-%d %H:%M:%S}] \033[1;35m[ VERBOSE ]\033[0m ", std::chrono::system_clock::now());
+      return std::format(L"\033[1m[{:%Y-%m-%d %H:%M:%S}] \033[1;35m[ VERBOSE ]\033[0m ",
+                         std::chrono::system_clock::now());
     }
 };
 
@@ -87,7 +89,8 @@ struct warn_colour_prefix
     [[nodiscard]]
     std::string operator()() const
     {
-      return std::format("\033[1m[{:%Y-%m-%d %H:%M:%S}] \033[1;33m[ WARNING ]\033[0m ", std::chrono::system_clock::now());
+      return std::format("\033[1m[{:%Y-%m-%d %H:%M:%S}] \033[1;33m[ WARNING ]\033[0m ",
+                         std::chrono::system_clock::now());
     }
 };
 
@@ -105,7 +108,8 @@ struct wwarning_colour_prefix
     [[nodiscard]]
     std::wstring operator()() const
     {
-      return std::format(L"\033[1m[{:%Y-%m-%d %H:%M:%S}] \033[1;33m[ WARNING ]\033[0m ", std::chrono::system_clock::now());
+      return std::format(L"\033[1m[{:%Y-%m-%d %H:%M:%S}] \033[1;33m[ WARNING ]\033[0m ",
+                         std::chrono::system_clock::now());
     }
 };
 
@@ -141,7 +145,8 @@ struct werror_colour_prefix
     [[nodiscard]]
     std::wstring operator()() const
     {
-      return std::format(L"\033[1m[{:%Y-%m-%d %H:%M:%S}] \033[1;31m[ ERROR ]\033[0m ", std::chrono::system_clock::now());
+      return std::format(L"\033[1m[{:%Y-%m-%d %H:%M:%S}] \033[1;31m[ ERROR ]\033[0m ",
+                         std::chrono::system_clock::now());
     }
 };
 

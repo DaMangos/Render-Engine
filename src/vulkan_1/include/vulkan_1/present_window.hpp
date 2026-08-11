@@ -1,0 +1,32 @@
+#pragma once
+
+#include <glfw_3/window.hpp>
+
+#include <vulkan/vulkan_raii.hpp>
+
+#include <memory>
+
+namespace vulkan_1
+{
+class present_window : public glfw_3::window
+{
+  public:
+    present_window(present_window &&) noexcept = default;
+
+    present_window(present_window const &) noexcept = delete;
+
+    present_window & operator=(present_window &&) noexcept = default;
+
+    present_window & operator=(present_window const &) noexcept = delete;
+
+    ~present_window() = default;
+
+  private:
+    friend class library;
+
+    present_window(glfw_3::window && window, std::shared_ptr<vk::raii::Instance const> const & instance);
+
+  protected:
+    std::shared_ptr<vk::raii::SurfaceKHR const> surface;
+};
+}

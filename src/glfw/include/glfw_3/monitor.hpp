@@ -1,0 +1,62 @@
+#pragma once
+
+#include <glfw_3/def.hpp>
+
+#include <compare>
+#include <functional>
+#include <string_view>
+#include <vector>
+
+typedef struct GLFWmonitor GLFWmonitor;
+
+namespace glfw_3
+{
+class monitor
+{
+  public:
+    monitor(monitor &&) noexcept = default;
+
+    monitor(monitor const &) noexcept = delete;
+
+    monitor & operator=(monitor &&) noexcept = default;
+
+    monitor & operator=(monitor const &) noexcept = delete;
+
+    std::strong_ordering operator<=>(monitor const & other) const noexcept;
+
+    ~monitor() = default;
+
+    [[nodiscard]]
+    int2 get_pos() const;
+
+    [[nodiscard]]
+    workarea get_workarea() const;
+
+    [[nodiscard]]
+    int2 get_physical_size_millimeters() const;
+
+    [[nodiscard]]
+    float2 get_content_scale() const;
+
+    [[nodiscard]]
+    std::string_view get_name() const;
+
+    [[nodiscard]]
+    std::vector<vidmode> get_video_modes() const;
+
+    [[nodiscard]]
+    vidmode get_current_video_mode() const;
+
+    mutable std::function<void()> when_monitor_connected;
+    mutable std::function<void()> when_monitor_disconnected;
+
+  private:
+    friend class window;
+    friend class library;
+    friend class internal;
+
+    explicit monitor(GLFWmonitor * ptr) noexcept;
+
+    GLFWmonitor * ptr = nullptr;
+};
+}

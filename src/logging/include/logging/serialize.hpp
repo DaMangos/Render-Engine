@@ -13,9 +13,9 @@
 namespace logging
 {
 template <class Type, class CharT, class Traits>
-concept serializable_range =
-  std::ranges::input_range<Type> and not(std::convertible_to<std::decay_t<Type>, std::basic_string_view<CharT, Traits>> or
-                                         std::convertible_to<std::decay_t<Type>, std::basic_string<CharT, Traits>>);
+concept serializable_range = std::ranges::input_range<Type>
+                         and not(std::convertible_to<std::decay_t<Type>, std::basic_string_view<CharT, Traits>>
+                                 or std::convertible_to<std::decay_t<Type>, std::basic_string<CharT, Traits>>);
 
 inline namespace serialize
 {
@@ -43,7 +43,8 @@ std::basic_ostream<CharT, Traits> & operator<<(std::basic_ostream<CharT, Traits>
 }
 
 template <class CharT, class Traits, class... Types>
-std::basic_ostream<CharT, Traits> & operator<<(std::basic_ostream<CharT, Traits> & out, std::tuple<Types...> const & tuple)
+std::basic_ostream<CharT, Traits> & operator<<(std::basic_ostream<CharT, Traits> & out,
+                                               std::tuple<Types...> const &        tuple)
 {
   out.put(CharT{'{'});
 
@@ -60,7 +61,8 @@ std::basic_ostream<CharT, Traits> & operator<<(std::basic_ostream<CharT, Traits>
 }
 
 template <class CharT, class Traits = std::char_traits<CharT>, class First, class Second>
-std::basic_ostream<CharT, Traits> & operator<<(std::basic_ostream<CharT, Traits> & out, std::pair<First, Second> const & pair)
+std::basic_ostream<CharT, Traits> & operator<<(std::basic_ostream<CharT, Traits> & out,
+                                               std::pair<First, Second> const &    pair)
 {
   out.put(CharT{'{'});
 

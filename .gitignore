@@ -5,6 +5,8 @@ spv/*
 log/*
 
 .cache/*
+.bear/*
+
 .DS_Store
 
 compile_commands.json

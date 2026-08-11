@@ -1,7 +1,11 @@
 
-#include <graphics/window.hpp>
+#include <glfw_3/library.hpp>
 #include <logging/logging.hpp>
 #include <logging/serialize.hpp>
+#include <vulkan_1/graphical_device.hpp>
+#include <vulkan_1/library.hpp>
+#include <vulkan_1/present_window.hpp>
+#include <vulkan_1/render_window.hpp>
 
 #include <cstdlib>
 #include <exception>
@@ -58,7 +62,6 @@ std::ofstream & create_file(std::filesystem::path const & path)
 int main(int const argc, char const * const * const args) noexcept
 {
   using namespace std::literals;
-  using namespace graphics::literals;
 
   try
   {
@@ -81,7 +84,8 @@ int main(int const argc, char const * const * const args) noexcept
       }
       else if(arg.starts_with("--vk-verbose="))
       {
-        auto const [_, inserted] = arg_files.try_emplace("vk-verbose", &create_file(arg.substr(arg.find_first_of('=') + 1)));
+        auto const [_, inserted]
+          = arg_files.try_emplace("vk-verbose", &create_file(arg.substr(arg.find_first_of('=') + 1)));
 
         if(not inserted)
           throw std::invalid_argument("duplicate: --vk-verbose");
@@ -95,7 +99,8 @@ int main(int const argc, char const * const * const args) noexcept
       }
       else if(arg.starts_with("--vk-info="))
       {
-        auto const [_, inserted] = arg_files.try_emplace("vk-info", &create_file(arg.substr(arg.find_first_of('=') + 1)));
+        auto const [_, inserted]
+          = arg_files.try_emplace("vk-info", &create_file(arg.substr(arg.find_first_of('=') + 1)));
 
         if(not inserted)
           throw std::invalid_argument("duplicate: --vk-info");
@@ -109,7 +114,8 @@ int main(int const argc, char const * const * const args) noexcept
       }
       else if(arg.starts_with("--vk-warning="))
       {
-        auto const [_, inserted] = arg_files.try_emplace("vk-warning", &create_file(arg.substr(arg.find_first_of('=') + 1)));
+        auto const [_, inserted]
+          = arg_files.try_emplace("vk-warning", &create_file(arg.substr(arg.find_first_of('=') + 1)));
 
         if(not inserted)
           throw std::invalid_argument("duplicate: --vk-warning");
@@ -122,7 +128,8 @@ int main(int const argc, char const * const * const args) noexcept
       }
       else if(arg.starts_with("--vk-error="))
       {
-        auto const [_, inserted] = arg_files.try_emplace("vk-error", &create_file(arg.substr(arg.find_first_of('=') + 1)));
+        auto const [_, inserted]
+          = arg_files.try_emplace("vk-error", &create_file(arg.substr(arg.find_first_of('=') + 1)));
 
         if(not inserted)
           throw std::invalid_argument("duplicate: --vk-error");
@@ -136,7 +143,8 @@ int main(int const argc, char const * const * const args) noexcept
       }
       else if(arg.starts_with("--verbose="))
       {
-        auto const [_, inserted] = arg_files.try_emplace("verbose", &create_file(arg.substr(arg.find_first_of('=') + 1)));
+        auto const [_, inserted]
+          = arg_files.try_emplace("verbose", &create_file(arg.substr(arg.find_first_of('=') + 1)));
 
         if(not inserted)
           throw std::invalid_argument("duplicate: --verbose");
@@ -178,7 +186,8 @@ int main(int const argc, char const * const * const args) noexcept
       }
       else if(arg.starts_with("--warning="))
       {
-        auto const [_, inserted] = arg_files.try_emplace("warning", &create_file(arg.substr(arg.find_first_of('=') + 1)));
+        auto const [_, inserted]
+          = arg_files.try_emplace("warning", &create_file(arg.substr(arg.find_first_of('=') + 1)));
 
         if(not inserted)
           throw std::invalid_argument("duplicate: --warning");
@@ -227,17 +236,20 @@ int main(int const argc, char const * const * const args) noexcept
     if(auto file = arg_files.find("error"); file != arg_files.end())
       logging::default_error_out = file->second;
 
-    graphics::window window(500_px,
-                            500_px,
-                            "renderer",
-                            arg_files["vk-verbose"],
-                            arg_files["vk-info"],
-                            arg_files["vk-warning"],
-                            arg_files["vk-error"]);
+    auto library = vulkan_1::library(arg_files["vk-verbose"],
+                                     arg_files["vk-info"],
+                                     arg_files["vk-warning"],
+                                     arg_files["vk-error"]);
 
-    while(not window.should_close())
+    auto present_window = library.create_present_window({.height = 500, .width = 500}, "demo");
+
+    auto graphical_device = library.find_graphical_device(present_window);
+
+    auto render_window = graphical_device.create_render_window(std::move(present_window));
+
+    while(not render_window.should_close())
     {
-      window.poll_events();
+      glfw_3::default_library.poll_events();
     }
   }
   catch(std::system_error const & error)

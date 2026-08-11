@@ -19,9 +19,11 @@ class basic_prefixedostream : public std::basic_ostream<CharT, Traits>
     }
 
     template <class Function>
-    explicit basic_prefixedostream(std::unique_ptr<basic_prefixedbuf<Function, CharT, Traits, Allocator>> && buf) noexcept
+    explicit basic_prefixedostream(
+      std::unique_ptr<basic_prefixedbuf<Function, CharT, Traits, Allocator>> && buf) noexcept
     : std::basic_ostream<CharT, Traits>(buf.get()),
-      buf(buf.release(), [](void * ptr) { delete static_cast<basic_prefixedbuf<Function, CharT, Traits, Allocator> *>(ptr); })
+      buf(buf.release(),
+          [](void * ptr) { delete static_cast<basic_prefixedbuf<Function, CharT, Traits, Allocator> *>(ptr); })
     {
     }
 
