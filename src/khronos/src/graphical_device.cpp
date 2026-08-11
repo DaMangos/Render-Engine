@@ -3,12 +3,12 @@
 #include "detail/find_queue_index.hpp"
 #include "detail/make_shared_with_data.hpp"
 
+#include <khronos/graphical_device.hpp>
+#include <khronos/library.hpp>
+#include <khronos/present_window.hpp>
+#include <khronos/render_window.hpp>
 #include <logging/logging.hpp>
 #include <logging/serialize.hpp>
-#include <vulkan_1/graphical_device.hpp>
-#include <vulkan_1/library.hpp>
-#include <vulkan_1/present_window.hpp>
-#include <vulkan_1/render_window.hpp>
 
 #include <algorithm>
 #include <cassert>
@@ -56,7 +56,7 @@ static int score(std::shared_ptr<vk::SwapchainCreateInfoKHR const> const & swapc
 }
 }
 
-vulkan_1::render_window vulkan_1::graphical_device::create_render_window(present_window && window) const
+khronos::render_window khronos::graphical_device::create_render_window(present_window && window) const
 {
   return {std::move(window),
           physical_device,
@@ -66,8 +66,8 @@ vulkan_1::render_window vulkan_1::graphical_device::create_render_window(present
           max_image_extent};
 }
 
-vulkan_1::graphical_device::graphical_device(std::shared_ptr<vk::raii::Instance const>           instance,
-                                             std::shared_ptr<vk::raii::SurfaceKHR const> const & surface)
+khronos::graphical_device::graphical_device(std::shared_ptr<vk::raii::Instance const>           instance,
+                                            std::shared_ptr<vk::raii::SurfaceKHR const> const & surface)
 {
   using namespace logging::serialize;
 
@@ -101,6 +101,12 @@ vulkan_1::graphical_device::graphical_device(std::shared_ptr<vk::raii::Instance 
 
   if(not physical_device or not default_swapchain_create_info or not min_image_extent or not max_image_extent)
     throw std::runtime_error("there are no suitable physical devices");
+
+  auto const & [physical_device_properties, physical_device_properties_12]
+    = physical_device->getProperties2<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceVulkan12Properties>();
+
+  logging::info() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
+                  << physical_device_properties_12.driverName.data() << ") is suitable";
 
   auto const graphics_queue_index = detail::find_graphics_queue_index(physical_device);
   auto const present_queue_index  = detail::find_present_queue_index(physical_device, surface);

@@ -1,15 +1,15 @@
 #include "detail/create_swapchain_create_info.hpp"
 #include "detail/make_shared_with_data.hpp"
 
-#include <glfw_3/window.hpp>
+#include <glfw/window.hpp>
+#include <khronos/render_window.hpp>
 #include <logging/logging.hpp>
-#include <vulkan_1/render_window.hpp>
 
 #include <iomanip>
 #include <memory>
 #include <stdexcept>
 
-vulkan_1::render_window::render_window(
+khronos::render_window::render_window(
   present_window &&                                         window,
   std::shared_ptr<vk::raii::PhysicalDevice const> const &   physical_device,
   std::shared_ptr<vk::raii::Device const> const &           device,
@@ -49,4 +49,29 @@ vulkan_1::render_window::render_window(
   swapchain = detail::make_shared_with_data<vk::raii::SwapchainKHR const>(std::make_tuple(device, surface),
                                                                           *device,
                                                                           *swapchain_create_info);
+
+  auto const images = swapchain->getImages();
+
+  image_views.reserve(images.size());
+
+  for(auto const & image : images)
+  {
+    constexpr auto image_subresource_range = vk::ImageSubresourceRange{}
+                                               .setAspectMask(vk::ImageAspectFlagBits::eColor)
+                                               .setBaseMipLevel(0)
+                                               .setLevelCount(1)
+                                               .setBaseArrayLayer(0)
+                                               .setLayerCount(1);
+
+    auto const image_view_create_info = vk::ImageViewCreateInfo{}
+                                          .setViewType(vk::ImageViewType::e2D)
+                                          .setFormat(swapchain_create_info->imageFormat)
+                                          .setSubresourceRange(image_subresource_range)
+                                          .setImage(image);
+
+    image_views.emplace_back(
+      detail::make_shared_with_data<vk::raii::ImageView const>(std::make_tuple(device, swapchain),
+                                                               *device,
+                                                               image_view_create_info));
+  }
 }

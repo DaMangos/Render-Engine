@@ -1,11 +1,11 @@
 #pragma once
 
-#include <glfw_3/library.hpp>
-#include <glfw_3/monitor.hpp>
+#include <glfw/library.hpp>
+#include <glfw/monitor.hpp>
 
 #include <set>
 
-namespace glfw_3
+namespace glfw
 {
 class internal
 {

@@ -2,7 +2,7 @@
 
 #include <vulkan/vulkan_raii.hpp>
 
-namespace vulkan_1
+namespace khronos
 {
 class library;
 

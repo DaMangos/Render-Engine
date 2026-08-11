@@ -2,7 +2,7 @@
 
 #include <memory>
 
-namespace vulkan_1::detail
+namespace khronos::detail
 {
 template <class Type, class Data, class... Args>
 [[nodiscard]]

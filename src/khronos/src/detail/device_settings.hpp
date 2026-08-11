@@ -6,7 +6,7 @@
 #include <memory>
 #include <vector>
 
-namespace vulkan_1::detail
+namespace khronos::detail
 {
 [[nodiscard]]
 std::expected<std::vector<char const *>, std::vector<char const *>> get_required_device_extensions(

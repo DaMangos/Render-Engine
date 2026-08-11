@@ -1,6 +1,6 @@
 #include "find_queue_index.hpp"
 
-std::optional<std::uint32_t> vulkan_1::detail::find_graphics_queue_index(
+std::optional<std::uint32_t> khronos::detail::find_graphics_queue_index(
   std::shared_ptr<vk::raii::PhysicalDevice const> const & physical_device)
 {
   auto const properties = physical_device->getQueueFamilyProperties();
@@ -13,7 +13,7 @@ std::optional<std::uint32_t> vulkan_1::detail::find_graphics_queue_index(
   return std::nullopt;
 }
 
-std::optional<std::uint32_t> vulkan_1::detail::find_present_queue_index(
+std::optional<std::uint32_t> khronos::detail::find_present_queue_index(
   std::shared_ptr<vk::raii::PhysicalDevice const> const & physical_device,
   std::shared_ptr<vk::raii::SurfaceKHR const> const &     surface)
 {

@@ -1,15 +1,13 @@
 #pragma once
 
-#include "vulkan_1/graphical_device.hpp"
-
-#include <vulkan_1/present_window.hpp>
-
+#include <khronos/present_window.hpp>
 #include <vulkan/vulkan_raii.hpp>
 
 #include <memory>
 #include <optional>
+#include <vector>
 
-namespace vulkan_1
+namespace khronos
 {
 class render_window : public present_window
 {
@@ -34,7 +32,8 @@ class render_window : public present_window
                   std::shared_ptr<vk::Extent2D const> const &               min_image_extent,
                   std::shared_ptr<vk::Extent2D const> const &               max_image_extent);
 
-    std::optional<vk::SwapchainCreateInfoKHR>     swapchain_create_info;
-    std::shared_ptr<vk::raii::SwapchainKHR const> swapchain;
+    std::optional<vk::SwapchainCreateInfoKHR>               swapchain_create_info;
+    std::shared_ptr<vk::raii::SwapchainKHR const>           swapchain;
+    std::vector<std::shared_ptr<vk::raii::ImageView const>> image_views;
 };
 }

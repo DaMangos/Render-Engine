@@ -1,12 +1,14 @@
 #include "device_settings.hpp"
 
+#include <logging/logging.hpp>
+
 #include <algorithm>
 #include <expected>
-#include <functional>
+#include <iomanip>
 #include <string_view>
 #include <vector>
 
-std::expected<std::vector<char const *>, std::vector<char const *>> vulkan_1::detail::get_required_device_extensions(
+std::expected<std::vector<char const *>, std::vector<char const *>> khronos::detail::get_required_device_extensions(
   std::shared_ptr<vk::raii::PhysicalDevice const> const & physical_device)
 {
   auto const is_extension_available
@@ -25,7 +27,15 @@ std::expected<std::vector<char const *>, std::vector<char const *>> vulkan_1::de
     return std::unexpected{unavailable_device_extensions};
 
   if(is_extension_available(vk::KHRPortabilitySubsetExtensionName))
+  {
+    auto const & [physical_device_properties, physical_device_properties_12]
+      = physical_device->getProperties2<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceVulkan12Properties>();
+
+    logging::warning() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
+                       << physical_device_properties_12.driverName.data() << ") is not fully compliant";
+
     required_device_extensions.emplace_back(vk::KHRPortabilitySubsetExtensionName);
+  }
 
   return required_device_extensions;
 }

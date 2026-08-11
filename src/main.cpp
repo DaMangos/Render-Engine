@@ -1,11 +1,10 @@
-
-#include <glfw_3/library.hpp>
+#include <glfw/library.hpp>
+#include <khronos/graphical_device.hpp>
+#include <khronos/library.hpp>
+#include <khronos/present_window.hpp>
+#include <khronos/render_window.hpp>
 #include <logging/logging.hpp>
 #include <logging/serialize.hpp>
-#include <vulkan_1/graphical_device.hpp>
-#include <vulkan_1/library.hpp>
-#include <vulkan_1/present_window.hpp>
-#include <vulkan_1/render_window.hpp>
 
 #include <cstdlib>
 #include <exception>
@@ -21,28 +20,28 @@
 
 namespace
 {
-static constexpr char const * const help_msg =  //
-  "\n\n"
-  "--vk-verbose             - Outputs the vulkan verbose logs to the stdlog.\n\n"
-  "--vk-verbose=<filename>  - Outputs the vulkan verbose logs to file <filename>.\n\n"
-  "--vk-info                - Outputs the vulkan info logs to the stdlog.\n\n"
-  "--vk-info=<filename>     - Outputs the vulkan info logs to file <filename>.\n\n"
-  "--vk-warning             - Outputs the vulkan warning logs to the stderr.\n\n"
-  "--vk-warning=<filename>  - Outputs the vulkan warning logs to file <filename>.\n\n"
-  "--vk-error               - Outputs the vulkan error logs to the stderr.\n\n"
-  "--vk-error=<filename>    - Outputs the vulkan error logs to file <filename>.\n\n"
-  "--verbose                - Outputs the verbose logs to stdlog.\n\n"
-  "--verbose=<filename>     - Outputs the verbose logs to file <filename>.\n\n"
-  "--no-verbose             - Suppresses the verbose logs.\n\n"
-  "--info=<filename>        - Outputs the info logs to stdlog.\n\n"
-  "--info=<filename>        - Outputs the info logs to file <filename>.\n\n"
-  "--no-info                - Suppresses the info logs.\n\n"
-  "--warning                - Outputs the warning logs to stderr.\n\n"
-  "--warning=<filename>     - Outputs the warning logs to file <filename>.\n\n"
-  "--no-warning             - Suppresses the warning logs.\n\n"
-  "--error                  - Outputs the error logs to stderr.\n\n"
-  "--error=<filename>       - Outputs the error logs to file <filename>.\n\n"
-  "--no-error               - Suppresses the error logs.\n\n";
+static constexpr char const * const help_msg
+  = "\n\n"
+    "--vk-verbose             - Outputs the vulkan verbose logs to the stdlog.\n\n"
+    "--vk-verbose=<filename>  - Outputs the vulkan verbose logs to file <filename>.\n\n"
+    "--vk-info                - Outputs the vulkan info logs to the stdlog.\n\n"
+    "--vk-info=<filename>     - Outputs the vulkan info logs to file <filename>.\n\n"
+    "--vk-warning             - Outputs the vulkan warning logs to the stderr.\n\n"
+    "--vk-warning=<filename>  - Outputs the vulkan warning logs to file <filename>.\n\n"
+    "--vk-error               - Outputs the vulkan error logs to the stderr.\n\n"
+    "--vk-error=<filename>    - Outputs the vulkan error logs to file <filename>.\n\n"
+    "--verbose                - Outputs the verbose logs to stdlog.\n\n"
+    "--verbose=<filename>     - Outputs the verbose logs to file <filename>.\n\n"
+    "--no-verbose             - Suppresses the verbose logs.\n\n"
+    "--info=<filename>        - Outputs the info logs to stdlog.\n\n"
+    "--info=<filename>        - Outputs the info logs to file <filename>.\n\n"
+    "--no-info                - Suppresses the info logs.\n\n"
+    "--warning                - Outputs the warning logs to stderr.\n\n"
+    "--warning=<filename>     - Outputs the warning logs to file <filename>.\n\n"
+    "--no-warning             - Suppresses the warning logs.\n\n"
+    "--error                  - Outputs the error logs to stderr.\n\n"
+    "--error=<filename>       - Outputs the error logs to file <filename>.\n\n"
+    "--no-error               - Suppresses the error logs.\n\n";
 }
 
 std::ofstream & create_file(std::filesystem::path const & path)
@@ -236,10 +235,10 @@ int main(int const argc, char const * const * const args) noexcept
     if(auto file = arg_files.find("error"); file != arg_files.end())
       logging::default_error_out = file->second;
 
-    auto library = vulkan_1::library(arg_files["vk-verbose"],
-                                     arg_files["vk-info"],
-                                     arg_files["vk-warning"],
-                                     arg_files["vk-error"]);
+    khronos::library library{arg_files["vk-verbose"],
+                             arg_files["vk-info"],
+                             arg_files["vk-warning"],
+                             arg_files["vk-error"]};
 
     auto present_window = library.create_present_window({.height = 500, .width = 500}, "demo");
 
@@ -249,7 +248,7 @@ int main(int const argc, char const * const * const args) noexcept
 
     while(not render_window.should_close())
     {
-      glfw_3::default_library.poll_events();
+      glfw::default_library.poll_events();
     }
   }
   catch(std::system_error const & error)

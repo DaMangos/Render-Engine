@@ -6,7 +6,7 @@
 #include <ostream>
 #include <span>
 
-namespace glfw_3
+namespace glfw
 {
 
 enum struct action
@@ -390,15 +390,15 @@ std::basic_istream<CharT, Traits> & operator>>(std::basic_istream<CharT, Traits>
 }
 
 template <>
-struct std::hash<glfw_3::pixel>
+struct std::hash<glfw::pixel>
 {
-    std::size_t operator()(glfw_3::pixel const value) const noexcept
+    std::size_t operator()(glfw::pixel const value) const noexcept
     {
       return std::hash<int>{}(static_cast<int>(value));
     }
 };
 
-namespace glfw_3
+namespace glfw
 {
 template <class Type>
 struct vec2

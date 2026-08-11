@@ -5,7 +5,7 @@
 #include <memory>
 #include <optional>
 
-namespace vulkan_1::detail
+namespace khronos::detail
 {
 [[nodiscard]]
 std::optional<std::uint32_t> find_graphics_queue_index(

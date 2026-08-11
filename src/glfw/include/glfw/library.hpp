@@ -1,12 +1,12 @@
 #pragma once
 
-#include <glfw_3/def.hpp>
+#include <glfw/def.hpp>
 
 #include <functional>
 #include <set>
 #include <string>
 
-namespace glfw_3
+namespace glfw
 {
 extern class library default_library;
 

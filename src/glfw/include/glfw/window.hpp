@@ -1,7 +1,6 @@
 #pragma once
 
-#include <glfw_3/def.hpp>
-
+#include <glfw/def.hpp>
 #include <vulkan/vulkan_raii.hpp>
 
 #include <cuchar>
@@ -13,7 +12,7 @@
 
 typedef struct GLFWwindow GLFWwindow;
 
-namespace glfw_3
+namespace glfw
 {
 
 class window

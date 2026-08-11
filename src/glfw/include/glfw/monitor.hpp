@@ -1,6 +1,6 @@
 #pragma once
 
-#include <glfw_3/def.hpp>
+#include <glfw/def.hpp>
 
 #include <compare>
 #include <functional>
@@ -9,7 +9,7 @@
 
 typedef struct GLFWmonitor GLFWmonitor;
 
-namespace glfw_3
+namespace glfw
 {
 class monitor
 {

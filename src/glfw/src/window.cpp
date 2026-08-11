@@ -1,11 +1,10 @@
 #include "internal.hpp"
 
-#include <glfw_3/cursor.hpp>
-#include <glfw_3/library.hpp>
-#include <glfw_3/monitor.hpp>
-#include <glfw_3/window.hpp>
-
+#include <glfw/cursor.hpp>
 #include <GLFW/glfw3.h>
+#include <glfw/library.hpp>
+#include <glfw/monitor.hpp>
+#include <glfw/window.hpp>
 
 #include <filesystem>
 #include <utility>
@@ -14,7 +13,7 @@ namespace
 {
 static void window_pos_callback(GLFWwindow * window, int xpos, int ypos)
 {
-  auto * const self = static_cast<glfw_3::window *>(glfwGetWindowUserPointer(window));
+  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_window_moved)
     self->when_window_moved({.x = xpos, .y = ypos});
@@ -22,7 +21,7 @@ static void window_pos_callback(GLFWwindow * window, int xpos, int ypos)
 
 static void window_size_callback(GLFWwindow * window, int width, int height)
 {
-  auto * const self = static_cast<glfw_3::window *>(glfwGetWindowUserPointer(window));
+  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_window_resized)
     self->when_window_resized({.width = width, .height = height});
@@ -30,7 +29,7 @@ static void window_size_callback(GLFWwindow * window, int width, int height)
 
 static void window_close_callback(GLFWwindow * window)
 {
-  auto * const self = static_cast<glfw_3::window *>(glfwGetWindowUserPointer(window));
+  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_window_closed)
     self->when_window_closed();
@@ -38,7 +37,7 @@ static void window_close_callback(GLFWwindow * window)
 
 static void window_refresh_callback(GLFWwindow * window)
 {
-  auto * const self = static_cast<glfw_3::window *>(glfwGetWindowUserPointer(window));
+  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_window_refreshed)
     self->when_window_refreshed();
@@ -46,7 +45,7 @@ static void window_refresh_callback(GLFWwindow * window)
 
 static void window_focus_callback(GLFWwindow * window, int focused)
 {
-  auto * const self = static_cast<glfw_3::window *>(glfwGetWindowUserPointer(window));
+  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_window_focused and focused == VK_TRUE)
     self->when_window_focused();
@@ -57,7 +56,7 @@ static void window_focus_callback(GLFWwindow * window, int focused)
 
 static void window_iconify_callback(GLFWwindow * window, int iconified)
 {
-  auto * const self = static_cast<glfw_3::window *>(glfwGetWindowUserPointer(window));
+  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_window_minimized and iconified == VK_TRUE)
     self->when_window_minimized();
@@ -68,7 +67,7 @@ static void window_iconify_callback(GLFWwindow * window, int iconified)
 
 static void window_maximize_callback(GLFWwindow * window, int maximized)
 {
-  auto * const self = static_cast<glfw_3::window *>(glfwGetWindowUserPointer(window));
+  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_window_maximized and maximized == VK_TRUE)
     self->when_window_maximized();
@@ -79,7 +78,7 @@ static void window_maximize_callback(GLFWwindow * window, int maximized)
 
 static void framebuffer_size_callback(GLFWwindow * window, int xpos, int ypos)
 {
-  auto * const self = static_cast<glfw_3::window *>(glfwGetWindowUserPointer(window));
+  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_framebuffer_resized)
     self->when_framebuffer_resized({.x = xpos, .y = ypos});
@@ -87,7 +86,7 @@ static void framebuffer_size_callback(GLFWwindow * window, int xpos, int ypos)
 
 static void window_content_scale_callback(GLFWwindow * window, float xscale, float yscale)
 {
-  auto * const self = static_cast<glfw_3::window *>(glfwGetWindowUserPointer(window));
+  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_window_content_scaled)
     self->when_window_content_scaled({.x = xscale, .y = yscale});
@@ -95,15 +94,15 @@ static void window_content_scale_callback(GLFWwindow * window, float xscale, flo
 
 static void key_callback(GLFWwindow * window, int key, int scancode, int action, int mods)
 {
-  auto * const self = static_cast<glfw_3::window *>(glfwGetWindowUserPointer(window));
+  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_key_pressed)
-    self->when_key_pressed(glfw_3::key{key}, scancode, glfw_3::action{action}, glfw_3::modifier{mods});
+    self->when_key_pressed(glfw::key{key}, scancode, glfw::action{action}, glfw::modifier{mods});
 }
 
 static void char_callback(GLFWwindow * window, unsigned int codepoint)
 {
-  auto * const self = static_cast<glfw_3::window *>(glfwGetWindowUserPointer(window));
+  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_unicode_char_typed)
     self->when_unicode_char_typed(static_cast<char32_t>(codepoint));
@@ -111,15 +110,15 @@ static void char_callback(GLFWwindow * window, unsigned int codepoint)
 
 static void mouse_button_callback(GLFWwindow * window, int button, int action, int mods)
 {
-  auto * const self = static_cast<glfw_3::window *>(glfwGetWindowUserPointer(window));
+  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_mouse_button_pressed)
-    self->when_mouse_button_pressed(glfw_3::mouse_button{button}, glfw_3::action{action}, glfw_3::modifier{mods});
+    self->when_mouse_button_pressed(glfw::mouse_button{button}, glfw::action{action}, glfw::modifier{mods});
 }
 
 static void cursor_pos_callback(GLFWwindow * window, double xpos, double ypos)
 {
-  auto * const self = static_cast<glfw_3::window *>(glfwGetWindowUserPointer(window));
+  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_cursor_moved)
     self->when_cursor_moved({.x = xpos, .y = ypos});
@@ -127,7 +126,7 @@ static void cursor_pos_callback(GLFWwindow * window, double xpos, double ypos)
 
 static void cursor_enter_callback(GLFWwindow * window, int entered)
 {
-  auto * const self = static_cast<glfw_3::window *>(glfwGetWindowUserPointer(window));
+  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_cursor_entered and entered == VK_TRUE)
     self->when_cursor_entered();
@@ -138,7 +137,7 @@ static void cursor_enter_callback(GLFWwindow * window, int entered)
 
 static void scroll_callback(GLFWwindow * window, double xoffset, double yoffset)
 {
-  auto * const self = static_cast<glfw_3::window *>(glfwGetWindowUserPointer(window));
+  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_mouse_scrolled)
     self->when_mouse_scrolled({.x = xoffset, .y = yoffset});
@@ -146,7 +145,7 @@ static void scroll_callback(GLFWwindow * window, double xoffset, double yoffset)
 
 static void drop_callback(GLFWwindow * window, int path_count, char const ** paths)
 {
-  auto * const self = static_cast<glfw_3::window *>(glfwGetWindowUserPointer(window));
+  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_file_dropped)
   {
@@ -162,7 +161,7 @@ static void drop_callback(GLFWwindow * window, int path_count, char const ** pat
 }
 }
 
-glfw_3::window::window(window && other) noexcept
+glfw::window::window(window && other) noexcept
 : when_window_moved(std::move(other.when_window_moved)),
   when_window_resized(std::move(other.when_window_resized)),
   when_window_closed(std::move(other.when_window_closed)),
@@ -189,7 +188,7 @@ glfw_3::window::window(window && other) noexcept
     glfwSetWindowUserPointer(ptr.get(), this);
 }
 
-glfw_3::window & glfw_3::window::operator=(window && other) noexcept
+glfw::window & glfw::window::operator=(window && other) noexcept
 {
   when_window_moved          = std::move(other.when_window_moved);
   when_window_resized        = std::move(other.when_window_resized);
@@ -218,27 +217,27 @@ glfw_3::window & glfw_3::window::operator=(window && other) noexcept
   return *this;
 }
 
-std::strong_ordering glfw_3::window::operator<=>(window const & other) const noexcept
+std::strong_ordering glfw::window::operator<=>(window const & other) const noexcept
 {
   return ptr <=> other.ptr;
 }
 
-bool glfw_3::window::should_close() const
+bool glfw::window::should_close() const
 {
   return glfwWindowShouldClose(ptr.get());
 }
 
-std::string_view glfw_3::window::get_title() const
+std::string_view glfw::window::get_title() const
 {
   return glfwGetWindowTitle(ptr.get());
 }
 
-void glfw_3::window::set_title(std::string const & title)
+void glfw::window::set_title(std::string const & title)
 {
   glfwSetWindowTitle(ptr.get(), title.c_str());
 }
 
-void glfw_3::window::set_icon(std::span<image> images)
+void glfw::window::set_icon(std::span<image> images)
 {
   std::vector<GLFWimage> glfw_images;
 
@@ -254,7 +253,7 @@ void glfw_3::window::set_icon(std::span<image> images)
   glfwSetWindowIcon(ptr.get(), static_cast<int>(glfw_images.size()), glfw_images.data());
 }
 
-glfw_3::int2 glfw_3::window::get_pos() const
+glfw::int2 glfw::window::get_pos() const
 {
   int2 pos = {};
 
@@ -263,7 +262,7 @@ glfw_3::int2 glfw_3::window::get_pos() const
   return pos;
 }
 
-glfw_3::int2 glfw_3::window::get_size() const
+glfw::int2 glfw::window::get_size() const
 {
   int2 size = {};
 
@@ -272,7 +271,7 @@ glfw_3::int2 glfw_3::window::get_size() const
   return size;
 }
 
-glfw_3::int2 glfw_3::window::get_framebuffer_size() const
+glfw::int2 glfw::window::get_framebuffer_size() const
 {
   int2 size = {};
 
@@ -281,7 +280,7 @@ glfw_3::int2 glfw_3::window::get_framebuffer_size() const
   return size;
 }
 
-glfw_3::int4 glfw_3::window::get_frame_size() const
+glfw::int4 glfw::window::get_frame_size() const
 {
   int4 size = {};
 
@@ -290,7 +289,7 @@ glfw_3::int4 glfw_3::window::get_frame_size() const
   return size;
 }
 
-glfw_3::float2 glfw_3::window::get_content_scale() const
+glfw::float2 glfw::window::get_content_scale() const
 {
   float2 scale = {};
 
@@ -299,32 +298,32 @@ glfw_3::float2 glfw_3::window::get_content_scale() const
   return scale;
 }
 
-float glfw_3::window::get_opacity() const
+float glfw::window::get_opacity() const
 {
   return glfwGetWindowOpacity(ptr.get());
 }
 
-glfw_3::monitor const & glfw_3::window::get_monitor() const
+glfw::monitor const & glfw::window::get_monitor() const
 {
   return internal::try_emplace_monitor(glfwGetPrimaryMonitor());
 }
 
-bool glfw_3::window::get_input_mode(input_mode mode) const
+bool glfw::window::get_input_mode(input_mode mode) const
 {
   return glfwGetInputMode(ptr.get(), std::to_underlying(mode)) == GLFW_TRUE;
 }
 
-glfw_3::action glfw_3::window::get_key(key key) const
+glfw::action glfw::window::get_key(key key) const
 {
   return action{glfwGetKey(ptr.get(), std::to_underlying(key))};
 }
 
-glfw_3::action glfw_3::window::get_mouse_button(mouse_button button) const
+glfw::action glfw::window::get_mouse_button(mouse_button button) const
 {
   return action{glfwGetMouseButton(ptr.get(), std::to_underlying(button))};
 }
 
-glfw_3::double2 glfw_3::window::get_cursor_pos() const
+glfw::double2 glfw::window::get_cursor_pos() const
 {
   double2 pos = {};
 
@@ -333,8 +332,8 @@ glfw_3::double2 glfw_3::window::get_cursor_pos() const
   return pos;
 }
 
-vk::raii::SurfaceKHR glfw_3::window::create_surface(vk::raii::Instance const &                  instance,
-                                                    vk::Optional<vk::AllocationCallbacks const> allocator) const
+vk::raii::SurfaceKHR glfw::window::create_surface(vk::raii::Instance const &                  instance,
+                                                  vk::Optional<vk::AllocationCallbacks const> allocator) const
 {
   VkSurfaceKHR surface = VK_NULL_HANDLE;
 
@@ -346,97 +345,97 @@ vk::raii::SurfaceKHR glfw_3::window::create_surface(vk::raii::Instance const &  
   return vk::raii::SurfaceKHR(instance, surface, allocator);
 }
 
-void glfw_3::window::set_pos(int2 const pos)
+void glfw::window::set_pos(int2 const pos)
 {
   glfwSetWindowPos(ptr.get(), pos.x, pos.y);
 }
 
-void glfw_3::window::set_size_limits(int2 min, int2 max)
+void glfw::window::set_size_limits(int2 min, int2 max)
 {
   glfwSetWindowSizeLimits(ptr.get(), min.width, min.height, max.width, max.height);
 }
 
-void glfw_3::window::set_aspect_ratio(int numer, int denom)
+void glfw::window::set_aspect_ratio(int numer, int denom)
 {
   glfwSetWindowAspectRatio(ptr.get(), numer, denom);
 }
 
-void glfw_3::window::set_size(int2 size)
+void glfw::window::set_size(int2 size)
 {
   glfwSetWindowSize(ptr.get(), size.width, size.height);
 }
 
-void glfw_3::window::set_monitor(monitor const & monitor, workarea area, int const refreshRate)
+void glfw::window::set_monitor(monitor const & monitor, workarea area, int const refreshRate)
 {
   glfwSetWindowMonitor(ptr.get(), monitor.ptr, area.pos.x, area.pos.y, area.size.width, area.size.height, refreshRate);
 }
 
-void glfw_3::window::set_input_mode(input_mode mode, bool value)
+void glfw::window::set_input_mode(input_mode mode, bool value)
 {
   glfwSetInputMode(ptr.get(), std::to_underlying(mode), value ? GLFW_TRUE : GLFW_FALSE);
 }
 
-void glfw_3::window::set_cursor_pos(double2 pos)
+void glfw::window::set_cursor_pos(double2 pos)
 {
   glfwSetCursorPos(ptr.get(), pos.x, pos.y);
 }
 
-void glfw_3::window::set_cursor(cursor const & cursor)
+void glfw::window::set_cursor(cursor const & cursor)
 {
   glfwSetCursor(ptr.get(), cursor.ptr.get());
 }
 
-void glfw_3::window::set_clipboard_string(std::string const & str)
+void glfw::window::set_clipboard_string(std::string const & str)
 {
   glfwSetClipboardString(ptr.get(), str.c_str());
 }
 
-void glfw_3::window::set_should_close(bool value)
+void glfw::window::set_should_close(bool value)
 {
   glfwSetWindowShouldClose(ptr.get(), static_cast<int>(value));
 }
 
-void glfw_3::window::set_opacity(float opacity)
+void glfw::window::set_opacity(float opacity)
 {
   glfwSetWindowOpacity(ptr.get(), opacity);
 }
 
-void glfw_3::window::minimize()
+void glfw::window::minimize()
 {
   glfwIconifyWindow(ptr.get());
 }
 
-void glfw_3::window::restore()
+void glfw::window::restore()
 {
   glfwRestoreWindow(ptr.get());
 }
 
-void glfw_3::window::maximize()
+void glfw::window::maximize()
 {
   glfwMaximizeWindow(ptr.get());
 }
 
-void glfw_3::window::show()
+void glfw::window::show()
 {
   glfwShowWindow(ptr.get());
 }
 
-void glfw_3::window::hide()
+void glfw::window::hide()
 {
   glfwHideWindow(ptr.get());
 }
 
-void glfw_3::window::focus()
+void glfw::window::focus()
 {
   glfwFocusWindow(ptr.get());
 }
 
-void glfw_3::window::request_attention()
+void glfw::window::request_attention()
 {
   glfwRequestWindowAttention(ptr.get());
 }
 
-glfw_3::window::window(std::unique_ptr<GLFWwindow, void (*)(GLFWwindow *)> && ptr) noexcept
+glfw::window::window(std::unique_ptr<GLFWwindow, void (*)(GLFWwindow *)> && ptr) noexcept
 : ptr(std::move(ptr))
 {
   if(ptr)

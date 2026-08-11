@@ -69,18 +69,20 @@ static std::vector<std::size_t> find_unavailable_feature_indices(
 }
 }
 
-std::shared_ptr<vk::SwapchainCreateInfoKHR> vulkan_1::detail::create_swapchain_create_info(
+std::shared_ptr<vk::SwapchainCreateInfoKHR> khronos::detail::create_swapchain_create_info(
   std::shared_ptr<vk::raii::PhysicalDevice const> const & physical_device,
   std::shared_ptr<vk::raii::SurfaceKHR const> const &     surface)
 {
   using namespace logging::serialize;
 
-  auto const physical_device_properties = physical_device->getProperties();
+  auto const [physical_device_properties, physical_device_properties_12]
+    = physical_device->getProperties2<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceVulkan12Properties>();
 
-  if(physical_device_properties.apiVersion < vk::ApiVersion13)
+  if(physical_device_properties.properties.apiVersion < vk::ApiVersion13)
   {
-    logging::warning() << "physical device " << std::quoted(physical_device_properties.deviceName.data())
-                       << " is not suitable because does not support vulkan api version 1.3";
+    logging::warning() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
+                       << physical_device_properties_12.driverName.data()
+                       << ") is not suitable because does not support vulkan api version 1.3";
     return nullptr;
   }
 
@@ -88,14 +90,16 @@ std::shared_ptr<vk::SwapchainCreateInfoKHR> vulkan_1::detail::create_swapchain_c
 
   if(not device_extensions)
   {
-    logging::warning() << "physical device " << std::quoted(physical_device_properties.deviceName.data())
-                       << " is not suitable because it's missing physical device extensions: "
+    logging::warning() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
+                       << physical_device_properties_12.driverName.data()
+                       << ") is not suitable because it's missing physical device extensions: "
                        << device_extensions.error();
     return nullptr;
   }
 
-  logging::verbose() << "physical device " << std::quoted(physical_device_properties.deviceName.data())
-                     << " has got all required physical device extensions: " << *device_extensions;
+  logging::verbose() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
+                     << physical_device_properties_12.driverName.data()
+                     << ") has got all required physical device extensions: " << *device_extensions;
 
   auto const unavailable_features_indices
     = find_unavailable_feature_indices(physical_device, required_physical_device_features);
@@ -103,42 +107,48 @@ std::shared_ptr<vk::SwapchainCreateInfoKHR> vulkan_1::detail::create_swapchain_c
   if(not unavailable_features_indices.empty())
   {
     if(unavailable_features_indices.size() == 1)
-      logging::warning() << "physical device " << std::quoted(physical_device_properties.deviceName.data())
-                         << " is not suitable because it's missing " << unavailable_features_indices.size()
-                         << " required physical device feature at index " << unavailable_features_indices.front();
+      logging::warning() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
+                         << physical_device_properties_12.driverName.data() << ") is not suitable because it's missing "
+                         << unavailable_features_indices.size() << " required physical device feature at index "
+                         << unavailable_features_indices.front();
     else
-      logging::warning() << "physical device " << std::quoted(physical_device_properties.deviceName.data())
-                         << " is not suitable because it's missing " << unavailable_features_indices.size()
-                         << " required physical device features at indices " << unavailable_features_indices;
+      logging::warning() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
+                         << physical_device_properties_12.driverName.data() << ") is not suitable because it's missing "
+                         << unavailable_features_indices.size() << " required physical device features at indices "
+                         << unavailable_features_indices;
     return nullptr;
   }
 
-  logging::verbose() << "physical device " << std::quoted(physical_device_properties.deviceName.data())
-                     << " has all requires device features";
+  logging::verbose() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
+                     << physical_device_properties_12.driverName.data() << ") has all requires device features";
 
   auto const graphics_queue_index = find_graphics_queue_index(physical_device);
 
   if(not graphics_queue_index)
   {
-    logging::warning() << physical_device_properties.deviceName
-                       << " is not suitable because it's missing the graphics queue family";
+    logging::warning() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
+                       << physical_device_properties_12.driverName.data()
+                       << ") is not suitable because it's missing the graphics queue family";
     return nullptr;
   }
 
-  logging::verbose() << "physical device " << std::quoted(physical_device_properties.deviceName.data())
-                     << " has graphics queue family at index " << *graphics_queue_index;
+  logging::verbose() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
+                     << physical_device_properties_12.driverName.data() << ") has graphics queue family at index "
+                     << *graphics_queue_index;
 
   auto const present_queue_index = find_present_queue_index(physical_device, surface);
 
   if(not present_queue_index)
   {
-    logging::warning() << physical_device_properties.deviceName
-                       << " is not suitable because it's missing the present queue family";
+    logging::warning() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
+                       << physical_device_properties_12.driverName.data()
+                       << ") is not suitable because it's missing the present queue family";
     return nullptr;
   }
 
-  logging::verbose() << "physical device " << std::quoted(physical_device_properties.deviceName.data())
-                     << " has present queue family at index " << *present_queue_index;
+  logging::verbose() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
+                     << physical_device_properties_12.driverName.data() << ") has present queue family at index "
+                     << *present_queue_index;
 
   auto const surface_capabilities = physical_device->getSurfaceCapabilitiesKHR(*surface);
 
@@ -178,8 +188,9 @@ std::shared_ptr<vk::SwapchainCreateInfoKHR> vulkan_1::detail::create_swapchain_c
   if(std::ranges::contains(surface_formats,
                            vk::SurfaceFormatKHR{vk::Format::eB8G8R8A8Srgb, vk::ColorSpaceKHR::eSrgbNonlinear}))
   {
-    logging::verbose() << "physical device " << std::quoted(physical_device_properties.deviceName.data())
-                       << " has format " << std::quoted(vk::to_string(vk::Format::eB8G8R8A8Srgb)) << " and color space "
+    logging::verbose() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
+                       << physical_device_properties_12.driverName.data() << ") has format "
+                       << std::quoted(vk::to_string(vk::Format::eB8G8R8A8Srgb)) << " and color space "
                        << std::quoted(vk::to_string(vk::ColorSpaceKHR::eSrgbNonlinear));
 
     swapchain_create_info->setImageFormat(vk::Format::eB8G8R8A8Srgb);
@@ -187,19 +198,21 @@ std::shared_ptr<vk::SwapchainCreateInfoKHR> vulkan_1::detail::create_swapchain_c
   }
   else if(not surface_formats.empty())
   {
-    logging::warning() << "physical device " << std::quoted(physical_device_properties.deviceName.data())
-                       << " is missing format " << std::quoted(vk::to_string(vk::Format::eB8G8R8A8Srgb))
-                       << " and color space " << std::quoted(vk::to_string(vk::ColorSpaceKHR::eSrgbNonlinear))
-                       << " defaulting to format " << std::quoted(vk::to_string(surface_formats.front().format))
-                       << " and color space " << std::quoted(vk::to_string(surface_formats.front().colorSpace));
+    logging::warning() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
+                       << physical_device_properties_12.driverName.data() << ") is missing format "
+                       << std::quoted(vk::to_string(vk::Format::eB8G8R8A8Srgb)) << " and color space "
+                       << std::quoted(vk::to_string(vk::ColorSpaceKHR::eSrgbNonlinear)) << " defaulting to format "
+                       << std::quoted(vk::to_string(surface_formats.front().format)) << " and color space "
+                       << std::quoted(vk::to_string(surface_formats.front().colorSpace));
 
     swapchain_create_info->setImageFormat(surface_formats.front().format);
     swapchain_create_info->setImageColorSpace(surface_formats.front().colorSpace);
   }
   else
   {
-    logging::warning() << "physical device " << std::quoted(physical_device_properties.deviceName.data())
-                       << " is not suitable because it's missing surface formats";
+    logging::warning() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
+                       << physical_device_properties_12.driverName.data()
+                       << ") is not suitable because it's missing surface formats";
     return nullptr;
   }
 
@@ -207,23 +220,26 @@ std::shared_ptr<vk::SwapchainCreateInfoKHR> vulkan_1::detail::create_swapchain_c
 
   if(std::ranges::contains(surface_present_modes, vk::PresentModeKHR::eMailbox))
   {
-    logging::verbose() << "physical device " << std::quoted(physical_device_properties.deviceName.data())
-                       << " has present mode " << std::quoted(vk::to_string(vk::PresentModeKHR::eMailbox));
+    logging::verbose() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
+                       << physical_device_properties_12.driverName.data() << ") has present mode "
+                       << std::quoted(vk::to_string(vk::PresentModeKHR::eMailbox));
 
     swapchain_create_info->setPresentMode(vk::PresentModeKHR::eMailbox);
   }
   else if(std::ranges::contains(surface_present_modes, vk::PresentModeKHR::eFifo))
   {
-    logging::warning() << "physical device " << std::quoted(physical_device_properties.deviceName.data())
-                       << " is missing present mode " << std::quoted(vk::to_string(vk::PresentModeKHR::eMailbox))
-                       << " defaulting to " << std::quoted(vk::to_string(vk::PresentModeKHR::eFifo));
+    logging::warning() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
+                       << physical_device_properties_12.driverName.data() << ") is missing present mode "
+                       << std::quoted(vk::to_string(vk::PresentModeKHR::eMailbox)) << " defaulting to "
+                       << std::quoted(vk::to_string(vk::PresentModeKHR::eFifo));
 
     swapchain_create_info->setPresentMode(vk::PresentModeKHR::eFifo);
   }
   else
   {
-    logging::warning() << "physical device " << std::quoted(physical_device_properties.deviceName.data())
-                       << " is not suitable because it's missing present mode "
+    logging::warning() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
+                       << physical_device_properties_12.driverName.data()
+                       << ") is not suitable because it's missing present mode "
                        << std::quoted(vk::to_string(vk::PresentModeKHR::eFifo));
     return nullptr;
   }

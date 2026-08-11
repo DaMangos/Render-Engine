@@ -1,17 +1,16 @@
 #include "internal.hpp"
 
-#include <glfw_3/cursor.hpp>
-#include <glfw_3/library.hpp>
-#include <glfw_3/monitor.hpp>
-#include <glfw_3/window.hpp>
-
+#include <glfw/cursor.hpp>
 #include <GLFW/glfw3.h>
+#include <glfw/library.hpp>
+#include <glfw/monitor.hpp>
+#include <glfw/window.hpp>
 
 #include <set>
 #include <stdexcept>
 #include <system_error>
 
-glfw_3::library glfw_3::default_library = glfw_3::internal::init_library();
+glfw::library glfw::default_library = glfw::internal::init_library();
 
 namespace
 {
@@ -72,22 +71,22 @@ static void error_callback(int error_code, char const * description)
 
 static void monitor_callback(GLFWmonitor * glfw_monitor, int connected)
 {
-  auto const & found = glfw_3::internal::try_emplace_monitor(glfw_monitor);
+  auto const & found = glfw::internal::try_emplace_monitor(glfw_monitor);
 
   if(found.when_monitor_connected and connected == VK_TRUE)
-    glfw_3::default_library.when_monitor_connected(found);
+    glfw::default_library.when_monitor_connected(found);
 
   if(found.when_monitor_disconnected and connected == VK_FALSE)
-    glfw_3::default_library.when_monitor_disconnected(found);
+    glfw::default_library.when_monitor_disconnected(found);
 }
 }
 
-glfw_3::library::library()
+glfw::library::library()
 {
   static bool has_default_library_been_initialized = false;
 
   if(has_default_library_been_initialized)
-    throw std::logic_error("glfw_3 has already been init");
+    throw std::logic_error("glfw has already been init");
 
   has_default_library_been_initialized = true;
 
@@ -102,37 +101,37 @@ glfw_3::library::library()
   glfwSetMonitorCallback(monitor_callback);
 }
 
-glfw_3::library::~library()
+glfw::library::~library()
 {
   glfwTerminate();
 }
 
-glfw_3::window glfw_3::library::create_window(int2 size, std::string const & title) const
+glfw::window glfw::library::create_window(int2 size, std::string const & title) const
 {
   return window({glfwCreateWindow(size.width, size.height, title.c_str(), nullptr, nullptr), glfwDestroyWindow});
 }
 
-glfw_3::window glfw_3::library::create_window(int2 size, std::string const & title, window const & share) const
+glfw::window glfw::library::create_window(int2 size, std::string const & title, window const & share) const
 {
   return window(
     {glfwCreateWindow(size.width, size.height, title.c_str(), nullptr, share.ptr.get()), glfwDestroyWindow});
 }
 
-glfw_3::window glfw_3::library::create_window(int2 size, std::string const & title, monitor const & monitor) const
+glfw::window glfw::library::create_window(int2 size, std::string const & title, monitor const & monitor) const
 {
   return window({glfwCreateWindow(size.width, size.height, title.c_str(), monitor.ptr, nullptr), glfwDestroyWindow});
 }
 
-glfw_3::window glfw_3::library::create_window(int2                size,
-                                              std::string const & title,
-                                              window const &      share,
-                                              monitor const &     monitor) const
+glfw::window glfw::library::create_window(int2                size,
+                                          std::string const & title,
+                                          window const &      share,
+                                          monitor const &     monitor) const
 {
   return window(
     {glfwCreateWindow(size.width, size.height, title.c_str(), monitor.ptr, share.ptr.get()), glfwDestroyWindow});
 }
 
-std::set<glfw_3::monitor> const & glfw_3::library::get_monitors() const
+std::set<glfw::monitor> const & glfw::library::get_monitors() const
 {
   int            count         = 0;
   GLFWmonitor ** glfw_monitors = glfwGetMonitors(&count);
@@ -146,12 +145,12 @@ std::set<glfw_3::monitor> const & glfw_3::library::get_monitors() const
   return internal::monitors;
 }
 
-glfw_3::monitor const & glfw_3::library::get_primary_monitor() const
+glfw::monitor const & glfw::library::get_primary_monitor() const
 {
   return internal::try_emplace_monitor(glfwGetPrimaryMonitor());
 }
 
-glfw_3::cursor glfw_3::library::create_cursor(image image, int2 hotspot) const
+glfw::cursor glfw::library::create_cursor(image image, int2 hotspot) const
 {
   GLFWimage glfw_image = {
     .height = image.size.height,
@@ -162,57 +161,57 @@ glfw_3::cursor glfw_3::library::create_cursor(image image, int2 hotspot) const
   return cursor({glfwCreateCursor(&glfw_image, hotspot.x, hotspot.y), glfwDestroyCursor});
 }
 
-glfw_3::cursor glfw_3::library::create_arrow_cursor() const
+glfw::cursor glfw::library::create_arrow_cursor() const
 {
   return cursor({glfwCreateStandardCursor(GLFW_ARROW_CURSOR), glfwDestroyCursor});
 }
 
-glfw_3::cursor glfw_3::library::create_ibeam_cursor() const
+glfw::cursor glfw::library::create_ibeam_cursor() const
 {
   return cursor({glfwCreateStandardCursor(GLFW_IBEAM_CURSOR), glfwDestroyCursor});
 }
 
-glfw_3::cursor glfw_3::library::create_crosshair_cursor() const
+glfw::cursor glfw::library::create_crosshair_cursor() const
 {
   return cursor({glfwCreateStandardCursor(GLFW_CROSSHAIR_CURSOR), glfwDestroyCursor});
 }
 
-glfw_3::cursor glfw_3::library::create_pointing_hand_cursor() const
+glfw::cursor glfw::library::create_pointing_hand_cursor() const
 {
   return cursor({glfwCreateStandardCursor(GLFW_POINTING_HAND_CURSOR), glfwDestroyCursor});
 }
 
-glfw_3::cursor glfw_3::library::create_resize_ew_cursor() const
+glfw::cursor glfw::library::create_resize_ew_cursor() const
 {
   return cursor({glfwCreateStandardCursor(GLFW_RESIZE_EW_CURSOR), glfwDestroyCursor});
 }
 
-glfw_3::cursor glfw_3::library::create_resize_ns_cursor() const
+glfw::cursor glfw::library::create_resize_ns_cursor() const
 {
   return cursor({glfwCreateStandardCursor(GLFW_RESIZE_NS_CURSOR), glfwDestroyCursor});
 }
 
-glfw_3::cursor glfw_3::library::create_resize_nwse_cursor() const
+glfw::cursor glfw::library::create_resize_nwse_cursor() const
 {
   return cursor({glfwCreateStandardCursor(GLFW_RESIZE_NWSE_CURSOR), glfwDestroyCursor});
 }
 
-glfw_3::cursor glfw_3::library::create_resize_nesw_cursor() const
+glfw::cursor glfw::library::create_resize_nesw_cursor() const
 {
   return cursor({glfwCreateStandardCursor(GLFW_RESIZE_NESW_CURSOR), glfwDestroyCursor});
 }
 
-glfw_3::cursor glfw_3::library::create_resize_all_cursor() const
+glfw::cursor glfw::library::create_resize_all_cursor() const
 {
   return cursor({glfwCreateStandardCursor(GLFW_RESIZE_ALL_CURSOR), glfwDestroyCursor});
 }
 
-glfw_3::cursor glfw_3::library::create_not_allowed_cursor() const
+glfw::cursor glfw::library::create_not_allowed_cursor() const
 {
   return cursor({glfwCreateStandardCursor(GLFW_NOT_ALLOWED_CURSOR), glfwDestroyCursor});
 }
 
-std::span<char const * const> glfw_3::library::get_required_instance_extensions() const
+std::span<char const * const> glfw::library::get_required_instance_extensions() const
 {
   std::uint32_t count      = 0;
   char const ** extensions = glfwGetRequiredInstanceExtensions(&count);
@@ -222,7 +221,7 @@ std::span<char const * const> glfw_3::library::get_required_instance_extensions(
   return {extensions, static_cast<std::size_t>(count)};
 }
 
-void glfw_3::library::poll_events() const
+void glfw::library::poll_events() const
 {
   glfwPollEvents();
 }

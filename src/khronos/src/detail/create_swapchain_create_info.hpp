@@ -4,7 +4,7 @@
 
 #include <memory>
 
-namespace vulkan_1::detail
+namespace khronos::detail
 {
 std::shared_ptr<vk::SwapchainCreateInfoKHR> create_swapchain_create_info(
   std::shared_ptr<vk::raii::PhysicalDevice const> const & physical_device,

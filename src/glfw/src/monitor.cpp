@@ -1,18 +1,17 @@
-#include <glfw_3/def.hpp>
-#include <glfw_3/library.hpp>
-#include <glfw_3/monitor.hpp>
-
+#include <glfw/def.hpp>
 #include <GLFW/glfw3.h>
+#include <glfw/library.hpp>
+#include <glfw/monitor.hpp>
 
 #include <cassert>
 #include <cstddef>
 
-std::strong_ordering glfw_3::monitor::operator<=>(monitor const & other) const noexcept
+std::strong_ordering glfw::monitor::operator<=>(monitor const & other) const noexcept
 {
   return ptr <=> other.ptr;
 }
 
-glfw_3::int2 glfw_3::monitor::get_pos() const
+glfw::int2 glfw::monitor::get_pos() const
 {
   int2 pos = {};
 
@@ -21,7 +20,7 @@ glfw_3::int2 glfw_3::monitor::get_pos() const
   return pos;
 }
 
-glfw_3::workarea glfw_3::monitor::get_workarea() const
+glfw::workarea glfw::monitor::get_workarea() const
 {
   workarea wa;
 
@@ -30,7 +29,7 @@ glfw_3::workarea glfw_3::monitor::get_workarea() const
   return wa;
 }
 
-glfw_3::int2 glfw_3::monitor::get_physical_size_millimeters() const
+glfw::int2 glfw::monitor::get_physical_size_millimeters() const
 {
   int2 size = {};
 
@@ -39,7 +38,7 @@ glfw_3::int2 glfw_3::monitor::get_physical_size_millimeters() const
   return size;
 }
 
-glfw_3::float2 glfw_3::monitor::get_content_scale() const
+glfw::float2 glfw::monitor::get_content_scale() const
 {
   float2 scale = {};
 
@@ -48,12 +47,12 @@ glfw_3::float2 glfw_3::monitor::get_content_scale() const
   return scale;
 }
 
-std::string_view glfw_3::monitor::get_name() const
+std::string_view glfw::monitor::get_name() const
 {
   return glfwGetMonitorName(ptr);
 }
 
-std::vector<glfw_3::vidmode> glfw_3::monitor::get_video_modes() const
+std::vector<glfw::vidmode> glfw::monitor::get_video_modes() const
 {
   int count = 0;
 
@@ -75,7 +74,7 @@ std::vector<glfw_3::vidmode> glfw_3::monitor::get_video_modes() const
   return vidmodes;
 }
 
-glfw_3::vidmode glfw_3::monitor::get_current_video_mode() const
+glfw::vidmode glfw::monitor::get_current_video_mode() const
 {
   GLFWvidmode const * const glfw_vidmode = glfwGetVideoMode(ptr);
 
@@ -88,7 +87,7 @@ glfw_3::vidmode glfw_3::monitor::get_current_video_mode() const
   };
 }
 
-glfw_3::monitor::monitor(GLFWmonitor * ptr) noexcept
+glfw::monitor::monitor(GLFWmonitor * ptr) noexcept
 : ptr(ptr)
 {
 }

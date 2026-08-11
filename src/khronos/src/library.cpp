@@ -1,11 +1,11 @@
 #include "detail/make_shared_with_data.hpp"
 
-#include <glfw_3/library.hpp>
+#include <glfw/library.hpp>
+#include <khronos/graphical_device.hpp>
+#include <khronos/library.hpp>
+#include <khronos/present_window.hpp>
 #include <logging/logging.hpp>
 #include <logging/serialize.hpp>
-#include <vulkan_1/graphical_device.hpp>
-#include <vulkan_1/library.hpp>
-#include <vulkan_1/present_window.hpp>
 
 #include <algorithm>
 #include <cassert>
@@ -128,10 +128,10 @@ std::vector<std::size_t> find_unavailable_feature_indices(
 }
 }
 
-vulkan_1::library::library(std::ostream * const vk_verbose_out,
-                           std::ostream * const vk_info_out,
-                           std::ostream * const vk_warning_out,
-                           std::ostream * const vk_error_out)
+khronos::library::library(std::ostream * const vk_verbose_out,
+                          std::ostream * const vk_info_out,
+                          std::ostream * const vk_warning_out,
+                          std::ostream * const vk_error_out)
 {
   context = std::make_shared<vk::raii::Context const>();
 
@@ -152,8 +152,8 @@ vulkan_1::library::library(std::ostream * const vk_verbose_out,
                                       .setEngineVersion(VK_MAKE_VERSION(1, 0, 0))
                                       .setApiVersion(vk::ApiVersion14);
 
-  std::vector<char const *> required_instance_extensions
-    = {std::from_range, glfw_3::default_library.get_required_instance_extensions()};
+  std::vector<char const *> required_instance_extensions{std::from_range,
+                                                         glfw::default_library.get_required_instance_extensions()};
   std::vector<char const *> required_instance_layers;
 
   auto unavailable_instance_extensions
@@ -163,7 +163,10 @@ vulkan_1::library::library(std::ostream * const vk_verbose_out,
     throw std::runtime_error("unavailable instance extensions: " + logging::to_string(unavailable_instance_extensions));
 
   if(is_extension_available(vk::KHRPortabilityEnumerationExtensionName))
+  {
+    logging::verbose() << "exposing devices with non conformant vulkan implementations";
     required_instance_extensions.emplace_back(vk::KHRPortabilityEnumerationExtensionName);
+  }
 
   if((vk_verbose_out or vk_info_out or vk_warning_out or vk_error_out)
      and is_extension_available(vk::EXTDebugUtilsExtensionName) and is_layer_available("VK_LAYER_KHRONOS_validation"))
@@ -228,34 +231,34 @@ vulkan_1::library::library(std::ostream * const vk_verbose_out,
   }
 }
 
-vulkan_1::present_window vulkan_1::library::create_present_window(glfw_3::int2 size, std::string const & title) const
+khronos::present_window khronos::library::create_present_window(glfw::int2 size, std::string const & title) const
 {
-  return {glfw_3::default_library.create_window(size, title), instance};
+  return {glfw::default_library.create_window(size, title), instance};
 }
 
-vulkan_1::present_window vulkan_1::library::create_present_window(glfw_3::int2           size,
-                                                                  std::string const &    title,
-                                                                  glfw_3::window const & share) const
+khronos::present_window khronos::library::create_present_window(glfw::int2           size,
+                                                                std::string const &  title,
+                                                                glfw::window const & share) const
 {
-  return {glfw_3::default_library.create_window(size, title, share), instance};
+  return {glfw::default_library.create_window(size, title, share), instance};
 }
 
-vulkan_1::present_window vulkan_1::library::create_present_window(glfw_3::int2            size,
-                                                                  std::string const &     title,
-                                                                  glfw_3::monitor const & monitor) const
+khronos::present_window khronos::library::create_present_window(glfw::int2            size,
+                                                                std::string const &   title,
+                                                                glfw::monitor const & monitor) const
 {
-  return {glfw_3::default_library.create_window(size, title, monitor), instance};
+  return {glfw::default_library.create_window(size, title, monitor), instance};
 }
 
-vulkan_1::present_window vulkan_1::library::create_present_window(glfw_3::int2            size,
-                                                                  std::string const &     title,
-                                                                  glfw_3::window const &  share,
-                                                                  glfw_3::monitor const & monitor) const
+khronos::present_window khronos::library::create_present_window(glfw::int2            size,
+                                                                std::string const &   title,
+                                                                glfw::window const &  share,
+                                                                glfw::monitor const & monitor) const
 {
-  return {glfw_3::default_library.create_window(size, title, share, monitor), instance};
+  return {glfw::default_library.create_window(size, title, share, monitor), instance};
 }
 
-vulkan_1::graphical_device vulkan_1::library::find_graphical_device(present_window const & window) const
+khronos::graphical_device khronos::library::find_graphical_device(present_window const & window) const
 {
   return {instance, window.surface};
 }

@@ -1,14 +1,13 @@
 #pragma once
 
-#include <glfw_3/window.hpp>
-
+#include <glfw/window.hpp>
 #include <vulkan/vulkan_raii.hpp>
 
 #include <memory>
 
-namespace vulkan_1
+namespace khronos
 {
-class present_window : public glfw_3::window
+class present_window : public glfw::window
 {
   public:
     present_window(present_window &&) noexcept = default;
@@ -24,7 +23,7 @@ class present_window : public glfw_3::window
   private:
     friend class library;
 
-    present_window(glfw_3::window && window, std::shared_ptr<vk::raii::Instance const> const & instance);
+    present_window(glfw::window && window, std::shared_ptr<vk::raii::Instance const> const & instance);
 
   protected:
     std::shared_ptr<vk::raii::SurfaceKHR const> surface;

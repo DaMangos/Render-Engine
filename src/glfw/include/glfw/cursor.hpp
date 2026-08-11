@@ -4,7 +4,7 @@
 
 typedef struct GLFWcursor GLFWcursor;
 
-namespace glfw_3
+namespace glfw
 {
 class cursor
 {
