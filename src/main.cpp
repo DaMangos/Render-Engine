@@ -20,28 +20,28 @@
 
 namespace
 {
-static constexpr char const * const help_msg
-  = "\n\n"
-    "--vk-verbose             - Outputs the vulkan verbose logs to the stdlog.\n\n"
-    "--vk-verbose=<filename>  - Outputs the vulkan verbose logs to file <filename>.\n\n"
-    "--vk-info                - Outputs the vulkan info logs to the stdlog.\n\n"
-    "--vk-info=<filename>     - Outputs the vulkan info logs to file <filename>.\n\n"
-    "--vk-warning             - Outputs the vulkan warning logs to the stderr.\n\n"
-    "--vk-warning=<filename>  - Outputs the vulkan warning logs to file <filename>.\n\n"
-    "--vk-error               - Outputs the vulkan error logs to the stderr.\n\n"
-    "--vk-error=<filename>    - Outputs the vulkan error logs to file <filename>.\n\n"
-    "--verbose                - Outputs the verbose logs to stdlog.\n\n"
-    "--verbose=<filename>     - Outputs the verbose logs to file <filename>.\n\n"
-    "--no-verbose             - Suppresses the verbose logs.\n\n"
-    "--info=<filename>        - Outputs the info logs to stdlog.\n\n"
-    "--info=<filename>        - Outputs the info logs to file <filename>.\n\n"
-    "--no-info                - Suppresses the info logs.\n\n"
-    "--warning                - Outputs the warning logs to stderr.\n\n"
-    "--warning=<filename>     - Outputs the warning logs to file <filename>.\n\n"
-    "--no-warning             - Suppresses the warning logs.\n\n"
-    "--error                  - Outputs the error logs to stderr.\n\n"
-    "--error=<filename>       - Outputs the error logs to file <filename>.\n\n"
-    "--no-error               - Suppresses the error logs.\n\n";
+static constexpr char const * const
+  help_msg = "\n\n"
+             "--vk-verbose             - Outputs the vulkan verbose logs to the stdlog.\n\n"
+             "--vk-verbose=<filename>  - Outputs the vulkan verbose logs to file <filename>.\n\n"
+             "--vk-info                - Outputs the vulkan info logs to the stdlog.\n\n"
+             "--vk-info=<filename>     - Outputs the vulkan info logs to file <filename>.\n\n"
+             "--vk-warning             - Outputs the vulkan warning logs to the stderr.\n\n"
+             "--vk-warning=<filename>  - Outputs the vulkan warning logs to file <filename>.\n\n"
+             "--vk-error               - Outputs the vulkan error logs to the stderr.\n\n"
+             "--vk-error=<filename>    - Outputs the vulkan error logs to file <filename>.\n\n"
+             "--verbose                - Outputs the verbose logs to stdlog.\n\n"
+             "--verbose=<filename>     - Outputs the verbose logs to file <filename>.\n\n"
+             "--no-verbose             - Suppresses the verbose logs.\n\n"
+             "--info=<filename>        - Outputs the info logs to stdlog.\n\n"
+             "--info=<filename>        - Outputs the info logs to file <filename>.\n\n"
+             "--no-info                - Suppresses the info logs.\n\n"
+             "--warning                - Outputs the warning logs to stderr.\n\n"
+             "--warning=<filename>     - Outputs the warning logs to file <filename>.\n\n"
+             "--no-warning             - Suppresses the warning logs.\n\n"
+             "--error                  - Outputs the error logs to stderr.\n\n"
+             "--error=<filename>       - Outputs the error logs to file <filename>.\n\n"
+             "--no-error               - Suppresses the error logs.\n\n";
 }
 
 std::ofstream & create_file(std::filesystem::path const & path)
@@ -83,8 +83,8 @@ int main(int const argc, char const * const * const args) noexcept
       }
       else if(arg.starts_with("--vk-verbose="))
       {
-        auto const [_, inserted]
-          = arg_files.try_emplace("vk-verbose", &create_file(arg.substr(arg.find_first_of('=') + 1)));
+        auto const [_, inserted] = arg_files
+                                     .try_emplace("vk-verbose", &create_file(arg.substr(arg.find_first_of('=') + 1)));
 
         if(not inserted)
           throw std::invalid_argument("duplicate: --vk-verbose");
@@ -98,8 +98,8 @@ int main(int const argc, char const * const * const args) noexcept
       }
       else if(arg.starts_with("--vk-info="))
       {
-        auto const [_, inserted]
-          = arg_files.try_emplace("vk-info", &create_file(arg.substr(arg.find_first_of('=') + 1)));
+        auto const [_, inserted] = arg_files
+                                     .try_emplace("vk-info", &create_file(arg.substr(arg.find_first_of('=') + 1)));
 
         if(not inserted)
           throw std::invalid_argument("duplicate: --vk-info");
@@ -113,8 +113,8 @@ int main(int const argc, char const * const * const args) noexcept
       }
       else if(arg.starts_with("--vk-warning="))
       {
-        auto const [_, inserted]
-          = arg_files.try_emplace("vk-warning", &create_file(arg.substr(arg.find_first_of('=') + 1)));
+        auto const [_, inserted] = arg_files
+                                     .try_emplace("vk-warning", &create_file(arg.substr(arg.find_first_of('=') + 1)));
 
         if(not inserted)
           throw std::invalid_argument("duplicate: --vk-warning");
@@ -127,8 +127,8 @@ int main(int const argc, char const * const * const args) noexcept
       }
       else if(arg.starts_with("--vk-error="))
       {
-        auto const [_, inserted]
-          = arg_files.try_emplace("vk-error", &create_file(arg.substr(arg.find_first_of('=') + 1)));
+        auto const [_, inserted] = arg_files
+                                     .try_emplace("vk-error", &create_file(arg.substr(arg.find_first_of('=') + 1)));
 
         if(not inserted)
           throw std::invalid_argument("duplicate: --vk-error");
@@ -142,8 +142,8 @@ int main(int const argc, char const * const * const args) noexcept
       }
       else if(arg.starts_with("--verbose="))
       {
-        auto const [_, inserted]
-          = arg_files.try_emplace("verbose", &create_file(arg.substr(arg.find_first_of('=') + 1)));
+        auto const [_, inserted] = arg_files
+                                     .try_emplace("verbose", &create_file(arg.substr(arg.find_first_of('=') + 1)));
 
         if(not inserted)
           throw std::invalid_argument("duplicate: --verbose");
@@ -185,8 +185,8 @@ int main(int const argc, char const * const * const args) noexcept
       }
       else if(arg.starts_with("--warning="))
       {
-        auto const [_, inserted]
-          = arg_files.try_emplace("warning", &create_file(arg.substr(arg.find_first_of('=') + 1)));
+        auto const [_, inserted] = arg_files
+                                     .try_emplace("warning", &create_file(arg.substr(arg.find_first_of('=') + 1)));
 
         if(not inserted)
           throw std::invalid_argument("duplicate: --warning");

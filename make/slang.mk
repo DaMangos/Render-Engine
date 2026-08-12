@@ -10,7 +10,6 @@ shaders: $(GENERATE)
 $(GENERATE): $(SPV)
 	@mkdir -p $(@D)
 	@xxd -i -n $(notdir $(@:.cpp=_spv)) $< $@
-	@{ printf '%s\n\n' '#include <cstdint>'; printf 'alignas(std::uint32_t) '; cat $@; } > $@.tmp && mv $@.tmp $@
 
 $(SPV): $(SRCS)
 	@mkdir -p $(@D)

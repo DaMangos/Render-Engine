@@ -31,7 +31,8 @@ compile_commands_debug :
 
 .PHONY: format
 format:
-	@clang-format $(shell find -L $(CURDIR) -name "*.cpp" -o -name "*.hpp" -o -name "*.ipp" -o -name "*.frag" -o -name "*.vert" -o -name "*.glsl") -style=file -i
+	@clang-format $(shell find -L $(CURDIR) -name "*.cpp" -o -name "*.hpp" -o -name "*.ipp") -style=file -i
+	@slang
 	@echo finished format
 
 .PHONY: release

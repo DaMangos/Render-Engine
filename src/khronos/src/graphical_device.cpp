@@ -27,8 +27,8 @@ static int score(std::shared_ptr<vk::raii::PhysicalDevice const> const &   physi
   if(not swapchain_create_info or not physical_device)
     return 0;
 
-  auto const is_extension_available
-    = [properties = physical_device->enumerateDeviceExtensionProperties()](std::string_view const extension)
+  auto const is_extension_available =
+    [properties = physical_device->enumerateDeviceExtensionProperties()](std::string_view const extension)
   {
     return std::ranges::any_of(properties, [&](auto const & property) { return property.extensionName == extension; });
   };
@@ -71,15 +71,15 @@ khronos::graphical_device::graphical_device(std::shared_ptr<vk::raii::Instance c
     return detail::make_shared_with_data<vk::raii::PhysicalDevice const>(instance, physical_device);
   };
 
-  auto const physical_devices
-    = instance->enumeratePhysicalDevices() | std::views::transform(make_shared_physical_device);
+  auto const physical_devices = instance->enumeratePhysicalDevices()
+                              | std::views::transform(make_shared_physical_device);
 
   logging::verbose() << "there are " << physical_devices.size() << " physical devices available";
 
   for(auto const & potential_physical_device : physical_devices)
   {
-    auto const potential_swapchain_create_info
-      = detail::create_swapchain_create_info(potential_physical_device, surface);
+    auto const potential_swapchain_create_info = detail::create_swapchain_create_info(potential_physical_device,
+                                                                                      surface);
 
     if(score(potential_physical_device, potential_swapchain_create_info)
        > score(physical_device, default_swapchain_create_info))
@@ -97,8 +97,10 @@ khronos::graphical_device::graphical_device(std::shared_ptr<vk::raii::Instance c
   if(not physical_device or not default_swapchain_create_info or not min_image_extent or not max_image_extent)
     throw std::runtime_error("there are no suitable physical devices");
 
-  auto const & [physical_device_properties, physical_device_properties_12]
-    = physical_device->getProperties2<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceVulkan12Properties>();
+  auto const & [physical_device_properties,
+                physical_device_properties_12] = physical_device
+                                                   ->getProperties2<vk::PhysicalDeviceProperties2,
+                                                                    vk::PhysicalDeviceVulkan12Properties>();
 
   logging::info() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
                   << physical_device_properties_12.driverName.data() << ") is suitable";
@@ -117,35 +119,37 @@ khronos::graphical_device::graphical_device(std::shared_ptr<vk::raii::Instance c
                                                 .setQueueCount(1)
                                                 .setQueuePriorities(queue_priority)};
 
-  auto const queue_family_index_compare
-    = [](vk::DeviceQueueCreateInfo const & lhs, vk::DeviceQueueCreateInfo const & rhs)
+  auto const queue_family_index_compare =
+    [](vk::DeviceQueueCreateInfo const & lhs, vk::DeviceQueueCreateInfo const & rhs)
   {
     return lhs.queueFamilyIndex == rhs.queueFamilyIndex;
   };
 
-  auto const unique_device_queue_create_infos
-    = std::vector{std::from_range, std::ranges::unique(device_queue_create_infos, queue_family_index_compare)};
+  auto const unique_device_queue_create_infos = std::vector{std::from_range,
+                                                            std::ranges::unique(device_queue_create_infos,
+                                                                                queue_family_index_compare)};
 
   auto const required_device_extensions = detail::get_required_device_extensions(physical_device);
 
-  auto const device_create_info = vk::DeviceCreateInfo{}
-                                    .setPNext(&detail::required_physical_device_features.get())
-                                    .setQueueCreateInfos(unique_device_queue_create_infos)
-                                    .setPEnabledExtensionNames(*required_device_extensions);
+  auto const & [device_create_info, _] = vk::StructureChain{vk::DeviceCreateInfo{}
+                                                              .setQueueCreateInfos(unique_device_queue_create_infos)
+                                                              .setPEnabledExtensionNames(*required_device_extensions),
+                                                            detail::required_physical_device_features.get()};
 
   device = detail::make_shared_with_data<vk::raii::Device const>(physical_device, *physical_device, device_create_info);
 
   auto const create_queue = [&](vk::DeviceQueueCreateInfo const & device_queue_create_info)
   {
-    auto const queue_create_info
-      = vk::DeviceQueueInfo2{}.setQueueFamilyIndex(device_queue_create_info.queueFamilyIndex).setQueueIndex(0);
+    auto const queue_create_info = vk::DeviceQueueInfo2{}
+                                     .setQueueFamilyIndex(device_queue_create_info.queueFamilyIndex)
+                                     .setQueueIndex(0);
 
     return std::make_pair(queue_create_info.queueFamilyIndex,
                           detail::make_shared_with_data<vk::raii::Queue const>(device, *device, queue_create_info));
   };
 
-  auto const queues
-    = std::unordered_map{std::from_range, unique_device_queue_create_infos | std::views::transform(create_queue)};
+  auto const queues = std::unordered_map{std::from_range,
+                                         unique_device_queue_create_infos | std::views::transform(create_queue)};
 
   graphics_queue = queues.find(*graphics_queue_index)->second;
   present_queue  = queues.find(*present_queue_index)->second;

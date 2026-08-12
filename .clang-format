@@ -71,6 +71,10 @@ MaxEmptyLinesToKeep: 1
 NamespaceIndentation: None
 PPIndentWidth: -1
 PenaltyReturnTypeOnItsOwnLine: 1000000
+PenaltyBreakScopeResolution: 1000000
+PenaltyBreakAssignment: 999999
+PenaltyBreakBeforeFirstCallParameter: 1000000
+PenaltyBreakBeforeMemberAccess: 0
 PackConstructorInitializers: Never
 PointerAlignment: Middle
 QualifierAlignment: Custom

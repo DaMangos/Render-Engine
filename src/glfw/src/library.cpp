@@ -1,3 +1,4 @@
+#include "glfw/def.hpp"
 #include "internal.hpp"
 
 #include <glfw/cursor.hpp>
@@ -106,23 +107,27 @@ glfw::library::~library()
   glfwTerminate();
 }
 
-glfw::window glfw::library::create_window(int2 size, std::string const & title) const
+glfw::window glfw::library::create_window(dimensions<int, 2> size, std::string const & title) const
 {
   return window({glfwCreateWindow(size.width, size.height, title.c_str(), nullptr, nullptr), glfwDestroyWindow});
 }
 
-glfw::window glfw::library::create_window(int2 size, std::string const & title, window const & share) const
+glfw::window glfw::library::create_window(dimensions<int, 2>  size,
+                                          std::string const & title,
+                                          window const &      share) const
 {
   return window(
     {glfwCreateWindow(size.width, size.height, title.c_str(), nullptr, share.ptr.get()), glfwDestroyWindow});
 }
 
-glfw::window glfw::library::create_window(int2 size, std::string const & title, monitor const & monitor) const
+glfw::window glfw::library::create_window(dimensions<int, 2>  size,
+                                          std::string const & title,
+                                          monitor const &     monitor) const
 {
   return window({glfwCreateWindow(size.width, size.height, title.c_str(), monitor.ptr, nullptr), glfwDestroyWindow});
 }
 
-glfw::window glfw::library::create_window(int2                size,
+glfw::window glfw::library::create_window(dimensions<int, 2>  size,
                                           std::string const & title,
                                           window const &      share,
                                           monitor const &     monitor) const
@@ -150,7 +155,7 @@ glfw::monitor const & glfw::library::get_primary_monitor() const
   return internal::try_emplace_monitor(glfwGetPrimaryMonitor());
 }
 
-glfw::cursor glfw::library::create_cursor(image image, int2 hotspot) const
+glfw::cursor glfw::library::create_cursor(image image, coordinates<int, 2> hotspot) const
 {
   GLFWimage glfw_image = {
     .height = image.size.height,

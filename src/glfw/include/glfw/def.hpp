@@ -3,10 +3,10 @@
 #include <array>
 #include <cstddef>
 #include <span>
+#include <type_traits>
 
 namespace glfw
 {
-
 enum struct action
 {
   release = 0,
@@ -221,104 +221,86 @@ enum struct input_mode
   raw_mouse_motion     = 0x00033005,
 };
 
-template <class Type>
-struct vec2
-{
-    union
-    {
-        Type x;
-        Type width;
-    };
+template <class Arithmetic, std::size_t Size>
+requires(std::is_arithmetic_v<Arithmetic>)
+struct dimensions;
 
-    union
-    {
-        Type y;
-        Type height;
-    };
+template <class Arithmetic>
+requires(std::is_arithmetic_v<Arithmetic>)
+struct dimensions<Arithmetic, 2>
+{
+    Arithmetic width;
+    Arithmetic height;
 };
 
-template <class Type>
-struct vec3
+template <class Arithmetic>
+requires(std::is_arithmetic_v<Arithmetic>)
+struct dimensions<Arithmetic, 3>
 {
-    union
-    {
-        Type x;
-        Type red;
-    };
-
-    union
-    {
-        Type y;
-        Type green;
-    };
-
-    union
-    {
-        Type z;
-        Type blue;
-    };
+    Arithmetic width;
+    Arithmetic height;
+    Arithmetic depth;
 };
 
-template <class Type>
-struct vec4
+template <class Arithmetic, std::size_t Size>
+requires(std::is_arithmetic_v<Arithmetic>)
+struct coordinates;
+
+template <class Arithmetic>
+requires(std::is_arithmetic_v<Arithmetic>)
+struct coordinates<Arithmetic, 2>
 {
-    union
-    {
-        Type x;
-        Type red;
-        Type left;
-    };
-
-    union
-    {
-        Type y;
-        Type green;
-        Type top;
-    };
-
-    union
-    {
-        Type z;
-        Type blue;
-        Type right;
-    };
-
-    union
-    {
-        Type w;
-        Type alpha;
-        Type bottom;
-    };
+    Arithmetic x;
+    Arithmetic y;
 };
 
-using int2 = vec2<int>;
-using int3 = vec3<int>;
-using int4 = vec4<int>;
+template <class Arithmetic>
+requires(std::is_arithmetic_v<Arithmetic>)
+struct coordinates<Arithmetic, 3>
+{
+    Arithmetic x;
+    Arithmetic y;
+    Arithmetic z;
+};
 
-using float2 = vec2<float>;
-using float3 = vec3<float>;
-using float4 = vec4<float>;
+template <class Arithmetic>
+requires(std::is_arithmetic_v<Arithmetic>)
+struct coordinates<Arithmetic, 4>
+{
+    Arithmetic x;
+    Arithmetic y;
+    Arithmetic z;
+    Arithmetic w;
+};
 
-using double2 = vec2<double>;
-using double3 = vec3<double>;
-using double4 = vec4<double>;
+template <class Arithmetic>
+requires(std::is_arithmetic_v<Arithmetic>)
+struct edges
+{
+    Arithmetic left;
+    Arithmetic top;
+    Arithmetic right;
+    Arithmetic bottom;
+};
 
 struct workarea
 {
-    int2 pos;
-    int2 size;
+    coordinates<int, 2> pos;
+    dimensions<int, 2>  size;
 };
 
 struct vidmode
 {
-    int2 size;
-    int3 bits;
-    int  refresh_rate;
+    dimensions<int, 2> size;
+    int                red_bits;
+    int                green_bits;
+    int                blue_bits;
+    int                refresh_rate;
 };
 
 struct image
 {
-    int2                 size;
+    dimensions<int, 2>   size;
     std::span<std::byte> pixels;
 };
 

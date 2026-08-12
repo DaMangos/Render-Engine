@@ -67,7 +67,7 @@ static std::vector<std::size_t> find_unavailable_feature_indices(
 
   return unavailable_features_indices;
 }
-}
+}  // namespace
 
 std::shared_ptr<vk::SwapchainCreateInfoKHR> khronos::detail::create_swapchain_create_info(
   std::shared_ptr<vk::raii::PhysicalDevice const> const & physical_device,
@@ -75,8 +75,10 @@ std::shared_ptr<vk::SwapchainCreateInfoKHR> khronos::detail::create_swapchain_cr
 {
   using namespace logging::serialize;
 
-  auto const [physical_device_properties, physical_device_properties_12]
-    = physical_device->getProperties2<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceVulkan12Properties>();
+  auto const & [physical_device_properties,
+                physical_device_properties_12] = physical_device
+                                                   ->getProperties2<vk::PhysicalDeviceProperties2,
+                                                                    vk::PhysicalDeviceVulkan12Properties>();
 
   if(physical_device_properties.properties.apiVersion < vk::ApiVersion13)
   {
@@ -101,8 +103,8 @@ std::shared_ptr<vk::SwapchainCreateInfoKHR> khronos::detail::create_swapchain_cr
                      << physical_device_properties_12.driverName.data()
                      << ") has got all required physical device extensions: " << *device_extensions;
 
-  auto const unavailable_features_indices
-    = find_unavailable_feature_indices(physical_device, required_physical_device_features);
+  auto const unavailable_features_indices = find_unavailable_feature_indices(physical_device,
+                                                                             required_physical_device_features);
 
   if(not unavailable_features_indices.empty())
   {
@@ -164,16 +166,16 @@ std::shared_ptr<vk::SwapchainCreateInfoKHR> khronos::detail::create_swapchain_cr
   if(present_queue_index)
     queue_family_indices->emplace_back(*present_queue_index);
 
-  auto const swapchain_create_info
-    = make_shared_with_data<vk::SwapchainCreateInfoKHR>(std::make_tuple(physical_device, surface, queue_family_indices),
-                                                        vk::SwapchainCreateInfoKHR{}
-                                                          .setSurface(*surface)
-                                                          .setMinImageCount(min_image_count)
-                                                          .setImageArrayLayers(1)
-                                                          .setImageUsage(vk::ImageUsageFlagBits::eColorAttachment)
-                                                          .setPreTransform(surface_capabilities.currentTransform)
-                                                          .setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque)
-                                                          .setClipped(true));
+  auto const swapchain_create_info = make_shared_with_data<
+    vk::SwapchainCreateInfoKHR>(std::make_tuple(physical_device, surface, queue_family_indices),
+                                vk::SwapchainCreateInfoKHR{}
+                                  .setSurface(*surface)
+                                  .setMinImageCount(min_image_count)
+                                  .setImageArrayLayers(1)
+                                  .setImageUsage(vk::ImageUsageFlagBits::eColorAttachment)
+                                  .setPreTransform(surface_capabilities.currentTransform)
+                                  .setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque)
+                                  .setClipped(vk::True));
 
   if(queue_family_indices->size() == 2)
   {

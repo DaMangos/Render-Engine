@@ -1,3 +1,4 @@
+#include "glfw/def.hpp"
 #include "internal.hpp"
 
 #include <glfw/cursor.hpp>
@@ -16,7 +17,7 @@ static void window_pos_callback(GLFWwindow * window, int xpos, int ypos)
   auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_window_moved)
-    self->when_window_moved({.x = xpos, .y = ypos});
+    self->when_window_moved(*self, {.x = xpos, .y = ypos});
 }
 
 static void window_size_callback(GLFWwindow * window, int width, int height)
@@ -24,7 +25,7 @@ static void window_size_callback(GLFWwindow * window, int width, int height)
   auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_window_resized)
-    self->when_window_resized({.width = width, .height = height});
+    self->when_window_resized(*self, {.width = width, .height = height});
 }
 
 static void window_close_callback(GLFWwindow * window)
@@ -32,7 +33,7 @@ static void window_close_callback(GLFWwindow * window)
   auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_window_closed)
-    self->when_window_closed();
+    self->when_window_closed(*self);
 }
 
 static void window_refresh_callback(GLFWwindow * window)
@@ -40,7 +41,7 @@ static void window_refresh_callback(GLFWwindow * window)
   auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_window_refreshed)
-    self->when_window_refreshed();
+    self->when_window_refreshed(*self);
 }
 
 static void window_focus_callback(GLFWwindow * window, int focused)
@@ -48,10 +49,10 @@ static void window_focus_callback(GLFWwindow * window, int focused)
   auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_window_focused and focused == VK_TRUE)
-    self->when_window_focused();
+    self->when_window_focused(*self);
 
   if(self and self->when_window_unfocused and focused == VK_FALSE)
-    self->when_window_unfocused();
+    self->when_window_unfocused(*self);
 }
 
 static void window_iconify_callback(GLFWwindow * window, int iconified)
@@ -59,10 +60,10 @@ static void window_iconify_callback(GLFWwindow * window, int iconified)
   auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_window_minimized and iconified == VK_TRUE)
-    self->when_window_minimized();
+    self->when_window_minimized(*self);
 
   if(self and self->when_window_unminimized and iconified == VK_FALSE)
-    self->when_window_unminimized();
+    self->when_window_unminimized(*self);
 }
 
 static void window_maximize_callback(GLFWwindow * window, int maximized)
@@ -70,10 +71,10 @@ static void window_maximize_callback(GLFWwindow * window, int maximized)
   auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_window_maximized and maximized == VK_TRUE)
-    self->when_window_maximized();
+    self->when_window_maximized(*self);
 
   if(self and self->when_window_unmaximized and maximized == VK_FALSE)
-    self->when_window_unmaximized();
+    self->when_window_unmaximized(*self);
 }
 
 static void framebuffer_size_callback(GLFWwindow * window, int xpos, int ypos)
@@ -81,7 +82,7 @@ static void framebuffer_size_callback(GLFWwindow * window, int xpos, int ypos)
   auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_framebuffer_resized)
-    self->when_framebuffer_resized({.x = xpos, .y = ypos});
+    self->when_framebuffer_resized(*self, {.x = xpos, .y = ypos});
 }
 
 static void window_content_scale_callback(GLFWwindow * window, float xscale, float yscale)
@@ -89,7 +90,7 @@ static void window_content_scale_callback(GLFWwindow * window, float xscale, flo
   auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_window_content_scaled)
-    self->when_window_content_scaled({.x = xscale, .y = yscale});
+    self->when_window_content_scaled(*self, {.x = xscale, .y = yscale});
 }
 
 static void key_callback(GLFWwindow * window, int key, int scancode, int action, int mods)
@@ -97,7 +98,7 @@ static void key_callback(GLFWwindow * window, int key, int scancode, int action,
   auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_key_pressed)
-    self->when_key_pressed(glfw::key{key}, scancode, glfw::action{action}, glfw::modifier{mods});
+    self->when_key_pressed(*self, glfw::key{key}, scancode, glfw::action{action}, glfw::modifier{mods});
 }
 
 static void char_callback(GLFWwindow * window, unsigned int codepoint)
@@ -105,7 +106,7 @@ static void char_callback(GLFWwindow * window, unsigned int codepoint)
   auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_unicode_char_typed)
-    self->when_unicode_char_typed(static_cast<char32_t>(codepoint));
+    self->when_unicode_char_typed(*self, static_cast<char32_t>(codepoint));
 }
 
 static void mouse_button_callback(GLFWwindow * window, int button, int action, int mods)
@@ -113,7 +114,7 @@ static void mouse_button_callback(GLFWwindow * window, int button, int action, i
   auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_mouse_button_pressed)
-    self->when_mouse_button_pressed(glfw::mouse_button{button}, glfw::action{action}, glfw::modifier{mods});
+    self->when_mouse_button_pressed(*self, glfw::mouse_button{button}, glfw::action{action}, glfw::modifier{mods});
 }
 
 static void cursor_pos_callback(GLFWwindow * window, double xpos, double ypos)
@@ -121,7 +122,7 @@ static void cursor_pos_callback(GLFWwindow * window, double xpos, double ypos)
   auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_cursor_moved)
-    self->when_cursor_moved({.x = xpos, .y = ypos});
+    self->when_cursor_moved(*self, {.x = xpos, .y = ypos});
 }
 
 static void cursor_enter_callback(GLFWwindow * window, int entered)
@@ -129,10 +130,10 @@ static void cursor_enter_callback(GLFWwindow * window, int entered)
   auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_cursor_entered and entered == VK_TRUE)
-    self->when_cursor_entered();
+    self->when_cursor_entered(*self);
 
   if(self and self->when_cursor_exited and entered == VK_FALSE)
-    self->when_cursor_exited();
+    self->when_cursor_exited(*self);
 }
 
 static void scroll_callback(GLFWwindow * window, double xoffset, double yoffset)
@@ -140,7 +141,7 @@ static void scroll_callback(GLFWwindow * window, double xoffset, double yoffset)
   auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_mouse_scrolled)
-    self->when_mouse_scrolled({.x = xoffset, .y = yoffset});
+    self->when_mouse_scrolled(*self, {.x = xoffset, .y = yoffset});
 }
 
 static void drop_callback(GLFWwindow * window, int path_count, char const ** paths)
@@ -156,7 +157,7 @@ static void drop_callback(GLFWwindow * window, int path_count, char const ** pat
     for(auto const & path : std::span{paths, std::ranges::next(paths, path_count)})
       files.emplace_back(path);
 
-    self->when_file_dropped(files);
+    self->when_file_dropped(*self, files);
   }
 }
 }
@@ -253,45 +254,45 @@ void glfw::window::set_icon(std::span<image> images)
   glfwSetWindowIcon(ptr.get(), static_cast<int>(glfw_images.size()), glfw_images.data());
 }
 
-glfw::int2 glfw::window::get_pos() const
+glfw::coordinates<int, 2> glfw::window::get_pos() const
 {
-  int2 pos = {};
+  coordinates<int, 2> pos = {};
 
   glfwGetWindowPos(ptr.get(), &pos.x, &pos.y);
 
   return pos;
 }
 
-glfw::int2 glfw::window::get_size() const
+glfw::dimensions<int, 2> glfw::window::get_size() const
 {
-  int2 size = {};
+  dimensions<int, 2> size = {};
 
   glfwGetWindowSize(ptr.get(), &size.width, &size.height);
 
   return size;
 }
 
-glfw::int2 glfw::window::get_framebuffer_size() const
+glfw::dimensions<int, 2> glfw::window::get_framebuffer_size() const
 {
-  int2 size = {};
+  dimensions<int, 2> size = {};
 
   glfwGetFramebufferSize(ptr.get(), &size.width, &size.height);
 
   return size;
 }
 
-glfw::int4 glfw::window::get_frame_size() const
+glfw::edges<int> glfw::window::get_frame_size() const
 {
-  int4 size = {};
+  edges<int> edges = {};
 
-  glfwGetWindowFrameSize(ptr.get(), &size.left, &size.top, &size.right, &size.bottom);
+  glfwGetWindowFrameSize(ptr.get(), &edges.left, &edges.top, &edges.right, &edges.bottom);
 
-  return size;
+  return edges;
 }
 
-glfw::float2 glfw::window::get_content_scale() const
+glfw::coordinates<float, 2> glfw::window::get_content_scale() const
 {
-  float2 scale = {};
+  coordinates<float, 2> scale = {};
 
   glfwGetWindowContentScale(ptr.get(), &scale.x, &scale.y);
 
@@ -323,9 +324,9 @@ glfw::action glfw::window::get_mouse_button(mouse_button button) const
   return action{glfwGetMouseButton(ptr.get(), std::to_underlying(button))};
 }
 
-glfw::double2 glfw::window::get_cursor_pos() const
+glfw::coordinates<double, 2> glfw::window::get_cursor_pos() const
 {
-  double2 pos = {};
+  coordinates<double, 2> pos = {};
 
   glfwGetCursorPos(ptr.get(), &pos.x, &pos.y);
 
@@ -345,12 +346,12 @@ vk::raii::SurfaceKHR glfw::window::create_surface(vk::raii::Instance const &    
   return vk::raii::SurfaceKHR(instance, surface, allocator);
 }
 
-void glfw::window::set_pos(int2 const pos)
+void glfw::window::set_pos(coordinates<int, 2> const pos)
 {
   glfwSetWindowPos(ptr.get(), pos.x, pos.y);
 }
 
-void glfw::window::set_size_limits(int2 min, int2 max)
+void glfw::window::set_size_limits(dimensions<int, 2> min, dimensions<int, 2> max)
 {
   glfwSetWindowSizeLimits(ptr.get(), min.width, min.height, max.width, max.height);
 }
@@ -360,7 +361,7 @@ void glfw::window::set_aspect_ratio(int numer, int denom)
   glfwSetWindowAspectRatio(ptr.get(), numer, denom);
 }
 
-void glfw::window::set_size(int2 size)
+void glfw::window::set_size(dimensions<int, 2> size)
 {
   glfwSetWindowSize(ptr.get(), size.width, size.height);
 }
@@ -375,7 +376,7 @@ void glfw::window::set_input_mode(input_mode mode, bool value)
   glfwSetInputMode(ptr.get(), std::to_underlying(mode), value ? GLFW_TRUE : GLFW_FALSE);
 }
 
-void glfw::window::set_cursor_pos(double2 pos)
+void glfw::window::set_cursor_pos(coordinates<double, 2> pos)
 {
   glfwSetCursorPos(ptr.get(), pos.x, pos.y);
 }

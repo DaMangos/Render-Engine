@@ -135,14 +135,14 @@ khronos::library::library(std::ostream * const vk_verbose_out,
 {
   context = std::make_shared<vk::raii::Context const>();
 
-  auto const is_extension_available
-    = [properties = context->enumerateInstanceExtensionProperties()](std::string_view const extension)
+  auto const is_extension_available =
+    [properties = context->enumerateInstanceExtensionProperties()](std::string_view const extension)
   {
     return std::ranges::any_of(properties, [&](auto const & property) { return property.extensionName == extension; });
   };
 
-  auto const is_layer_available
-    = [properties = context->enumerateInstanceLayerProperties()](std::string_view const layer)
+  auto const is_layer_available = [properties = context
+                                                  ->enumerateInstanceLayerProperties()](std::string_view const layer)
   {
     return std::ranges::any_of(properties, [&](auto const & property) { return property.layerName == layer; });
   };
@@ -156,8 +156,8 @@ khronos::library::library(std::ostream * const vk_verbose_out,
                                                          glfw::default_library.get_required_instance_extensions()};
   std::vector<char const *> required_instance_layers;
 
-  auto unavailable_instance_extensions
-    = required_instance_extensions | std::views::filter(std::not_fn(is_extension_available));
+  auto unavailable_instance_extensions = required_instance_extensions
+                                       | std::views::filter(std::not_fn(is_extension_available));
 
   if(not unavailable_instance_extensions.empty())
     throw std::runtime_error("unavailable instance extensions: " + logging::to_string(unavailable_instance_extensions));
@@ -180,39 +180,35 @@ khronos::library::library(std::ostream * const vk_verbose_out,
 
     auto const user_data = std::make_shared<user_data_type>(vk_verbose_out, vk_info_out, vk_warning_out, vk_error_out);
 
-    auto const debug_utils_messenger_create_info
-      = vk::DebugUtilsMessengerCreateInfoEXT{}
-          .setMessageSeverity((vk_verbose_out ? vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose
-                                              : vk::DebugUtilsMessageSeverityFlagBitsEXT{})
-                              | (vk_info_out ? vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo
-                                             : vk::DebugUtilsMessageSeverityFlagBitsEXT{})
-                              | (vk_warning_out ? vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning
-                                                : vk::DebugUtilsMessageSeverityFlagBitsEXT{})
-                              | (vk_error_out ? vk::DebugUtilsMessageSeverityFlagBitsEXT::eError
-                                              : vk::DebugUtilsMessageSeverityFlagBitsEXT{}))
-          .setMessageType(vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral
-                          | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance
-                          | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation)
-          .setPfnUserCallback(&user_callback)
-          .setPUserData(user_data.get());
-
-    auto const instance_create_info = vk::InstanceCreateInfo{}
-                                        .setPNext(&debug_utils_messenger_create_info)
-                                        .setFlags(is_extension_available(vk::KHRPortabilityEnumerationExtensionName)
-                                                    ? vk::InstanceCreateFlagBits::eEnumeratePortabilityKHR
-                                                    : vk::InstanceCreateFlagBits{})
-                                        .setPApplicationInfo(&application_info)
-                                        .setPEnabledExtensionNames(required_instance_extensions)
-                                        .setPEnabledLayerNames(required_instance_layers);
+    auto const & [instance_create_info, debug_utils_messenger_create_info]
+      = vk::StructureChain{vk::InstanceCreateInfo{}
+                             .setFlags(is_extension_available(vk::KHRPortabilityEnumerationExtensionName)
+                                         ? vk::InstanceCreateFlagBits::eEnumeratePortabilityKHR
+                                         : vk::InstanceCreateFlagBits{})
+                             .setPApplicationInfo(&application_info)
+                             .setPEnabledExtensionNames(required_instance_extensions)
+                             .setPEnabledLayerNames(required_instance_layers),
+                           vk::DebugUtilsMessengerCreateInfoEXT{}
+                             .setMessageSeverity((vk_verbose_out ? vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose
+                                                                 : vk::DebugUtilsMessageSeverityFlagBitsEXT{})
+                                                 | (vk_info_out ? vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo
+                                                                : vk::DebugUtilsMessageSeverityFlagBitsEXT{})
+                                                 | (vk_warning_out ? vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning
+                                                                   : vk::DebugUtilsMessageSeverityFlagBitsEXT{})
+                                                 | (vk_error_out ? vk::DebugUtilsMessageSeverityFlagBitsEXT::eError
+                                                                 : vk::DebugUtilsMessageSeverityFlagBitsEXT{}))
+                             .setMessageType(vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral
+                                             | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance
+                                             | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation)
+                             .setPfnUserCallback(&user_callback)
+                             .setPUserData(user_data.get())};
 
     instance = detail::make_shared_with_data<vk::raii::Instance const>(std::make_tuple(context, user_data),
                                                                        *context,
                                                                        instance_create_info);
 
-    debug_utils_messenger
-      = detail::make_shared_with_data<vk::raii::DebugUtilsMessengerEXT const>(instance,
-                                                                              *instance,
-                                                                              debug_utils_messenger_create_info);
+    debug_utils_messenger = detail::make_shared_with_data<
+      vk::raii::DebugUtilsMessengerEXT const>(instance, *instance, debug_utils_messenger_create_info);
   }
   else
   {
@@ -231,29 +227,30 @@ khronos::library::library(std::ostream * const vk_verbose_out,
   }
 }
 
-khronos::present_window khronos::library::create_present_window(glfw::int2 size, std::string const & title) const
+khronos::present_window khronos::library::create_present_window(glfw::dimensions<int, 2> size,
+                                                                std::string const &      title) const
 {
   return {glfw::default_library.create_window(size, title), instance};
 }
 
-khronos::present_window khronos::library::create_present_window(glfw::int2           size,
-                                                                std::string const &  title,
-                                                                glfw::window const & share) const
+khronos::present_window khronos::library::create_present_window(glfw::dimensions<int, 2> size,
+                                                                std::string const &      title,
+                                                                glfw::window const &     share) const
 {
   return {glfw::default_library.create_window(size, title, share), instance};
 }
 
-khronos::present_window khronos::library::create_present_window(glfw::int2            size,
-                                                                std::string const &   title,
-                                                                glfw::monitor const & monitor) const
+khronos::present_window khronos::library::create_present_window(glfw::dimensions<int, 2> size,
+                                                                std::string const &      title,
+                                                                glfw::monitor const &    monitor) const
 {
   return {glfw::default_library.create_window(size, title, monitor), instance};
 }
 
-khronos::present_window khronos::library::create_present_window(glfw::int2            size,
-                                                                std::string const &   title,
-                                                                glfw::window const &  share,
-                                                                glfw::monitor const & monitor) const
+khronos::present_window khronos::library::create_present_window(glfw::dimensions<int, 2> size,
+                                                                std::string const &      title,
+                                                                glfw::window const &     share,
+                                                                glfw::monitor const &    monitor) const
 {
   return {glfw::default_library.create_window(size, title, share, monitor), instance};
 }

@@ -20,16 +20,16 @@ class library
     ~library();
 
     [[nodiscard]]
-    class window create_window(int2 size, std::string const & title) const;
+    class window create_window(dimensions<int, 2> size, std::string const & title) const;
 
     [[nodiscard]]
-    class window create_window(int2 size, std::string const & title, class window const & share) const;
+    class window create_window(dimensions<int, 2> size, std::string const & title, class window const & share) const;
 
     [[nodiscard]]
-    class window create_window(int2 size, std::string const & title, class monitor const & monitor) const;
+    class window create_window(dimensions<int, 2> size, std::string const & title, class monitor const & monitor) const;
 
     [[nodiscard]]
-    class window create_window(int2                  size,
+    class window create_window(dimensions<int, 2>    size,
                                std::string const &   title,
                                class window const &  share,
                                class monitor const & monitor) const;
@@ -41,7 +41,7 @@ class library
     class monitor const & get_primary_monitor() const;
 
     [[nodiscard]]
-    class cursor create_cursor(image image, int2 hotspot) const;
+    class cursor create_cursor(image image, coordinates<int, 2> hotspot) const;
 
     [[nodiscard]]
     class cursor create_arrow_cursor() const;

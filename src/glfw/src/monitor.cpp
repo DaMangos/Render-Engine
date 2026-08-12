@@ -11,9 +11,9 @@ std::strong_ordering glfw::monitor::operator<=>(monitor const & other) const noe
   return ptr <=> other.ptr;
 }
 
-glfw::int2 glfw::monitor::get_pos() const
+glfw::coordinates<int, 2> glfw::monitor::get_pos() const
 {
-  int2 pos = {};
+  coordinates<int, 2> pos = {};
 
   glfwGetMonitorPos(ptr, &pos.x, &pos.y);
 
@@ -24,23 +24,23 @@ glfw::workarea glfw::monitor::get_workarea() const
 {
   workarea wa;
 
-  glfwGetMonitorWorkarea(ptr, &wa.pos.x, &wa.pos.y, &wa.pos.width, &wa.pos.height);
+  glfwGetMonitorWorkarea(ptr, &wa.pos.x, &wa.pos.y, &wa.size.width, &wa.size.height);
 
   return wa;
 }
 
-glfw::int2 glfw::monitor::get_physical_size_millimeters() const
+glfw::dimensions<int, 2> glfw::monitor::get_physical_size_millimeters() const
 {
-  int2 size = {};
+  dimensions<int, 2> size = {};
 
   glfwGetMonitorPhysicalSize(ptr, &size.width, &size.height);
 
   return size;
 }
 
-glfw::float2 glfw::monitor::get_content_scale() const
+glfw::coordinates<float, 2> glfw::monitor::get_content_scale() const
 {
-  float2 scale = {};
+  coordinates<float, 2> scale = {};
 
   glfwGetMonitorContentScale(ptr, &scale.x, &scale.y);
 
@@ -67,7 +67,9 @@ std::vector<glfw::vidmode> glfw::monitor::get_video_modes() const
   for(auto const & glfw_vidmode : std::span{glfw_vidmodes, static_cast<std::size_t>(count)})
     vidmodes.push_back({
       .size         = {.height = glfw_vidmode.height, .width = glfw_vidmode.width},
-      .bits         = {.red = glfw_vidmode.redBits, .blue = glfw_vidmode.blueBits, .green = glfw_vidmode.greenBits},
+      .red_bits     = glfw_vidmode.redBits,
+      .green_bits   = glfw_vidmode.greenBits,
+      .blue_bits    = glfw_vidmode.blueBits,
       .refresh_rate = glfw_vidmode.refreshRate,
     });
 
@@ -82,7 +84,9 @@ glfw::vidmode glfw::monitor::get_current_video_mode() const
 
   return {
     .size         = {.height = glfw_vidmode->height, .width = glfw_vidmode->width},
-    .bits         = {.red = glfw_vidmode->redBits, .blue = glfw_vidmode->blueBits, .green = glfw_vidmode->greenBits},
+    .red_bits     = glfw_vidmode->redBits,
+    .green_bits   = glfw_vidmode->greenBits,
+    .blue_bits    = glfw_vidmode->blueBits,
     .refresh_rate = glfw_vidmode->refreshRate,
   };
 }

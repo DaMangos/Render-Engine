@@ -162,21 +162,19 @@ struct werror_prefix
 
 #ifdef NDEBUG
 std::ostream * logging::default_verbose_out = nullptr;
-std::ostream * logging::default_info_out    = nullptr;
 #else
 std::ostream * logging::default_verbose_out = &std::clog;
-std::ostream * logging::default_info_out    = &std::clog;
 #endif
+std::ostream * logging::default_info_out    = &std::clog;
 std::ostream * logging::default_warning_out = &std::cerr;
 std::ostream * logging::default_error_out   = &std::cerr;
 
 #ifdef NDEBUG
 std::wostream * logging::default_wverbose_out = nullptr;
-std::wostream * logging::default_winfo_out    = nullptr;
 #else
 std::wostream * logging::default_wverbose_out = &std::wclog;
-std::wostream * logging::default_winfo_out    = &std::wclog;
 #endif
+std::wostream * logging::default_winfo_out    = &std::wclog;
 std::wostream * logging::default_wwarning_out = &std::wcerr;
 std::wostream * logging::default_werror_out   = &std::wcerr;
 

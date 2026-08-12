@@ -27,16 +27,16 @@ class monitor
     ~monitor() = default;
 
     [[nodiscard]]
-    int2 get_pos() const;
+    coordinates<int, 2> get_pos() const;
 
     [[nodiscard]]
     workarea get_workarea() const;
 
     [[nodiscard]]
-    int2 get_physical_size_millimeters() const;
+    dimensions<int, 2> get_physical_size_millimeters() const;
 
     [[nodiscard]]
-    float2 get_content_scale() const;
+    coordinates<float, 2> get_content_scale() const;
 
     [[nodiscard]]
     std::string_view get_name() const;
