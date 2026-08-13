@@ -82,8 +82,7 @@ khronos::render_window::render_window(
                                                                              image_view_create_info));
   }
 
-  if(triangle_spv_len % sizeof(std::uint32_t))
-    throw;
+  assert(triangle_spv_len % sizeof(std::uint32_t) == 0);
 
   auto const code = std::make_unique_for_overwrite<std::uint32_t[]>(triangle_spv_len);
 
