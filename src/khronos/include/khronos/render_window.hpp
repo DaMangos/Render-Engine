@@ -4,24 +4,12 @@
 #include <vulkan/vulkan_raii.hpp>
 
 #include <memory>
-#include <optional>
 #include <vector>
 
 namespace khronos
 {
 class render_window : public present_window
 {
-  public:
-    render_window(render_window &&) noexcept = default;
-
-    render_window(render_window const &) noexcept = delete;
-
-    render_window & operator=(render_window &&) noexcept = default;
-
-    render_window & operator=(render_window const &) noexcept = delete;
-
-    ~render_window() = default;
-
   private:
     friend class graphical_device;
 

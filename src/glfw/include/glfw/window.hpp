@@ -26,7 +26,7 @@ class window
 
     window & operator=(window && other) noexcept;
 
-    ~window() = default;
+    virtual ~window() = default;
 
     [[nodiscard]]
     std::strong_ordering operator<=>(window const & other) const noexcept;

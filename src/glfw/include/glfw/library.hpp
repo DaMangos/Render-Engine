@@ -78,8 +78,8 @@ class library
 
     void poll_events() const;
 
-    std::function<void(monitor const &)> when_monitor_connected;
-    std::function<void(monitor const &)> when_monitor_disconnected;
+    std::function<void(monitor const &)>  when_monitor_connected;
+    std::function<void(std::string_view)> when_monitor_disconnected;
 
   private:
     friend class internal;

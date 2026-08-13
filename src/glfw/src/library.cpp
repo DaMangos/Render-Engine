@@ -74,11 +74,11 @@ static void monitor_callback(GLFWmonitor * glfw_monitor, int connected)
 {
   auto const & found = glfw::internal::try_emplace_monitor(glfw_monitor);
 
-  if(found.when_monitor_connected and connected == VK_TRUE)
-    glfw::default_library.when_monitor_connected(found);
+  if(connected == VK_TRUE)
+    glfw::default_library.when_monitor_connected(*found);
 
-  if(found.when_monitor_disconnected and connected == VK_FALSE)
-    glfw::default_library.when_monitor_disconnected(found);
+  if(connected == VK_FALSE)
+    glfw::default_library.when_monitor_disconnected(glfw::internal::monitors.extract(found).value().get_name());
 }
 }
 
@@ -152,7 +152,7 @@ std::set<glfw::monitor> const & glfw::library::get_monitors() const
 
 glfw::monitor const & glfw::library::get_primary_monitor() const
 {
-  return internal::try_emplace_monitor(glfwGetPrimaryMonitor());
+  return *internal::try_emplace_monitor(glfwGetPrimaryMonitor());
 }
 
 glfw::cursor glfw::library::create_cursor(image image, coordinates<int, 2> hotspot) const

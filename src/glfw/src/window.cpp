@@ -306,7 +306,7 @@ float glfw::window::get_opacity() const
 
 glfw::monitor const & glfw::window::get_monitor() const
 {
-  return internal::try_emplace_monitor(glfwGetPrimaryMonitor());
+  return *internal::try_emplace_monitor(glfwGetPrimaryMonitor());
 }
 
 bool glfw::window::get_input_mode(input_mode mode) const

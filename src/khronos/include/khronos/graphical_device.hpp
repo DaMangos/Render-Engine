@@ -4,8 +4,6 @@
 
 namespace khronos
 {
-class library;
-
 class graphical_device
 {
   public:
@@ -22,7 +20,7 @@ class graphical_device
     ~graphical_device() = default;
 
   private:
-    friend library;
+    friend class library;
 
     graphical_device(std::shared_ptr<vk::raii::Instance const>           instance,
                      std::shared_ptr<vk::raii::SurfaceKHR const> const & surface);

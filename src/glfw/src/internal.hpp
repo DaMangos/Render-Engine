@@ -13,7 +13,7 @@ class internal
     [[nodiscard]]
     static library init_library();
 
-    static monitor const & try_emplace_monitor(GLFWmonitor * glfw_monitor);
+    static std::set<glfw::monitor>::iterator try_emplace_monitor(GLFWmonitor * glfw_monitor);
 
     static std::set<monitor> monitors;
 };

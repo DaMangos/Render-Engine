@@ -47,9 +47,6 @@ class monitor
     [[nodiscard]]
     vidmode get_current_video_mode() const;
 
-    mutable std::function<void()> when_monitor_connected;
-    mutable std::function<void()> when_monitor_disconnected;
-
   private:
     friend class window;
     friend class library;
