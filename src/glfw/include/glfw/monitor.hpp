@@ -3,7 +3,6 @@
 #include <glfw/def.hpp>
 
 #include <compare>
-#include <functional>
 #include <string_view>
 #include <vector>
 
@@ -48,9 +47,10 @@ class monitor
     vidmode get_current_video_mode() const;
 
   private:
-    friend class window;
-    friend class library;
     friend class internal;
+
+    friend window;
+    friend library;
 
     explicit monitor(GLFWmonitor * ptr) noexcept;
 

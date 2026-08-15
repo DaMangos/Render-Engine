@@ -13,9 +13,10 @@
 namespace logging
 {
 template <class Type, class CharT, class Traits>
-concept serializable_range = std::ranges::input_range<Type>
-                         and not(std::convertible_to<std::decay_t<Type>, std::basic_string_view<CharT, Traits>>
-                                 or std::convertible_to<std::decay_t<Type>, std::basic_string<CharT, Traits>>);
+concept serializable_range
+  = std::ranges::input_range<Type>
+and not(std::convertible_to<std::decay_t<Type>, std::basic_string_view<CharT, Traits>>
+        or std::convertible_to<std::decay_t<Type>, std::basic_string<CharT, Traits>>);
 
 inline namespace serialize
 {

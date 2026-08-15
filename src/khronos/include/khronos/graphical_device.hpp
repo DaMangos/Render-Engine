@@ -4,10 +4,15 @@
 
 namespace khronos
 {
+class present_window;
+class render_window;
+
 class graphical_device
 {
   public:
-    class render_window create_render_window(class present_window && window) const;
+    render_window create_render_window(present_window && window) const;
+
+    void draw_next_frame(render_window & render_window) const;
 
     graphical_device(graphical_device &&) noexcept = default;
 
@@ -27,10 +32,8 @@ class graphical_device
 
     std::shared_ptr<vk::raii::PhysicalDevice const>   physical_device;
     std::shared_ptr<vk::raii::Device const>           device;
-    std::shared_ptr<vk::raii::Queue const>            graphics_queue;
-    std::shared_ptr<vk::raii::Queue const>            present_queue;
+    std::shared_ptr<vk::raii::Queue const>            graphics_and_present_queue;
+    std::uint32_t                                     graphics_and_present_queue_family_index;
     std::shared_ptr<vk::SwapchainCreateInfoKHR const> default_swapchain_create_info;
-    std::shared_ptr<vk::Extent2D const>               min_image_extent;
-    std::shared_ptr<vk::Extent2D const>               max_image_extent;
 };
 }

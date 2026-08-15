@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glfw/def.hpp>
+#include <vulkan/vulkan_raii.hpp>
 
 #include <functional>
 #include <set>
@@ -8,7 +9,7 @@
 
 namespace glfw
 {
-extern class library default_library;
+extern library default_library;
 
 class library
 {
@@ -20,61 +21,70 @@ class library
     ~library();
 
     [[nodiscard]]
-    class window create_window(dimensions<int, 2> size, std::string const & title) const;
+    window create_window(dimensions<int, 2> const & size, std::string const & title) const;
 
     [[nodiscard]]
-    class window create_window(dimensions<int, 2> size, std::string const & title, class window const & share) const;
+    window create_window(dimensions<int, 2> const & size,
+                         std::string const &        title,
+                         window const &             share) const;
 
     [[nodiscard]]
-    class window create_window(dimensions<int, 2> size, std::string const & title, class monitor const & monitor) const;
+    window create_window(dimensions<int, 2> const & size,
+                         std::string const &        title,
+                         monitor const &            monitor) const;
 
     [[nodiscard]]
-    class window create_window(dimensions<int, 2>    size,
-                               std::string const &   title,
-                               class window const &  share,
-                               class monitor const & monitor) const;
+    window create_window(dimensions<int, 2> const & size,
+                         std::string const &        title,
+                         window const &             share,
+                         monitor const &            monitor) const;
 
     [[nodiscard]]
-    std::set<class monitor> const & get_monitors() const;
+    std::set<monitor> const & get_monitors() const;
 
     [[nodiscard]]
-    class monitor const & get_primary_monitor() const;
+    monitor const & get_primary_monitor() const;
 
     [[nodiscard]]
-    class cursor create_cursor(image image, coordinates<int, 2> hotspot) const;
+    cursor create_cursor(image const & image, coordinates<int, 2> const & hotspot) const;
 
     [[nodiscard]]
-    class cursor create_arrow_cursor() const;
+    cursor create_arrow_cursor() const;
 
     [[nodiscard]]
-    class cursor create_ibeam_cursor() const;
+    cursor create_ibeam_cursor() const;
 
     [[nodiscard]]
-    class cursor create_crosshair_cursor() const;
+    cursor create_crosshair_cursor() const;
 
     [[nodiscard]]
-    class cursor create_pointing_hand_cursor() const;
+    cursor create_pointing_hand_cursor() const;
 
     [[nodiscard]]
-    class cursor create_resize_ew_cursor() const;
+    cursor create_resize_ew_cursor() const;
 
     [[nodiscard]]
-    class cursor create_resize_ns_cursor() const;
+    cursor create_resize_ns_cursor() const;
 
     [[nodiscard]]
-    class cursor create_resize_nwse_cursor() const;
+    cursor create_resize_nwse_cursor() const;
 
     [[nodiscard]]
-    class cursor create_resize_nesw_cursor() const;
+    cursor create_resize_nesw_cursor() const;
 
     [[nodiscard]]
-    class cursor create_resize_all_cursor() const;
+    cursor create_resize_all_cursor() const;
 
     [[nodiscard]]
-    class cursor create_not_allowed_cursor() const;
+    cursor create_not_allowed_cursor() const;
 
     [[nodiscard]]
     std::span<char const * const> get_required_instance_extensions() const;
+
+    [[nodiscard]]
+    bool get_physical_device_presentation_support(vk::raii::Instance const &       instance,
+                                                  vk::raii::PhysicalDevice const & physical_device,
+                                                  std::uint32_t const              queue_family) const;
 
     void poll_events() const;
 

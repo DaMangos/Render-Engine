@@ -1,5 +1,5 @@
 .PHONY: all
-all: compile_commands_debug format shaders release debug test_release test_debug
+all: format shaders release debug test_release test_debug
 
 .PHONY: help
 help :
@@ -31,8 +31,7 @@ compile_commands_debug :
 
 .PHONY: format
 format:
-	@clang-format $(shell find -L $(CURDIR) -name "*.cpp" -o -name "*.hpp" -o -name "*.ipp") -style=file -i
-	@slang
+	@clang-format $(shell find -L $(CURDIR) -name "*.cpp" -o -name "*.hpp" -o -name "*.ipp" -not -path "**/generate/**") -style=file -i
 	@echo finished format
 
 .PHONY: release

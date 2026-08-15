@@ -1,4 +1,3 @@
-#include "glfw/def.hpp"
 #include "internal.hpp"
 
 #include <glfw/cursor.hpp>
@@ -14,6 +13,8 @@
 glfw::library glfw::default_library = glfw::internal::init_library();
 
 namespace
+{
+namespace detail
 {
 class glfw_category_type : public std::error_category
 {
@@ -78,28 +79,30 @@ static void monitor_callback(GLFWmonitor * glfw_monitor, int connected)
     glfw::default_library.when_monitor_connected(*found);
 
   if(connected == VK_FALSE)
-    glfw::default_library.when_monitor_disconnected(glfw::internal::monitors.extract(found).value().get_name());
+    glfw::default_library.when_monitor_disconnected(
+      glfw::internal::monitors.extract(found).value().get_name());
+}
 }
 }
 
 glfw::library::library()
 {
+  [[maybe_unused]]
   static bool has_default_library_been_initialized = false;
 
-  if(has_default_library_been_initialized)
-    throw std::logic_error("glfw has already been init");
+  assert(not has_default_library_been_initialized);
 
   has_default_library_been_initialized = true;
 
   glfwInitHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-  glfwSetErrorCallback(error_callback);
+  glfwSetErrorCallback(::detail::error_callback);
 
   glfwInit();
 
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-  glfwSetMonitorCallback(monitor_callback);
+  glfwSetMonitorCallback(::detail::monitor_callback);
 }
 
 glfw::library::~library()
@@ -107,33 +110,35 @@ glfw::library::~library()
   glfwTerminate();
 }
 
-glfw::window glfw::library::create_window(dimensions<int, 2> size, std::string const & title) const
+glfw::window glfw::library::create_window(dimensions<int, 2> const & size, std::string const & title) const
 {
-  return window({glfwCreateWindow(size.width, size.height, title.c_str(), nullptr, nullptr), glfwDestroyWindow});
+  return window(
+    {glfwCreateWindow(size.width, size.height, title.c_str(), nullptr, nullptr), glfwDestroyWindow});
 }
 
-glfw::window glfw::library::create_window(dimensions<int, 2>  size,
-                                          std::string const & title,
-                                          window const &      share) const
+glfw::window glfw::library::create_window(dimensions<int, 2> const & size,
+                                          std::string const &        title,
+                                          window const &             share) const
 {
   return window(
     {glfwCreateWindow(size.width, size.height, title.c_str(), nullptr, share.ptr.get()), glfwDestroyWindow});
 }
 
-glfw::window glfw::library::create_window(dimensions<int, 2>  size,
-                                          std::string const & title,
-                                          monitor const &     monitor) const
-{
-  return window({glfwCreateWindow(size.width, size.height, title.c_str(), monitor.ptr, nullptr), glfwDestroyWindow});
-}
-
-glfw::window glfw::library::create_window(dimensions<int, 2>  size,
-                                          std::string const & title,
-                                          window const &      share,
-                                          monitor const &     monitor) const
+glfw::window glfw::library::create_window(dimensions<int, 2> const & size,
+                                          std::string const &        title,
+                                          monitor const &            monitor) const
 {
   return window(
-    {glfwCreateWindow(size.width, size.height, title.c_str(), monitor.ptr, share.ptr.get()), glfwDestroyWindow});
+    {glfwCreateWindow(size.width, size.height, title.c_str(), monitor.ptr, nullptr), glfwDestroyWindow});
+}
+
+glfw::window glfw::library::create_window(dimensions<int, 2> const & size,
+                                          std::string const &        title,
+                                          window const &             share,
+                                          monitor const &            monitor) const
+{
+  return window({glfwCreateWindow(size.width, size.height, title.c_str(), monitor.ptr, share.ptr.get()),
+                 glfwDestroyWindow});
 }
 
 std::set<glfw::monitor> const & glfw::library::get_monitors() const
@@ -155,7 +160,7 @@ glfw::monitor const & glfw::library::get_primary_monitor() const
   return *internal::try_emplace_monitor(glfwGetPrimaryMonitor());
 }
 
-glfw::cursor glfw::library::create_cursor(image image, coordinates<int, 2> hotspot) const
+glfw::cursor glfw::library::create_cursor(image const & image, coordinates<int, 2> const & hotspot) const
 {
   GLFWimage glfw_image = {
     .height = image.size.height,
@@ -224,6 +229,13 @@ std::span<char const * const> glfw::library::get_required_instance_extensions() 
   assert(extensions);
 
   return {extensions, static_cast<std::size_t>(count)};
+}
+
+bool glfw::library::get_physical_device_presentation_support(vk::raii::Instance const &       instance,
+                                                             vk::raii::PhysicalDevice const & physical_device,
+                                                             std::uint32_t const queue_family) const
+{
+  return glfwGetPhysicalDevicePresentationSupport(*instance, *physical_device, queue_family) == GLFW_TRUE;
 }
 
 void glfw::library::poll_events() const

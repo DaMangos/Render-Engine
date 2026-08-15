@@ -1,7 +1,6 @@
 #pragma once
 
-#include <glfw/monitor.hpp>
-#include <glfw/window.hpp>
+#include <glfw/def.hpp>
 #include <vulkan/vulkan_raii.hpp>
 
 #include <ostream>
@@ -27,23 +26,24 @@ class library
     ~library() = default;
 
     [[nodiscard]]
-    class present_window create_present_window(glfw::dimensions<int, 2> size, std::string const & title) const;
+    class present_window create_present_window(glfw::dimensions<int, 2> const & size,
+                                               std::string const &              title) const;
 
     [[nodiscard]]
-    class present_window create_present_window(glfw::dimensions<int, 2> size,
-                                               std::string const &      title,
-                                               glfw::window const &     share) const;
+    class present_window create_present_window(glfw::dimensions<int, 2> const & size,
+                                               std::string const &              title,
+                                               glfw::window const &             share) const;
 
     [[nodiscard]]
-    class present_window create_present_window(glfw::dimensions<int, 2> size,
-                                               std::string const &      title,
-                                               glfw::monitor const &    monitor) const;
+    class present_window create_present_window(glfw::dimensions<int, 2> const & size,
+                                               std::string const &              title,
+                                               glfw::monitor const &            monitor) const;
 
     [[nodiscard]]
-    class present_window create_present_window(glfw::dimensions<int, 2> size,
-                                               std::string const &      title,
-                                               glfw::window const &     share,
-                                               glfw::monitor const &    monitor) const;
+    class present_window create_present_window(glfw::dimensions<int, 2> const & size,
+                                               std::string const &              title,
+                                               glfw::window const &             share,
+                                               glfw::monitor const &            monitor) const;
 
     [[nodiscard]]
     class graphical_device find_graphical_device(present_window const & window) const;

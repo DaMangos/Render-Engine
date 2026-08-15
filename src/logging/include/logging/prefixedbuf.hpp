@@ -19,7 +19,10 @@ inline constexpr std::mutex & get_mutex(void const * const buf) noexcept
 }
 }
 
-template <class Function, class CharT, class Traits = std::char_traits<CharT>, class Allocator = std::allocator<CharT>>
+template <class Function,
+          class CharT,
+          class Traits    = std::char_traits<CharT>,
+          class Allocator = std::allocator<CharT>>
 class basic_prefixedbuf : public std::basic_stringbuf<CharT, Traits, Allocator>
 {
   public:

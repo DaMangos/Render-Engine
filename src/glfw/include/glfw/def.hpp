@@ -7,6 +7,11 @@
 
 namespace glfw
 {
+class cursor;
+class library;
+class monitor;
+class window;
+
 enum struct action
 {
   release = 0,
