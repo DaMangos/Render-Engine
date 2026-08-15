@@ -79,12 +79,12 @@ static void window_maximize_callback(GLFWwindow * window, int maximized)
     self->when_window_unmaximized(*self);
 }
 
-static void framebuffer_size_callback(GLFWwindow * window, int xpos, int ypos)
+static void framebuffer_size_callback(GLFWwindow * window, int width, int height)
 {
   auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_framebuffer_resized)
-    self->when_framebuffer_resized(*self, {.x = xpos, .y = ypos});
+    self->when_framebuffer_resized(*self, {.width = width, .height = height});
 }
 
 static void window_content_scale_callback(GLFWwindow * window, float xscale, float yscale)
@@ -229,11 +229,6 @@ std::strong_ordering glfw::window::operator<=>(window const & other) const noexc
   return ptr <=> other.ptr;
 }
 
-bool glfw::window::should_close() const
-{
-  return glfwWindowShouldClose(ptr.get());
-}
-
 std::string_view glfw::window::get_title() const
 {
   return glfwGetWindowTitle(ptr.get());
@@ -356,6 +351,66 @@ vk::raii::SurfaceKHR glfw::window::create_surface(
   return vk::raii::SurfaceKHR(instance, surface, allocator);
 }
 
+bool glfw::window::should_close() const
+{
+  return glfwWindowShouldClose(ptr.get()) == VK_TRUE;
+}
+
+bool glfw::window::is_focused() const
+{
+  return glfwGetWindowAttrib(ptr.get(), GLFW_FOCUSED) == GLFW_TRUE;
+}
+
+bool glfw::window::is_minimized() const
+{
+  return glfwGetWindowAttrib(ptr.get(), GLFW_ICONIFIED) == GLFW_TRUE;
+}
+
+bool glfw::window::is_maximized() const
+{
+  return glfwGetWindowAttrib(ptr.get(), GLFW_MAXIMIZED) == GLFW_TRUE;
+}
+
+bool glfw::window::is_cursor_hovered() const
+{
+  return glfwGetWindowAttrib(ptr.get(), GLFW_HOVERED) == GLFW_TRUE;
+}
+
+bool glfw::window::is_visible() const
+{
+  return glfwGetWindowAttrib(ptr.get(), GLFW_VISIBLE) == GLFW_TRUE;
+}
+
+bool glfw::window::is_resizable() const
+{
+  return glfwGetWindowAttrib(ptr.get(), GLFW_RESIZABLE) == GLFW_TRUE;
+}
+
+bool glfw::window::is_decorated() const
+{
+  return glfwGetWindowAttrib(ptr.get(), GLFW_DECORATED) == GLFW_TRUE;
+}
+
+bool glfw::window::is_auto_minimized() const
+{
+  return glfwGetWindowAttrib(ptr.get(), GLFW_AUTO_ICONIFY) == GLFW_TRUE;
+}
+
+bool glfw::window::is_floating() const
+{
+  return glfwGetWindowAttrib(ptr.get(), GLFW_FLOATING) == GLFW_TRUE;
+}
+
+bool glfw::window::is_transparent_framebuffer() const
+{
+  return glfwGetWindowAttrib(ptr.get(), GLFW_TRANSPARENT_FRAMEBUFFER) == GLFW_TRUE;
+}
+
+bool glfw::window::is_focus_on_show() const
+{
+  return glfwGetWindowAttrib(ptr.get(), GLFW_FOCUS_ON_SHOW) == GLFW_TRUE;
+}
+
 void glfw::window::set_pos(coordinates<int, 2> const & pos)
 {
   glfwSetWindowPos(ptr.get(), pos.x, pos.y);
@@ -452,43 +507,42 @@ void glfw::window::request_attention()
   glfwRequestWindowAttention(ptr.get());
 }
 
-glfw::window::window(std::unique_ptr<GLFWwindow, void (*)(GLFWwindow *)> && ptr) noexcept
-: ptr(std::move(ptr))
+glfw::window::window(std::unique_ptr<GLFWwindow, void (*)(GLFWwindow *)> && new_ptr) noexcept
+: ptr(std::move(new_ptr))
 {
-  if(ptr)
-  {
-    glfwSetWindowUserPointer(ptr.get(), this);
+  assert(ptr);
 
-    glfwSetWindowPosCallback(ptr.get(), ::detail::window_pos_callback);
+  glfwSetWindowUserPointer(ptr.get(), this);
 
-    glfwSetWindowSizeCallback(ptr.get(), ::detail::window_size_callback);
+  glfwSetWindowPosCallback(ptr.get(), ::detail::window_pos_callback);
 
-    glfwSetWindowCloseCallback(ptr.get(), ::detail::window_close_callback);
+  glfwSetWindowSizeCallback(ptr.get(), ::detail::window_size_callback);
 
-    glfwSetWindowRefreshCallback(ptr.get(), ::detail::window_refresh_callback);
+  glfwSetWindowCloseCallback(ptr.get(), ::detail::window_close_callback);
 
-    glfwSetWindowFocusCallback(ptr.get(), ::detail::window_focus_callback);
+  glfwSetWindowRefreshCallback(ptr.get(), ::detail::window_refresh_callback);
 
-    glfwSetWindowIconifyCallback(ptr.get(), ::detail::window_iconify_callback);
+  glfwSetWindowFocusCallback(ptr.get(), ::detail::window_focus_callback);
 
-    glfwSetWindowMaximizeCallback(ptr.get(), ::detail::window_maximize_callback);
+  glfwSetWindowIconifyCallback(ptr.get(), ::detail::window_iconify_callback);
 
-    glfwSetFramebufferSizeCallback(ptr.get(), ::detail::framebuffer_size_callback);
+  glfwSetWindowMaximizeCallback(ptr.get(), ::detail::window_maximize_callback);
 
-    glfwSetWindowContentScaleCallback(ptr.get(), ::detail::window_content_scale_callback);
+  glfwSetFramebufferSizeCallback(ptr.get(), ::detail::framebuffer_size_callback);
 
-    glfwSetKeyCallback(ptr.get(), ::detail::key_callback);
+  glfwSetWindowContentScaleCallback(ptr.get(), ::detail::window_content_scale_callback);
 
-    glfwSetCharCallback(ptr.get(), ::detail::char_callback);
+  glfwSetKeyCallback(ptr.get(), ::detail::key_callback);
 
-    glfwSetMouseButtonCallback(ptr.get(), ::detail::mouse_button_callback);
+  glfwSetCharCallback(ptr.get(), ::detail::char_callback);
 
-    glfwSetCursorPosCallback(ptr.get(), ::detail::cursor_pos_callback);
+  glfwSetMouseButtonCallback(ptr.get(), ::detail::mouse_button_callback);
 
-    glfwSetCursorEnterCallback(ptr.get(), ::detail::cursor_enter_callback);
+  glfwSetCursorPosCallback(ptr.get(), ::detail::cursor_pos_callback);
 
-    glfwSetScrollCallback(ptr.get(), ::detail::scroll_callback);
+  glfwSetCursorEnterCallback(ptr.get(), ::detail::cursor_enter_callback);
 
-    glfwSetDropCallback(ptr.get(), ::detail::drop_callback);
-  }
+  glfwSetScrollCallback(ptr.get(), ::detail::scroll_callback);
+
+  glfwSetDropCallback(ptr.get(), ::detail::drop_callback);
 }

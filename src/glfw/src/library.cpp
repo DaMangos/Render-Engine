@@ -242,3 +242,8 @@ void glfw::library::poll_events() const
 {
   glfwPollEvents();
 }
+
+void glfw::library::wait_events() const
+{
+  glfwWaitEvents();
+}

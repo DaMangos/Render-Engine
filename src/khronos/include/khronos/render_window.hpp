@@ -1,5 +1,7 @@
 #pragma once
 
+#include "khronos/def.hpp"
+
 #include <khronos/present_window.hpp>
 #include <vulkan/vulkan_raii.hpp>
 
@@ -11,6 +13,13 @@ namespace khronos
 {
 class render_window : public present_window
 {
+  public:
+    std::vector<vertex> vertices = {
+      {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+      { {0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+      {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+    };
+
   private:
     friend class graphical_device;
 
@@ -34,8 +43,10 @@ class render_window : public present_window
     std::vector<image> images;
 
     std::shared_ptr<vk::raii::ShaderModule const>   shader_module;
-    std::shared_ptr<vk::raii::PipelineLayout const> pipeline_layout;
+    std::shared_ptr<vk::raii::PipelineLayout const> graphics_pipeline_layout;
     std::shared_ptr<vk::raii::Pipeline const>       graphics_pipeline;
+    std::shared_ptr<vk::raii::Buffer const>         vertex_buffer;
+    std::shared_ptr<vk::raii::DeviceMemory const>   vertex_buffer_device_memory;
     std::shared_ptr<vk::raii::CommandPool const>    graphics_and_present_command_pool;
 
     struct frame

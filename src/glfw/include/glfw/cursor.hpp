@@ -15,7 +15,7 @@ class cursor
     friend class window;
     friend class library;
 
-    explicit cursor(std::unique_ptr<GLFWcursor, void (*)(GLFWcursor *)> && ptr) noexcept;
+    explicit cursor(std::unique_ptr<GLFWcursor, void (*)(GLFWcursor *)> && new_ptr) noexcept;
 
     std::unique_ptr<GLFWcursor, void (*)(GLFWcursor *)> ptr;
 };

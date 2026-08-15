@@ -151,7 +151,9 @@ khronos::render_window khronos::graphical_device::create_render_window(present_w
 
 void khronos::graphical_device::draw_next_frame(render_window & window) const
 {
-  auto const wait_for_fences_result = device->waitForFences(**window.frames.front().in_flight_fence,
+  auto const current_frame = window.frames.front();
+
+  auto const wait_for_fences_result = device->waitForFences(**current_frame.in_flight_fence,
                                                             vk::True,
                                                             std::numeric_limits<std::uint64_t>::max());
 
@@ -161,18 +163,20 @@ void khronos::graphical_device::draw_next_frame(render_window & window) const
   if(wait_for_fences_result > vk::Result::eSuccess)
     logging::warning() << "wait for fences returned a warning: " << vk::to_string(wait_for_fences_result);
 
-  device->resetFences(**window.frames.front().in_flight_fence);
+  device->resetFences(**current_frame.in_flight_fence);
 
   auto const & [acquire_next_image_result, next_image_index]
     = window.swapchain->acquireNextImage(std::numeric_limits<std::uint64_t>::max(),
-                                         *window.frames.front().present_complete_semaphores);
+                                         *current_frame.present_complete_semaphores);
 
   if(acquire_next_image_result < vk::Result::eSuccess)
     throw vk::SystemError{vk::make_error_code(acquire_next_image_result), "failed to acquire next image"};
 
   if(acquire_next_image_result > vk::Result::eSuccess)
-    logging::warning() << "acquire next image returned a warning: "
+    logging::warning() << "acquiring the next image returned a warning: "
                        << vk::to_string(acquire_next_image_result);
+
+  auto const current_image = window.images.at(next_image_index);
 
   auto const image_subresource_range = vk::ImageSubresourceRange{}
                                          .setAspectMask(vk::ImageAspectFlagBits::eColor)
@@ -191,14 +195,14 @@ void khronos::graphical_device::draw_next_frame(render_window & window) const
         .setNewLayout(vk::ImageLayout::eColorAttachmentOptimal)
         .setSrcQueueFamilyIndex(vk::QueueFamilyIgnored)
         .setDstQueueFamilyIndex(vk::QueueFamilyIgnored)
-        .setImage(window.images[next_image_index].image)
+        .setImage(current_image.image)
         .setSubresourceRange(image_subresource_range);
 
   auto const write_dependency_info
     = vk::DependencyInfo{}.setImageMemoryBarrierCount(1).setPImageMemoryBarriers(&write_image_memory_barrier);
 
   auto const attachmentInfo = vk::RenderingAttachmentInfo{}
-                                .setImageView(*window.images[next_image_index].image_view)
+                                .setImageView(*current_image.image_view)
                                 .setImageLayout(vk::ImageLayout::eColorAttachmentOptimal)
                                 .setLoadOp(vk::AttachmentLoadOp::eClear)
                                 .setStoreOp(vk::AttachmentStoreOp::eStore)
@@ -232,7 +236,7 @@ void khronos::graphical_device::draw_next_frame(render_window & window) const
         .setNewLayout(vk::ImageLayout::ePresentSrcKHR)
         .setSrcQueueFamilyIndex(vk::QueueFamilyIgnored)
         .setDstQueueFamilyIndex(vk::QueueFamilyIgnored)
-        .setImage(window.images[next_image_index].image)
+        .setImage(current_image.image)
         .setSubresourceRange(image_subresource_range);
 
   auto const present_dependency_info
@@ -243,30 +247,31 @@ void khronos::graphical_device::draw_next_frame(render_window & window) const
     vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eTopOfPipe,
   };
 
-  window.frames.front().graphics_and_present_command_buffer->reset();
-  window.frames.front().graphics_and_present_command_buffer->begin({});
-  window.frames.front().graphics_and_present_command_buffer->pipelineBarrier2(write_dependency_info);
-  window.frames.front().graphics_and_present_command_buffer->beginRendering(rendering_info);
-  window.frames.front().graphics_and_present_command_buffer->bindPipeline(vk::PipelineBindPoint::eGraphics,
-                                                                          **window.graphics_pipeline);
-  window.frames.front().graphics_and_present_command_buffer->setViewport(0, viewport);
-  window.frames.front().graphics_and_present_command_buffer->setScissor(0, scissor);
-  window.frames.front().graphics_and_present_command_buffer->draw(3, 1, 0, 0);
-  window.frames.front().graphics_and_present_command_buffer->endRendering();
-  window.frames.front().graphics_and_present_command_buffer->pipelineBarrier2(present_dependency_info);
-  window.frames.front().graphics_and_present_command_buffer->end();
+  current_frame.graphics_and_present_command_buffer->reset();
+  current_frame.graphics_and_present_command_buffer->begin({});
+  current_frame.graphics_and_present_command_buffer->pipelineBarrier2(write_dependency_info);
+  current_frame.graphics_and_present_command_buffer->beginRendering(rendering_info);
+  current_frame.graphics_and_present_command_buffer->bindPipeline(vk::PipelineBindPoint::eGraphics,
+                                                                  **window.graphics_pipeline);
+  current_frame.graphics_and_present_command_buffer->setViewport(0, viewport);
+  current_frame.graphics_and_present_command_buffer->setScissor(0, scissor);
+  current_frame.graphics_and_present_command_buffer->bindVertexBuffers(0, **window.vertex_buffer, {0});
+  current_frame.graphics_and_present_command_buffer
+    ->draw(static_cast<uint32_t>(window.vertices.size()), 1, 0, 0);
+  current_frame.graphics_and_present_command_buffer->endRendering();
+  current_frame.graphics_and_present_command_buffer->pipelineBarrier2(present_dependency_info);
+  current_frame.graphics_and_present_command_buffer->end();
 
-  auto const graphics_submit_info
-    = vk::SubmitInfo{}
-        .setWaitSemaphores(**window.frames.front().present_complete_semaphores)
-        .setWaitDstStageMask(wait_destination_stage_mask)
-        .setCommandBuffers(**window.frames.front().graphics_and_present_command_buffer)
-        .setSignalSemaphores(**window.images[next_image_index].render_complete_semaphores);
+  auto const graphics_submit_info = vk::SubmitInfo{}
+                                      .setWaitSemaphores(**current_frame.present_complete_semaphores)
+                                      .setWaitDstStageMask(wait_destination_stage_mask)
+                                      .setCommandBuffers(**current_frame.graphics_and_present_command_buffer)
+                                      .setSignalSemaphores(**current_image.render_complete_semaphores);
 
-  graphics_and_present_queue->submit(graphics_submit_info, **window.frames.front().in_flight_fence);
+  graphics_and_present_queue->submit(graphics_submit_info, **current_frame.in_flight_fence);
 
   auto const present_info = vk::PresentInfoKHR{}
-                              .setWaitSemaphores(**window.images[next_image_index].render_complete_semaphores)
+                              .setWaitSemaphores(**current_image.render_complete_semaphores)
                               .setSwapchains(**window.swapchain)
                               .setImageIndices(next_image_index);
 
@@ -276,7 +281,7 @@ void khronos::graphical_device::draw_next_frame(render_window & window) const
     throw vk::SystemError{vk::make_error_code(present_result), "failed to present"};
 
   if(present_result > vk::Result::eSuccess)
-    logging::warning() << "present returned a warning: " << vk::to_string(present_result);
+    logging::warning() << "presenting returned a warning: " << vk::to_string(present_result);
 
   window.frames.splice(window.frames.end(), window.frames, window.frames.begin());
 }
@@ -366,8 +371,7 @@ khronos::graphical_device::graphical_device(std::shared_ptr<vk::raii::Instance c
 
     std::uint32_t graphics_queue_family_index = 0;
     for(; graphics_queue_family_index < queue_family_properties.size(); graphics_queue_family_index++)
-      if(static_cast<bool>(queue_family_properties[graphics_queue_family_index].queueFlags
-                           & vk::QueueFlagBits::eGraphics))
+      if(queue_family_properties[graphics_queue_family_index].queueFlags & vk::QueueFlagBits::eGraphics)
         break;
 
     if(graphics_queue_family_index == queue_family_properties.size())
@@ -468,12 +472,9 @@ khronos::graphical_device::graphical_device(std::shared_ptr<vk::raii::Instance c
     = vk::DeviceQueueInfo2{}.setQueueFamilyIndex(graphics_and_present_queue_family_index).setQueueIndex(0);
 
   detail::emplace_data(device, physical_device);
-  detail::emplace_function(device, [](vk::raii::Device const & device) { device.waitIdle(); });
 
   graphics_and_present_queue
     = detail::make_shared_with_data<vk::raii::Queue const>(*device, graphics_and_present_queue_create_info);
 
   detail::emplace_data(graphics_and_present_queue, device);
-  detail::emplace_function(graphics_and_present_queue,
-                           [](vk::raii::Queue const & queue) { queue.waitIdle(); });
 }

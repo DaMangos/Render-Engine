@@ -41,15 +41,15 @@ std::shared_ptr<Type> make_shared_with_data(auto &&... args)
 }
 
 template <class Type, class Data>
-void emplace_data(std::shared_ptr<Type> const & ptr, std::shared_ptr<Data> const & data)
+void emplace_data(std::shared_ptr<Type> const & des, std::shared_ptr<Data> const & data)
 {
-  if(auto * deleter = std::get_deleter<deleter_with_data<std::add_const_t<Type>>>(ptr); deleter)
+  if(auto * deleter = std::get_deleter<deleter_with_data<std::add_const_t<Type>>>(des); deleter)
   {
     deleter->data.emplace(data);
     return;
   }
 
-  if(auto * deleter = std::get_deleter<deleter_with_data<std::remove_const_t<Type>>>(ptr); deleter)
+  if(auto * deleter = std::get_deleter<deleter_with_data<std::remove_const_t<Type>>>(des); deleter)
   {
     deleter->data.emplace(data);
     return;
@@ -59,15 +59,15 @@ void emplace_data(std::shared_ptr<Type> const & ptr, std::shared_ptr<Data> const
 }
 
 template <class Type, class Data>
-void erase_data(std::shared_ptr<Type> const & ptr, std::shared_ptr<Data> const & data)
+void erase_data(std::shared_ptr<Type> const & des, std::shared_ptr<Data> const & data)
 {
-  if(auto * deleter = std::get_deleter<deleter_with_data<std::add_const_t<Type>>>(ptr); deleter)
+  if(auto * deleter = std::get_deleter<deleter_with_data<std::add_const_t<Type>>>(des); deleter)
   {
     deleter->data.erase(data);
     return;
   }
 
-  if(auto * deleter = std::get_deleter<deleter_with_data<std::remove_const_t<Type>>>(ptr); deleter)
+  if(auto * deleter = std::get_deleter<deleter_with_data<std::remove_const_t<Type>>>(des); deleter)
   {
     deleter->data.erase(data);
     return;
@@ -77,15 +77,15 @@ void erase_data(std::shared_ptr<Type> const & ptr, std::shared_ptr<Data> const &
 }
 
 template <class Type>
-void emplace_function(std::shared_ptr<Type> const & ptr, std::invocable<Type &> auto function)
+void emplace_function(std::shared_ptr<Type> const & des, std::invocable<Type &> auto function)
 {
-  if(auto * deleter = std::get_deleter<deleter_with_data<std::add_const_t<Type>>>(ptr); deleter)
+  if(auto * deleter = std::get_deleter<deleter_with_data<std::add_const_t<Type>>>(des); deleter)
   {
     deleter->functions.emplace_back(std::move(function));
     return;
   }
 
-  if(auto * deleter = std::get_deleter<deleter_with_data<std::remove_const_t<Type>>>(ptr); deleter)
+  if(auto * deleter = std::get_deleter<deleter_with_data<std::remove_const_t<Type>>>(des); deleter)
   {
     deleter->functions.emplace_back(std::move(function));
     return;

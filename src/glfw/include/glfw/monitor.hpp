@@ -47,12 +47,12 @@ class monitor
     vidmode get_current_video_mode() const;
 
   private:
-    friend class internal;
+    friend struct internal;
 
     friend window;
     friend library;
 
-    explicit monitor(GLFWmonitor * ptr) noexcept;
+    explicit monitor(GLFWmonitor * new_ptr) noexcept;
 
     GLFWmonitor * ptr = nullptr;
 };

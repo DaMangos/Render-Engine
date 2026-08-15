@@ -91,7 +91,8 @@ glfw::vidmode glfw::monitor::get_current_video_mode() const
   };
 }
 
-glfw::monitor::monitor(GLFWmonitor * ptr) noexcept
-: ptr(ptr)
+glfw::monitor::monitor(GLFWmonitor * new_ptr) noexcept
+: ptr(new_ptr)
 {
+  assert(ptr);
 }

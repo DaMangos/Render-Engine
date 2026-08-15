@@ -252,21 +252,25 @@ int main(int const argc, char const * const * const args) noexcept
     {
       glfw::default_library.poll_events();
 
-      graphical_device.draw_next_frame(render_window);
+      if(not render_window.is_minimized())
+        graphical_device.draw_next_frame(render_window);
     }
   }
+
   catch(std::system_error const & error)
   {
     logging::error() << error.what();
 
     return error.code().value();
   }
+
   catch(std::runtime_error const & error)
   {
     logging::error() << error.what();
 
     return EXIT_FAILURE;
   }
+
   catch(std::invalid_argument const & error)
   {
     logging::error() << error.what();
@@ -275,6 +279,7 @@ int main(int const argc, char const * const * const args) noexcept
 
     return EXIT_FAILURE;
   }
+
   catch(std::exception const & error)
   {
     logging::error() << error.what();

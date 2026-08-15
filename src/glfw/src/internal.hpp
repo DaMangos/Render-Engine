@@ -7,9 +7,8 @@
 
 namespace glfw
 {
-class internal
+struct internal
 {
-  public:
     [[nodiscard]]
     static library init_library();
 
