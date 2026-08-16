@@ -75,12 +75,16 @@ static void monitor_callback(GLFWmonitor * glfw_monitor, int connected)
 {
   auto const & found = glfw::internal::try_emplace_monitor(glfw_monitor);
 
-  if(connected == VK_TRUE)
+  if(glfw::default_library.when_monitor_connected and connected == VK_TRUE)
     glfw::default_library.when_monitor_connected(*found);
 
   if(connected == VK_FALSE)
-    glfw::default_library.when_monitor_disconnected(
-      glfw::internal::monitors.extract(found).value().get_name());
+  {
+    auto dis_connected_monitor = glfw::internal::monitors.extract(found);
+
+    if(glfw::default_library.when_monitor_disconnected)
+      glfw::default_library.when_monitor_disconnected(dis_connected_monitor.value().get_name());
+  }
 }
 }
 }
@@ -112,8 +116,7 @@ glfw::library::~library()
 
 glfw::window glfw::library::create_window(dimensions<int, 2> const & size, std::string const & title) const
 {
-  return window(
-    {glfwCreateWindow(size.width, size.height, title.c_str(), nullptr, nullptr), glfwDestroyWindow});
+  return window({glfwCreateWindow(size.width, size.height, title.c_str(), nullptr, nullptr), glfwDestroyWindow});
 }
 
 glfw::window glfw::library::create_window(dimensions<int, 2> const & size,
@@ -128,8 +131,7 @@ glfw::window glfw::library::create_window(dimensions<int, 2> const & size,
                                           std::string const &        title,
                                           monitor const &            monitor) const
 {
-  return window(
-    {glfwCreateWindow(size.width, size.height, title.c_str(), monitor.ptr, nullptr), glfwDestroyWindow});
+  return window({glfwCreateWindow(size.width, size.height, title.c_str(), monitor.ptr, nullptr), glfwDestroyWindow});
 }
 
 glfw::window glfw::library::create_window(dimensions<int, 2> const & size,
@@ -137,8 +139,8 @@ glfw::window glfw::library::create_window(dimensions<int, 2> const & size,
                                           window const &             share,
                                           monitor const &            monitor) const
 {
-  return window({glfwCreateWindow(size.width, size.height, title.c_str(), monitor.ptr, share.ptr.get()),
-                 glfwDestroyWindow});
+  return window(
+    {glfwCreateWindow(size.width, size.height, title.c_str(), monitor.ptr, share.ptr.get()), glfwDestroyWindow});
 }
 
 std::set<glfw::monitor> const & glfw::library::get_monitors() const
@@ -233,7 +235,7 @@ std::span<char const * const> glfw::library::get_required_instance_extensions() 
 
 bool glfw::library::get_physical_device_presentation_support(vk::raii::Instance const &       instance,
                                                              vk::raii::PhysicalDevice const & physical_device,
-                                                             std::uint32_t const queue_family) const
+                                                             std::uint32_t const              queue_family) const
 {
   return glfwGetPhysicalDevicePresentationSupport(*instance, *physical_device, queue_family) == GLFW_TRUE;
 }

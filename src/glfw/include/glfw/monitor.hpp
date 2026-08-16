@@ -6,8 +6,6 @@
 #include <string_view>
 #include <vector>
 
-typedef struct GLFWmonitor GLFWmonitor;
-
 namespace glfw
 {
 class monitor
@@ -21,9 +19,10 @@ class monitor
 
     monitor & operator=(monitor const &) noexcept = delete;
 
-    std::strong_ordering operator<=>(monitor const & other) const noexcept;
-
     ~monitor() = default;
+
+    [[nodiscard]]
+    std::strong_ordering operator<=>(monitor const & other) const noexcept;
 
     [[nodiscard]]
     coordinates<int, 2> get_pos() const;

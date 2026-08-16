@@ -1,7 +1,6 @@
 #include "internal.hpp"
 
 #include <glfw/cursor.hpp>
-#include <GLFW/glfw3.h>
 #include <glfw/library.hpp>
 #include <glfw/monitor.hpp>
 #include <glfw/window.hpp>
@@ -116,10 +115,7 @@ static void mouse_button_callback(GLFWwindow * window, int button, int action, i
   auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
 
   if(self and self->when_mouse_button_pressed)
-    self->when_mouse_button_pressed(*self,
-                                    glfw::mouse_button{button},
-                                    glfw::action{action},
-                                    glfw::modifier{mods});
+    self->when_mouse_button_pressed(*self, glfw::mouse_button{button}, glfw::action{action}, glfw::modifier{mods});
 }
 
 static void cursor_pos_callback(GLFWwindow * window, double xpos, double ypos)
@@ -310,9 +306,29 @@ glfw::monitor const & glfw::window::get_monitor() const
   return *internal::try_emplace_monitor(glfwGetPrimaryMonitor());
 }
 
-bool glfw::window::get_input_mode(input_mode const mode) const
+bool glfw::window::is_input_mode_cursor() const
 {
-  return glfwGetInputMode(ptr.get(), std::to_underlying(mode)) == GLFW_TRUE;
+  return glfwGetInputMode(ptr.get(), GLFW_CURSOR) == GLFW_TRUE;
+}
+
+bool glfw::window::is_input_mode_sticky_keys() const
+{
+  return glfwGetInputMode(ptr.get(), GLFW_STICKY_KEYS) == GLFW_TRUE;
+}
+
+bool glfw::window::is_input_mode_sticky_mouse_buttons() const
+{
+  return glfwGetInputMode(ptr.get(), GLFW_STICKY_MOUSE_BUTTONS) == GLFW_TRUE;
+}
+
+bool glfw::window::is_input_mode_lock_key_mods() const
+{
+  return glfwGetInputMode(ptr.get(), GLFW_LOCK_KEY_MODS) == GLFW_TRUE;
+}
+
+bool glfw::window::is_input_mode_raw_mouse_motion() const
+{
+  return glfwGetInputMode(ptr.get(), GLFW_RAW_MOUSE_MOTION) == GLFW_TRUE;
 }
 
 glfw::action glfw::window::get_key(key const key) const
@@ -334,9 +350,8 @@ glfw::coordinates<double, 2> glfw::window::get_cursor_pos() const
   return pos;
 }
 
-vk::raii::SurfaceKHR glfw::window::create_surface(
-  vk::raii::Instance const &                        instance,
-  vk::Optional<vk::AllocationCallbacks const> const allocator) const
+vk::raii::SurfaceKHR glfw::window::create_surface(vk::raii::Instance const &                        instance,
+                                                  vk::Optional<vk::AllocationCallbacks const> const allocator) const
 {
   VkSurfaceKHR surface = VK_NULL_HANDLE;
 
@@ -433,18 +448,32 @@ void glfw::window::set_size(dimensions<int, 2> const & size)
 
 void glfw::window::set_monitor(monitor const & monitor, workarea const & area, int const refreshRate)
 {
-  glfwSetWindowMonitor(ptr.get(),
-                       monitor.ptr,
-                       area.pos.x,
-                       area.pos.y,
-                       area.size.width,
-                       area.size.height,
-                       refreshRate);
+  glfwSetWindowMonitor(ptr.get(), monitor.ptr, area.pos.x, area.pos.y, area.size.width, area.size.height, refreshRate);
 }
 
-void glfw::window::set_input_mode(input_mode const mode, bool const value)
+void glfw::window::set_input_mode_cursor(bool const value)
 {
-  glfwSetInputMode(ptr.get(), std::to_underlying(mode), value ? GLFW_TRUE : GLFW_FALSE);
+  glfwSetInputMode(ptr.get(), GLFW_CURSOR, value ? GLFW_TRUE : GLFW_FALSE);
+}
+
+void glfw::window::set_input_mode_sticky_keys(bool const value)
+{
+  glfwSetInputMode(ptr.get(), GLFW_STICKY_KEYS, value ? GLFW_TRUE : GLFW_FALSE);
+}
+
+void glfw::window::set_input_mode_sticky_mouse_buttons(bool const value)
+{
+  glfwSetInputMode(ptr.get(), GLFW_STICKY_MOUSE_BUTTONS, value ? GLFW_TRUE : GLFW_FALSE);
+}
+
+void glfw::window::set_input_mode_lock_key_mods(bool const value)
+{
+  glfwSetInputMode(ptr.get(), GLFW_LOCK_KEY_MODS, value ? GLFW_TRUE : GLFW_FALSE);
+}
+
+void glfw::window::set_input_mode_raw_mouse_motion(bool const value)
+{
+  glfwSetInputMode(ptr.get(), GLFW_RAW_MOUSE_MOTION, value ? GLFW_TRUE : GLFW_FALSE);
 }
 
 void glfw::window::set_cursor_pos(coordinates<double, 2> const & pos)
@@ -505,6 +534,11 @@ void glfw::window::focus()
 void glfw::window::request_attention()
 {
   glfwRequestWindowAttention(ptr.get());
+}
+
+void glfw::window::close() noexcept
+{
+  ptr.reset();
 }
 
 glfw::window::window(std::unique_ptr<GLFWwindow, void (*)(GLFWwindow *)> && new_ptr) noexcept

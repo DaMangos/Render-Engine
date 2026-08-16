@@ -40,7 +40,7 @@ BreakBeforeTernaryOperators: true
 BreakConstructorInitializers: BeforeColon
 BreakInheritanceList: BeforeColon
 BreakStringLiterals: false
-ColumnLimit: 110
+ColumnLimit: 120
 CompactNamespaces: false
 ConstructorInitializerIndentWidth: 0
 ContinuationIndentWidth: 2
@@ -73,7 +73,7 @@ PPIndentWidth: -1
 PenaltyReturnTypeOnItsOwnLine: 1000000
 PenaltyBreakScopeResolution: 1000000
 PenaltyBreakAssignment: 0
-PenaltyBreakBeforeFirstCallParameter: 0
+PenaltyBreakBeforeFirstCallParameter: 1000
 PenaltyBreakBeforeMemberAccess: 100
 PackConstructorInitializers: Never
 PointerAlignment: Middle
@@ -116,15 +116,30 @@ Standard: Latest
 TabWidth: 2
 UseTab: Never
 IncludeCategories:
-  # Headers in <> without extension.
-  - Regex:           '<([A-Za-z0-9\Q/-_\E])+>'
-    Priority:        4
-  # Headers in <> from specific external libraries.
-  - Regex:           '<(boost|GLFW|vulkan|gtest|gmock)\/i'
-    Priority:        3
-  # Headers in <> with extension.
-  - Regex:           '<([A-Za-z0-9.\Q/-_\E])+>'
-    Priority:        2
-  # Headers in "" with extension.
-  - Regex:           '"([A-Za-z0-9.\Q/-_\E])+"'
-    Priority:        1
+# Headers in <> without extension.
+- Regex: '<[A-Za-z0-9_/-]+>'
+  Priority: 7
+
+# Vulkan headers.
+- Regex: '<vulkan/'
+  Priority: 6
+
+# GLFW headers.
+- Regex: '<GLFW/glfw3.h>'
+  Priority: 5
+
+# GoogleTest / GoogleMock headers.
+- Regex: '<(gtest|gmock)/'
+  Priority: 4
+
+# Boost headers.
+- Regex: '<boost/'
+  Priority: 3
+
+# Headers in <> with extension.
+- Regex: '<[A-Za-z0-9_./-]+>'
+  Priority: 2
+
+# Headers in "" with extension.
+- Regex: '"[A-Za-z0-9_./-]+"'
+  Priority: 1

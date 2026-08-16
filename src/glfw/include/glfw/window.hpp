@@ -1,8 +1,7 @@
 #pragma once
 
-#include "GLFW/glfw3.h"
-
 #include <glfw/def.hpp>
+
 #include <vulkan/vulkan_raii.hpp>
 
 #include <cuchar>
@@ -11,8 +10,6 @@
 #include <memory>
 #include <string>
 #include <string_view>
-
-typedef struct GLFWwindow GLFWwindow;
 
 namespace glfw
 {
@@ -56,10 +53,20 @@ class window
     [[nodiscard]]
     monitor const & get_monitor() const;
 
-    void set_monitor(monitor const & monitor, workarea const & area, int const refreshRate);
+    [[nodiscard]]
+    bool is_input_mode_cursor() const;
 
     [[nodiscard]]
-    bool get_input_mode(input_mode const mode) const;
+    bool is_input_mode_sticky_keys() const;
+
+    [[nodiscard]]
+    bool is_input_mode_sticky_mouse_buttons() const;
+
+    [[nodiscard]]
+    bool is_input_mode_lock_key_mods() const;
+
+    [[nodiscard]]
+    bool is_input_mode_raw_mouse_motion() const;
 
     [[nodiscard]]
     action get_key(key const key) const;
@@ -72,8 +79,7 @@ class window
 
     [[nodiscard]]
     vk::raii::SurfaceKHR create_surface(vk::raii::Instance const &                        instance,
-                                        vk::Optional<vk::AllocationCallbacks const> const allocator
-                                        = nullptr) const;
+                                        vk::Optional<vk::AllocationCallbacks const> const allocator = nullptr) const;
 
     [[nodiscard]]
     bool should_close() const;
@@ -123,7 +129,17 @@ class window
 
     void set_size(dimensions<int, 2> const & size);
 
-    void set_input_mode(input_mode const mode, bool const value);
+    void set_monitor(monitor const & monitor, workarea const & area, int const refreshRate);
+
+    void set_input_mode_cursor(bool const value);
+
+    void set_input_mode_sticky_keys(bool const value);
+
+    void set_input_mode_sticky_mouse_buttons(bool const value);
+
+    void set_input_mode_lock_key_mods(bool const value);
+
+    void set_input_mode_raw_mouse_motion(bool const value);
 
     void set_cursor_pos(coordinates<double, 2> const & pos);
 
@@ -149,26 +165,29 @@ class window
 
     void request_attention();
 
-    std::function<void(window &, coordinates<int, 2> const &)>   when_window_moved;
-    std::function<void(window &, dimensions<int, 2> const &)>    when_window_resized;
-    std::function<void(window &)>                                when_window_closed;
-    std::function<void(window &)>                                when_window_refreshed;
-    std::function<void(window &)>                                when_window_focused;
-    std::function<void(window &)>                                when_window_unfocused;
-    std::function<void(window &)>                                when_window_minimized;
-    std::function<void(window &)>                                when_window_unminimized;
-    std::function<void(window &)>                                when_window_maximized;
-    std::function<void(window &)>                                when_window_unmaximized;
-    std::function<void(window &, dimensions<int, 2> const &)>    when_framebuffer_resized;
-    std::function<void(window &, coordinates<float, 2> const &)> when_window_content_scaled;
+    virtual void close() noexcept;
+
+  protected:
+    std::function<void(window &, coordinates<int, 2> const &)>                        when_window_moved;
+    std::function<void(window &, dimensions<int, 2> const &)>                         when_window_resized;
+    std::function<void(window &)>                                                     when_window_closed;
+    std::function<void(window &)>                                                     when_window_refreshed;
+    std::function<void(window &)>                                                     when_window_focused;
+    std::function<void(window &)>                                                     when_window_unfocused;
+    std::function<void(window &)>                                                     when_window_minimized;
+    std::function<void(window &)>                                                     when_window_unminimized;
+    std::function<void(window &)>                                                     when_window_maximized;
+    std::function<void(window &)>                                                     when_window_unmaximized;
+    std::function<void(window &, dimensions<int, 2> const &)>                         when_framebuffer_resized;
+    std::function<void(window &, coordinates<float, 2> const &)>                      when_window_content_scaled;
     std::function<void(window &, key const, int const, action const, modifier const)> when_key_pressed;
     std::function<void(window &, char32_t const)>                                     when_unicode_char_typed;
-    std::function<void(window &, mouse_button const, action const, modifier const)> when_mouse_button_pressed;
-    std::function<void(window &, coordinates<double, 2> const &)>                   when_cursor_moved;
-    std::function<void(window &)>                                                   when_cursor_entered;
-    std::function<void(window &)>                                                   when_cursor_exited;
-    std::function<void(window &, coordinates<double, 2> const &)>                   when_mouse_scrolled;
-    std::function<void(window &, std::span<std::filesystem::path const> const)>     when_file_dropped;
+    std::function<void(window &, mouse_button const, action const, modifier const)>   when_mouse_button_pressed;
+    std::function<void(window &, coordinates<double, 2> const &)>                     when_cursor_moved;
+    std::function<void(window &)>                                                     when_cursor_entered;
+    std::function<void(window &)>                                                     when_cursor_exited;
+    std::function<void(window &, coordinates<double, 2> const &)>                     when_mouse_scrolled;
+    std::function<void(window &, std::span<std::filesystem::path const> const)>       when_file_dropped;
 
   private:
     friend library;

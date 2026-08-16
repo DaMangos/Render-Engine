@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glfw/def.hpp>
+
 #include <vulkan/vulkan_raii.hpp>
 
 #include <functional>
@@ -24,14 +25,10 @@ class library
     window create_window(dimensions<int, 2> const & size, std::string const & title) const;
 
     [[nodiscard]]
-    window create_window(dimensions<int, 2> const & size,
-                         std::string const &        title,
-                         window const &             share) const;
+    window create_window(dimensions<int, 2> const & size, std::string const & title, window const & share) const;
 
     [[nodiscard]]
-    window create_window(dimensions<int, 2> const & size,
-                         std::string const &        title,
-                         monitor const &            monitor) const;
+    window create_window(dimensions<int, 2> const & size, std::string const & title, monitor const & monitor) const;
 
     [[nodiscard]]
     window create_window(dimensions<int, 2> const & size,

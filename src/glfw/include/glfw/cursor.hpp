@@ -1,8 +1,8 @@
 #pragma once
 
-#include <memory>
+#include <glfw/def.hpp>
 
-typedef struct GLFWcursor GLFWcursor;
+#include <memory>
 
 namespace glfw
 {
