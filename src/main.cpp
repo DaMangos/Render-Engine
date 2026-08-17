@@ -8,7 +8,6 @@
 #include <logging/logging.hpp>
 #include <logging/serialize.hpp>
 
-#include <cstdlib>
 #include <exception>
 #include <filesystem>
 #include <fstream>
@@ -242,7 +241,7 @@ int main(int const argc, char const * const * const args) noexcept
                              arg_files["vk-warning"],
                              arg_files["vk-error"]};
 
-    std::array<khronos::vertex, 4> const vertices = {
+    std::array<khronos::vertex, 4> vertices = {
       khronos::vertex{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
       khronos::vertex{ {0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
       khronos::vertex{  {0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
@@ -271,7 +270,9 @@ int main(int const argc, char const * const * const args) noexcept
       glfw::default_library.poll_events();
 
       if(not render_window.is_minimized())
+      {
         graphical_device.draw(graphics_pipeline, index_transfer_buffer, vertex_transfer_buffer, render_window);
+      }
     }
   }
 

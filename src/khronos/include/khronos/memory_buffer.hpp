@@ -37,7 +37,7 @@ class memory_buffer
                   vk::BufferUsageFlags2 const                             usage,
                   vk::MemoryPropertyFlags const                           properties);
 
-    vk::DeviceSize                                capacity;
+    vk::DeviceSize                                size;
     std::shared_ptr<vk::raii::Buffer const>       buffer;
     std::shared_ptr<vk::raii::DeviceMemory const> device_memory;
 };
@@ -61,7 +61,7 @@ class staging_buffer : public memory_buffer
                    std::uint32_t const                                     transfer_queue_family_index,
                    vk::DeviceSize const                                    size);
 
-    void * data;
+    std::byte * data;
 
     struct region
     {

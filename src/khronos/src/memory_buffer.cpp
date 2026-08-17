@@ -21,6 +21,7 @@ khronos::memory_buffer::memory_buffer(std::shared_ptr<vk::raii::PhysicalDevice c
                                       vk::DeviceSize const                                    size,
                                       vk::BufferUsageFlags2 const                             usage,
                                       vk::MemoryPropertyFlags const                           properties)
+: size(size)
 {
   auto const memory_properties = physical_device->getMemoryProperties();
 
@@ -53,8 +54,6 @@ khronos::memory_buffer::memory_buffer(std::shared_ptr<vk::raii::PhysicalDevice c
 
   detail::emplace_data(device_memory, buffer);
 
-  capacity = size;
-
   buffer->bindMemory(*device_memory, 0);
 }
 
@@ -77,10 +76,10 @@ void khronos::staging_buffer::copy(std::span<Type const> const objects, transfer
 {
   using namespace logging::serialize;
 
-  if(objects.size_bytes() > destination.capacity)
+  if(objects.size_bytes() > destination.size)
     throw vk::OutOfHostMemoryError{(std::stringstream{} << "unable to allocate a region for " << objects.size_bytes()
-                                                        << " bytes because the destination buffer has a capacity of "
-                                                        << destination.capacity << " bytes")
+                                                        << " bytes because the destination buffer has a size of "
+                                                        << destination.size << " bytes")
                                      .str()};
 
   auto const align_up = [&](vk::DeviceSize const offset)
@@ -107,9 +106,9 @@ void khronos::staging_buffer::copy(std::span<Type const> const objects, transfer
     {
       regions.emplace_hint(std::ranges::next(next_region), new_region);
 
-      std::memcpy(static_cast<std::byte *>(data) + new_region.offset, objects.data(), objects.size_bytes());
+      std::memcpy(data + new_region.offset, objects.data(), objects.size_bytes());
 
-      logging::verbose() << " found a new region at offset " << new_region.offset << " for size " << new_region.size;
+      logging::verbose() << "allocated " << new_region.size << " bytes at offset " << new_region.offset;
 
       return;
     }
@@ -117,13 +116,13 @@ void khronos::staging_buffer::copy(std::span<Type const> const objects, transfer
     new_region.offset = align_up(next_region->offset + next_region->size);
   }
 
-  if(new_region.offset + new_region.size <= capacity)
+  if(new_region.offset + new_region.size <= size)
   {
     regions.emplace_hint(regions.end(), new_region);
 
-    std::memcpy(static_cast<std::byte *>(data) + new_region.offset, objects.data(), objects.size_bytes());
+    std::memcpy(data + new_region.offset, objects.data(), objects.size_bytes());
 
-    logging::verbose() << " found a new region at offset " << new_region.offset << " for size " << new_region.size;
+    logging::verbose() << "allocated " << new_region.size << " bytes at offset " << new_region.offset;
 
     return;
   }
@@ -136,7 +135,7 @@ void khronos::staging_buffer::copy(std::span<Type const> const objects, transfer
   auto memory = regions | std::views::transform(to_pair) | std::ranges::to<std::vector>();
 
   throw vk::OutOfHostMemoryError{(std::stringstream{} << "unable to allocate a region of " << objects.size_bytes()
-                                                      << " bytes because device memory " << std::pair{0, capacity}
+                                                      << " bytes because device memory " << std::pair{0, size}
                                                       << " is already segmented into " << memory)
                                    .str()};
 }
@@ -151,7 +150,7 @@ khronos::staging_buffer::staging_buffer(std::shared_ptr<vk::raii::PhysicalDevice
                 size,
                 vk::BufferUsageFlagBits2::eTransferSrc,
                 vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent),
-  data(device_memory->mapMemory(0ull, size))
+  data(static_cast<std::byte *>(device_memory->mapMemory(0ull, size)))
 {
   auto const command_pool_create_info = vk::CommandPoolCreateInfo{}
                                           .setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer)
@@ -162,7 +161,7 @@ khronos::staging_buffer::staging_buffer(std::shared_ptr<vk::raii::PhysicalDevice
   auto const command_buffer_allocate_info = vk::CommandBufferAllocateInfo{}
                                               .setCommandPool(*command_pool)
                                               .setLevel(vk::CommandBufferLevel::ePrimary)
-                                              .setCommandBufferCount(1);
+                                              .setCommandBufferCount(2);
 
   auto const create_shared_command_buffer = [&](vk::raii::CommandBuffer & command_buffer)
   {

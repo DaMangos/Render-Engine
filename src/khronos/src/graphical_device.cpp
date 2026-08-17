@@ -217,7 +217,6 @@ void khronos::graphical_device::flush(staging_buffer & staging_buffer)
   auto const submit_info = vk::SubmitInfo{}.setCommandBuffers(**transfer.command_buffer);
 
   transfer_and_graphics_and_present_queue->submit(submit_info, *transfer.fence);
-  transfer_and_graphics_and_present_queue->waitIdle();
 
   staging_buffer.regions.clear();
 }
