@@ -10,7 +10,6 @@
 #include <algorithm>
 #include <cassert>
 #include <functional>
-#include <iostream>
 #include <memory>
 #include <ranges>
 #include <stdexcept>
@@ -30,11 +29,10 @@ struct user_data_type
     std::ostream * vk_error_out   = nullptr;
 };
 
-static VKAPI_ATTR vk::Bool32 VKAPI_CALL
-user_callback(vk::DebugUtilsMessageSeverityFlagBitsEXT       severity,
-              vk::DebugUtilsMessageTypeFlagsEXT              type,
-              vk::DebugUtilsMessengerCallbackDataEXT const * callback_data,
-              void *                                         user_data)
+static VKAPI_ATTR vk::Bool32 VKAPI_CALL user_callback(vk::DebugUtilsMessageSeverityFlagBitsEXT       severity,
+                                                      vk::DebugUtilsMessageTypeFlagsEXT              type,
+                                                      vk::DebugUtilsMessengerCallbackDataEXT const * callback_data,
+                                                      void *                                         user_data)
 {
   if(not user_data)
   {
@@ -137,111 +135,118 @@ khronos::library::library(std::ostream * const vk_verbose_out,
                           std::ostream * const vk_warning_out,
                           std::ostream * const vk_error_out)
 {
+  using namespace logging::serialize;
+
   context = std::make_shared<vk::raii::Context const>();
 
   auto const is_extension_available
     = [properties = context->enumerateInstanceExtensionProperties()](std::string_view const extension)
   {
-    return std::ranges::any_of(properties,
-                               [&](auto const & property) { return property.extensionName == extension; });
+    return std::ranges::any_of(properties, [&](auto const & property) { return property.extensionName == extension; });
   };
 
-  auto const is_layer_available
+  auto const is_extension_unavailable = std::not_fn(is_extension_available);
+
+  auto extensions = glfw::default_library.get_required_instance_extensions() | std::ranges::to<std::vector>();
+
+  auto unavailable_extensions = extensions | std::views::filter(is_extension_unavailable);
+
+  if(not unavailable_extensions.empty())
+    throw std::runtime_error(
+      (std::stringstream{} << "unavailable instance extensions: " << unavailable_extensions).str());
+
+  bool const expose_non_conformant_implementations = is_extension_available(vk::KHRPortabilityEnumerationExtensionName);
+
+  auto const flags = expose_non_conformant_implementations ? vk::InstanceCreateFlagBits::eEnumeratePortabilityKHR
+                                                           : vk::InstanceCreateFlagBits{};
+  if(expose_non_conformant_implementations)
+  {
+    logging::verbose() << "exposing physical devices with non conformant vulkan implementations";
+
+    extensions.emplace_back(vk::KHRPortabilityEnumerationExtensionName);
+  }
+
+  auto const application_info = vk::ApplicationInfo{}.setApiVersion(context->enumerateInstanceVersion());
+
+  if(not vk_verbose_out and not vk_info_out and not vk_warning_out and not vk_error_out)
+  {
+    logging::verbose() << "all required instance extensions are available: " << extensions;
+
+    auto const instance_create_info = vk::InstanceCreateInfo{}
+                                        .setFlags(flags)
+                                        .setPApplicationInfo(&application_info)
+                                        .setPEnabledExtensionNames(extensions);
+
+    instance = detail::make_shared_with_data<vk::raii::Instance const>(*context, instance_create_info);
+
+    detail::emplace_data(instance, context);
+
+    return;
+  }
+
+  auto const is_layer_unavailable
     = [properties = context->enumerateInstanceLayerProperties()](std::string_view const layer)
   {
-    return std::ranges::any_of(properties,
-                               [&](auto const & property) { return property.layerName == layer; });
+    return std::ranges::none_of(properties, [&](auto const & property) { return property.layerName == layer; });
   };
 
-  constexpr auto application_info = vk::ApplicationInfo{}
-                                      .setApplicationVersion(VK_MAKE_VERSION(1, 0, 0))
-                                      .setEngineVersion(VK_MAKE_VERSION(1, 0, 0))
-                                      .setApiVersion(vk::ApiVersion14);
+  if(is_layer_unavailable("VK_LAYER_KHRONOS_validation") or is_extension_unavailable(vk::EXTDebugUtilsExtensionName))
+    throw std::runtime_error("cannot create instance with validation layers");
 
-  std::vector<char const *> required_instance_extensions{
-    std::from_range,
-    glfw::default_library.get_required_instance_extensions()};
-  std::vector<char const *> required_instance_layers;
+  extensions.emplace_back(vk::EXTDebugUtilsExtensionName);
 
-  auto unavailable_instance_extensions
-    = required_instance_extensions | std::views::filter(std::not_fn(is_extension_available));
+  logging::verbose() << "all required instance extensions are available: " << extensions;
 
-  if(not unavailable_instance_extensions.empty())
-    throw std::runtime_error("unavailable instance extensions: "
-                             + logging::to_string(unavailable_instance_extensions));
+  auto const user_data
+    = std::make_shared<::detail::user_data_type>(vk_verbose_out, vk_info_out, vk_warning_out, vk_error_out);
 
-  if(is_extension_available(vk::KHRPortabilityEnumerationExtensionName))
+  auto const message_severity = [=]()
   {
-    logging::verbose() << "exposing devices with non conformant vulkan implementations";
-    required_instance_extensions.emplace_back(vk::KHRPortabilityEnumerationExtensionName);
-  }
+    auto message_severity = vk::DebugUtilsMessageSeverityFlagsEXT{};
 
-  if((vk_verbose_out or vk_info_out or vk_warning_out or vk_error_out)
-     and is_extension_available(vk::EXTDebugUtilsExtensionName)
-     and is_layer_available("VK_LAYER_KHRONOS_validation"))
-  {
-    required_instance_layers.emplace_back("VK_LAYER_KHRONOS_validation");
+    if(vk_verbose_out)
+      message_severity |= vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose;
 
-    required_instance_extensions.emplace_back(vk::EXTDebugUtilsExtensionName);
+    if(vk_info_out)
+      message_severity |= vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo;
 
-    logging::verbose() << "all required instance extensions are available: " << required_instance_extensions;
-    logging::verbose() << "all required instance layers are available: " << required_instance_layers;
+    if(vk_warning_out)
+      message_severity |= vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning;
 
-    auto const user_data
-      = std::make_shared<::detail::user_data_type>(vk_verbose_out, vk_info_out, vk_warning_out, vk_error_out);
+    if(vk_error_out)
+      message_severity |= vk::DebugUtilsMessageSeverityFlagBitsEXT::eError;
 
-    auto const & [instance_create_info, debug_utils_messenger_create_info] = vk::StructureChain{
-      vk::InstanceCreateInfo{}
-        .setFlags(is_extension_available(vk::KHRPortabilityEnumerationExtensionName)
-                    ? vk::InstanceCreateFlagBits::eEnumeratePortabilityKHR
-                    : vk::InstanceCreateFlagBits{})
-        .setPApplicationInfo(&application_info)
-        .setPEnabledExtensionNames(required_instance_extensions)
-        .setPEnabledLayerNames(required_instance_layers),
-      vk::DebugUtilsMessengerCreateInfoEXT{}
-        .setMessageSeverity((vk_verbose_out ? vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose
-                                            : vk::DebugUtilsMessageSeverityFlagBitsEXT{})
-                            | (vk_info_out ? vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo
-                                           : vk::DebugUtilsMessageSeverityFlagBitsEXT{})
-                            | (vk_warning_out ? vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning
-                                              : vk::DebugUtilsMessageSeverityFlagBitsEXT{})
-                            | (vk_error_out ? vk::DebugUtilsMessageSeverityFlagBitsEXT::eError
-                                            : vk::DebugUtilsMessageSeverityFlagBitsEXT{}))
-        .setMessageType(vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral
-                        | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance
-                        | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation)
-        .setPfnUserCallback(&::detail::user_callback)
-        .setPUserData(user_data.get())};
+    return message_severity;
+  }();
 
-    instance = detail::make_shared_with_data<vk::raii::Instance const>(*context, instance_create_info);
+  auto const message_type = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral
+                          | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance
+                          | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation;
 
-    detail::emplace_data(instance, context);
-    detail::emplace_data(instance, user_data);
+  constexpr auto layers = "VK_LAYER_KHRONOS_validation";
 
-    debug_utils_messenger = detail::make_shared_with_data<vk::raii::DebugUtilsMessengerEXT const>(
-      *instance,
-      debug_utils_messenger_create_info);
+  auto const & [instance_create_info, debug_utils_messenger_create_info]
+    = vk::StructureChain{vk::InstanceCreateInfo{}
+                           .setFlags(flags)
+                           .setPApplicationInfo(&application_info)
+                           .setPEnabledExtensionNames(extensions)
+                           .setPEnabledLayerNames(layers),
+                         vk::DebugUtilsMessengerCreateInfoEXT{}
+                           .setMessageSeverity(message_severity)
+                           .setMessageType(message_type)
+                           .setPfnUserCallback(&::detail::user_callback)
+                           .setPUserData(user_data.get())};
 
-    detail::emplace_data(debug_utils_messenger, instance);
-  }
-  else
-  {
-    logging::verbose() << "all required instance extensions are available: " << required_instance_extensions;
-    logging::verbose() << "all required instance layers are available: " << required_instance_layers;
+  instance = detail::make_shared_with_data<vk::raii::Instance const>(*context, instance_create_info);
 
-    auto const instance_create_info
-      = vk::InstanceCreateInfo{}
-          .setFlags(is_extension_available(vk::KHRPortabilityEnumerationExtensionName)
-                      ? vk::InstanceCreateFlagBits::eEnumeratePortabilityKHR
-                      : vk::InstanceCreateFlagBits{})
-          .setPApplicationInfo(&application_info)
-          .setPEnabledExtensionNames(required_instance_extensions)
-          .setPEnabledLayerNames(required_instance_layers);
+  detail::emplace_data(instance, context);
+  detail::emplace_data(instance, user_data);
 
-    instance = detail::make_shared_with_data<vk::raii::Instance const>(*context, instance_create_info);
+  debug_utils_messenger
+    = detail::make_shared_with_data<vk::raii::DebugUtilsMessengerEXT const>(*instance,
+                                                                            debug_utils_messenger_create_info);
 
-    detail::emplace_data(instance, context);
-  }
+  detail::emplace_data(debug_utils_messenger, instance);
 }
 
 khronos::present_window khronos::library::create_present_window(glfw::dimensions<int, 2> const & size,
@@ -259,7 +264,7 @@ khronos::present_window khronos::library::create_present_window(glfw::dimensions
 
 khronos::present_window khronos::library::create_present_window(glfw::dimensions<int, 2> const & size,
                                                                 std::string const &              title,
-                                                                glfw::monitor const & monitor) const
+                                                                glfw::monitor const &            monitor) const
 {
   return {glfw::default_library.create_window(size, title, monitor), instance};
 }
@@ -267,12 +272,12 @@ khronos::present_window khronos::library::create_present_window(glfw::dimensions
 khronos::present_window khronos::library::create_present_window(glfw::dimensions<int, 2> const & size,
                                                                 std::string const &              title,
                                                                 glfw::window const &             share,
-                                                                glfw::monitor const & monitor) const
+                                                                glfw::monitor const &            monitor) const
 {
   return {glfw::default_library.create_window(size, title, share, monitor), instance};
 }
 
 khronos::graphical_device khronos::library::find_graphical_device(present_window const & window) const
 {
-  return {instance, window.surface};
+  return {context, instance, window.surface};
 }

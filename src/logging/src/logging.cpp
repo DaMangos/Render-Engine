@@ -53,8 +53,7 @@ struct info_colour_prefix
     [[nodiscard]]
     std::string operator()() const
     {
-      return std::format("\033[1m[{:%Y-%m-%d %H:%M:%S}] \033[1;34m[ INFO ]\033[0m ",
-                         std::chrono::system_clock::now());
+      return std::format("\033[1m[{:%Y-%m-%d %H:%M:%S}] \033[1;34m[ INFO ]\033[0m ", std::chrono::system_clock::now());
     }
 };
 
@@ -72,8 +71,7 @@ struct winfo_colour_prefix
     [[nodiscard]]
     std::wstring operator()() const
     {
-      return std::format(L"\033[1m[{:%Y-%m-%d %H:%M:%S}] \033[1;34m[ INFO ]\033[0m ",
-                         std::chrono::system_clock::now());
+      return std::format(L"\033[1m[{:%Y-%m-%d %H:%M:%S}] \033[1;34m[ INFO ]\033[0m ", std::chrono::system_clock::now());
     }
 };
 
@@ -129,8 +127,7 @@ struct error_colour_prefix
     [[nodiscard]]
     std::string operator()() const
     {
-      return std::format("\033[1m[{:%Y-%m-%d %H:%M:%S}] \033[1;31m[ ERROR ]\033[0m ",
-                         std::chrono::system_clock::now());
+      return std::format("\033[1m[{:%Y-%m-%d %H:%M:%S}] \033[1;31m[ ERROR ]\033[0m ", std::chrono::system_clock::now());
     }
 };
 
@@ -188,8 +185,7 @@ logging::prefixedostream logging::verbose(std::ostream * const out)
 
   return dynamic_cast<std::filebuf const *>(out->rdbuf())
          ? prefixedostream(std::make_unique<prefixedbuf<verbose_prefix>>(*out, verbose_prefix{}))
-         : prefixedostream(
-             std::make_unique<prefixedbuf<verbose_colour_prefix>>(*out, verbose_colour_prefix{}));
+         : prefixedostream(std::make_unique<prefixedbuf<verbose_colour_prefix>>(*out, verbose_colour_prefix{}));
 }
 
 logging::prefixedostream logging::info(std::ostream * const out)
@@ -229,8 +225,7 @@ logging::wprefixedostream logging::wverbose(std::wostream * const out)
 
   return dynamic_cast<std::wfilebuf const *>(out->rdbuf())
          ? wprefixedostream(std::make_unique<wprefixedbuf<wverbose_prefix>>(*out, wverbose_prefix{}))
-         : wprefixedostream(
-             std::make_unique<wprefixedbuf<wverbose_colour_prefix>>(*out, wverbose_colour_prefix{}));
+         : wprefixedostream(std::make_unique<wprefixedbuf<wverbose_colour_prefix>>(*out, wverbose_colour_prefix{}));
 }
 
 logging::wprefixedostream logging::winfo(std::wostream * const out)
@@ -250,8 +245,7 @@ logging::wprefixedostream logging::wwarning(std::wostream * const out)
 
   return dynamic_cast<std::wfilebuf const *>(out->rdbuf())
          ? wprefixedostream(std::make_unique<wprefixedbuf<wwarning_prefix>>(*out, wwarning_prefix{}))
-         : wprefixedostream(
-             std::make_unique<wprefixedbuf<wwarning_colour_prefix>>(*out, wwarning_colour_prefix{}));
+         : wprefixedostream(std::make_unique<wprefixedbuf<wwarning_colour_prefix>>(*out, wwarning_colour_prefix{}));
 }
 
 logging::wprefixedostream logging::werror(std::wostream * const out)
@@ -261,6 +255,5 @@ logging::wprefixedostream logging::werror(std::wostream * const out)
 
   return dynamic_cast<std::wfilebuf const *>(out->rdbuf())
          ? wprefixedostream(std::make_unique<wprefixedbuf<werror_prefix>>(*out, werror_prefix{}))
-         : wprefixedostream(
-             std::make_unique<wprefixedbuf<werror_colour_prefix>>(*out, werror_colour_prefix{}));
+         : wprefixedostream(std::make_unique<wprefixedbuf<werror_colour_prefix>>(*out, werror_colour_prefix{}));
 }

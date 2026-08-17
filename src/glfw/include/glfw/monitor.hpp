@@ -1,6 +1,6 @@
 #pragma once
 
-#include <glfw/def.hpp>
+#include <glfw/fwd.hpp>
 
 #include <compare>
 #include <string_view>

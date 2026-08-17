@@ -9,161 +9,6 @@
 #include <filesystem>
 #include <utility>
 
-namespace
-{
-namespace detail
-{
-static void window_pos_callback(GLFWwindow * window, int xpos, int ypos)
-{
-  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
-
-  if(self and self->when_window_moved)
-    self->when_window_moved(*self, {.x = xpos, .y = ypos});
-}
-
-static void window_size_callback(GLFWwindow * window, int width, int height)
-{
-  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
-
-  if(self and self->when_window_resized)
-    self->when_window_resized(*self, {.width = width, .height = height});
-}
-
-static void window_close_callback(GLFWwindow * window)
-{
-  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
-
-  if(self and self->when_window_closed)
-    self->when_window_closed(*self);
-}
-
-static void window_refresh_callback(GLFWwindow * window)
-{
-  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
-
-  if(self and self->when_window_refreshed)
-    self->when_window_refreshed(*self);
-}
-
-static void window_focus_callback(GLFWwindow * window, int focused)
-{
-  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
-
-  if(self and self->when_window_focused and focused == VK_TRUE)
-    self->when_window_focused(*self);
-
-  if(self and self->when_window_unfocused and focused == VK_FALSE)
-    self->when_window_unfocused(*self);
-}
-
-static void window_iconify_callback(GLFWwindow * window, int iconified)
-{
-  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
-
-  if(self and self->when_window_minimized and iconified == VK_TRUE)
-    self->when_window_minimized(*self);
-
-  if(self and self->when_window_unminimized and iconified == VK_FALSE)
-    self->when_window_unminimized(*self);
-}
-
-static void window_maximize_callback(GLFWwindow * window, int maximized)
-{
-  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
-
-  if(self and self->when_window_maximized and maximized == VK_TRUE)
-    self->when_window_maximized(*self);
-
-  if(self and self->when_window_unmaximized and maximized == VK_FALSE)
-    self->when_window_unmaximized(*self);
-}
-
-static void framebuffer_size_callback(GLFWwindow * window, int width, int height)
-{
-  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
-
-  if(self and self->when_framebuffer_resized)
-    self->when_framebuffer_resized(*self, {.width = width, .height = height});
-}
-
-static void window_content_scale_callback(GLFWwindow * window, float xscale, float yscale)
-{
-  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
-
-  if(self and self->when_window_content_scaled)
-    self->when_window_content_scaled(*self, {.x = xscale, .y = yscale});
-}
-
-static void key_callback(GLFWwindow * window, int key, int scancode, int action, int mods)
-{
-  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
-
-  if(self and self->when_key_pressed)
-    self->when_key_pressed(*self, glfw::key{key}, scancode, glfw::action{action}, glfw::modifier{mods});
-}
-
-static void char_callback(GLFWwindow * window, unsigned int codepoint)
-{
-  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
-
-  if(self and self->when_unicode_char_typed)
-    self->when_unicode_char_typed(*self, static_cast<char32_t>(codepoint));
-}
-
-static void mouse_button_callback(GLFWwindow * window, int button, int action, int mods)
-{
-  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
-
-  if(self and self->when_mouse_button_pressed)
-    self->when_mouse_button_pressed(*self, glfw::mouse_button{button}, glfw::action{action}, glfw::modifier{mods});
-}
-
-static void cursor_pos_callback(GLFWwindow * window, double xpos, double ypos)
-{
-  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
-
-  if(self and self->when_cursor_moved)
-    self->when_cursor_moved(*self, {.x = xpos, .y = ypos});
-}
-
-static void cursor_enter_callback(GLFWwindow * window, int entered)
-{
-  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
-
-  if(self and self->when_cursor_entered and entered == VK_TRUE)
-    self->when_cursor_entered(*self);
-
-  if(self and self->when_cursor_exited and entered == VK_FALSE)
-    self->when_cursor_exited(*self);
-}
-
-static void scroll_callback(GLFWwindow * window, double xoffset, double yoffset)
-{
-  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
-
-  if(self and self->when_mouse_scrolled)
-    self->when_mouse_scrolled(*self, {.x = xoffset, .y = yoffset});
-}
-
-static void drop_callback(GLFWwindow * window, int path_count, char const ** paths)
-{
-  auto * const self = static_cast<glfw::window *>(glfwGetWindowUserPointer(window));
-
-  if(self and self->when_file_dropped)
-  {
-    std::vector<std::filesystem::path> files;
-
-    files.reserve(static_cast<std::size_t>(path_count));
-
-    for(auto const & path : std::span{paths, std::ranges::next(paths, path_count)})
-      files.emplace_back(path);
-
-    self->when_file_dropped(*self, files);
-  }
-}
-}
-}
-
 glfw::window::window(window && other) noexcept
 : when_window_moved(std::move(other.when_window_moved)),
   when_window_resized(std::move(other.when_window_resized)),
@@ -548,35 +393,35 @@ glfw::window::window(std::unique_ptr<GLFWwindow, void (*)(GLFWwindow *)> && new_
 
   glfwSetWindowUserPointer(ptr.get(), this);
 
-  glfwSetWindowPosCallback(ptr.get(), ::detail::window_pos_callback);
+  glfwSetWindowPosCallback(ptr.get(), internal::window_pos_callback);
 
-  glfwSetWindowSizeCallback(ptr.get(), ::detail::window_size_callback);
+  glfwSetWindowSizeCallback(ptr.get(), internal::window_size_callback);
 
-  glfwSetWindowCloseCallback(ptr.get(), ::detail::window_close_callback);
+  glfwSetWindowCloseCallback(ptr.get(), internal::window_close_callback);
 
-  glfwSetWindowRefreshCallback(ptr.get(), ::detail::window_refresh_callback);
+  glfwSetWindowRefreshCallback(ptr.get(), internal::window_refresh_callback);
 
-  glfwSetWindowFocusCallback(ptr.get(), ::detail::window_focus_callback);
+  glfwSetWindowFocusCallback(ptr.get(), internal::window_focus_callback);
 
-  glfwSetWindowIconifyCallback(ptr.get(), ::detail::window_iconify_callback);
+  glfwSetWindowIconifyCallback(ptr.get(), internal::window_iconify_callback);
 
-  glfwSetWindowMaximizeCallback(ptr.get(), ::detail::window_maximize_callback);
+  glfwSetWindowMaximizeCallback(ptr.get(), internal::window_maximize_callback);
 
-  glfwSetFramebufferSizeCallback(ptr.get(), ::detail::framebuffer_size_callback);
+  glfwSetFramebufferSizeCallback(ptr.get(), internal::framebuffer_size_callback);
 
-  glfwSetWindowContentScaleCallback(ptr.get(), ::detail::window_content_scale_callback);
+  glfwSetWindowContentScaleCallback(ptr.get(), internal::window_content_scale_callback);
 
-  glfwSetKeyCallback(ptr.get(), ::detail::key_callback);
+  glfwSetKeyCallback(ptr.get(), internal::key_callback);
 
-  glfwSetCharCallback(ptr.get(), ::detail::char_callback);
+  glfwSetCharCallback(ptr.get(), internal::char_callback);
 
-  glfwSetMouseButtonCallback(ptr.get(), ::detail::mouse_button_callback);
+  glfwSetMouseButtonCallback(ptr.get(), internal::mouse_button_callback);
 
-  glfwSetCursorPosCallback(ptr.get(), ::detail::cursor_pos_callback);
+  glfwSetCursorPosCallback(ptr.get(), internal::cursor_pos_callback);
 
-  glfwSetCursorEnterCallback(ptr.get(), ::detail::cursor_enter_callback);
+  glfwSetCursorEnterCallback(ptr.get(), internal::cursor_enter_callback);
 
-  glfwSetScrollCallback(ptr.get(), ::detail::scroll_callback);
+  glfwSetScrollCallback(ptr.get(), internal::scroll_callback);
 
-  glfwSetDropCallback(ptr.get(), ::detail::drop_callback);
+  glfwSetDropCallback(ptr.get(), internal::drop_callback);
 }

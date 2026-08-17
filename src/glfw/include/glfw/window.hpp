@@ -1,6 +1,6 @@
 #pragma once
 
-#include <glfw/def.hpp>
+#include <glfw/fwd.hpp>
 
 #include <vulkan/vulkan_raii.hpp>
 
@@ -190,6 +190,8 @@ class window
     std::function<void(window &, std::span<std::filesystem::path const> const)>       when_file_dropped;
 
   private:
+    friend struct internal;
+
     friend library;
 
     explicit window(std::unique_ptr<GLFWwindow, void (*)(GLFWwindow *)> && new_ptr) noexcept;

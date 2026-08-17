@@ -1,7 +1,8 @@
-#include <glfw/def.hpp>
-#include <GLFW/glfw3.h>
+#include <glfw/fwd.hpp>
 #include <glfw/library.hpp>
 #include <glfw/monitor.hpp>
+
+#include <GLFW/glfw3.h>
 
 #include <cassert>
 #include <cstddef>

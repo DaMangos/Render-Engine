@@ -1,10 +1,11 @@
 #include "internal.hpp"
 
 #include <glfw/cursor.hpp>
-#include <GLFW/glfw3.h>
 #include <glfw/library.hpp>
 #include <glfw/monitor.hpp>
 #include <glfw/window.hpp>
+
+#include <GLFW/glfw3.h>
 
 #include <set>
 #include <stdexcept>

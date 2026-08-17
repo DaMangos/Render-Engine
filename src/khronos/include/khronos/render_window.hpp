@@ -1,8 +1,8 @@
 #pragma once
 
-#include "khronos/def.hpp"
-
+#include <khronos/fwd.hpp>
 #include <khronos/present_window.hpp>
+
 #include <vulkan/vulkan_raii.hpp>
 
 #include <list>
@@ -14,11 +14,6 @@ namespace khronos
 class render_window : public present_window
 {
   public:
-    std::vector<vertex> vertices = {
-      {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-      { {0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-      {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
-    };
 
   private:
     friend class graphical_device;
@@ -28,7 +23,7 @@ class render_window : public present_window
                   std::shared_ptr<vk::raii::Device const> const &           device,
                   std::shared_ptr<vk::SwapchainCreateInfoKHR const> const & default_swapchain_create_info,
                   std::shared_ptr<vk::raii::Queue const> const &            graphics_and_present_queue,
-                  std::uint32_t const graphics_and_present_queue_family_index);
+                  std::uint32_t const                                       graphics_and_present_queue_family_index);
 
     std::shared_ptr<vk::SwapchainCreateInfoKHR>   swapchain_create_info;
     std::shared_ptr<vk::raii::SwapchainKHR const> swapchain;
@@ -42,16 +37,11 @@ class render_window : public present_window
 
     std::vector<image> images;
 
-    std::shared_ptr<vk::raii::ShaderModule const>   shader_module;
-    std::shared_ptr<vk::raii::PipelineLayout const> graphics_pipeline_layout;
-    std::shared_ptr<vk::raii::Pipeline const>       graphics_pipeline;
-    std::shared_ptr<vk::raii::Buffer const>         vertex_buffer;
-    std::shared_ptr<vk::raii::DeviceMemory const>   vertex_buffer_device_memory;
-    std::shared_ptr<vk::raii::CommandPool const>    graphics_and_present_command_pool;
+    std::shared_ptr<vk::raii::CommandPool const> command_pool;
 
     struct frame
     {
-        std::shared_ptr<vk::raii::CommandBuffer const> graphics_and_present_command_buffer;
+        std::shared_ptr<vk::raii::CommandBuffer const> command_buffer;
         std::shared_ptr<vk::raii::Fence const>         in_flight_fence;
         std::shared_ptr<vk::raii::Semaphore const>     present_complete_semaphores;
     };
