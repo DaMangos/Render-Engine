@@ -2,7 +2,6 @@
 
 #include <concepts>
 #include <ranges>
-#include <sstream>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -33,19 +32,22 @@ concept tuple_like = not std::is_reference_v<Tuple> and requires(Tuple t) {
 
 (std::make_index_sequence<std::tuple_size_v<Tuple>>());
 
-template <class Type, class CharT = char, class Traits = std::char_traits<CharT>>
-[[nodiscard]]
-std::basic_string<CharT, Traits> to_string(Type && value);
-
 inline namespace serialize
 {
 
+template <class Stream, class Tuple>
+Stream && operator<<(Stream && out, Tuple && tuple)
+  requires(std::derived_from<std::decay_t<Stream>, std::ios_base> and tuple_like<std::decay_t<Tuple>>
+           and not serializable_range<std::decay_t<Tuple>,
+                                      typename std::decay_t<Stream>::char_type,
+                                      typename std::decay_t<Stream>::traits_type>);
+
 template <class Stream, class Range>
 Stream && operator<<(Stream && out, Range && range)
-requires(std::derived_from<std::decay_t<Stream>, std::ios_base>
-         and serializable_range<std::decay_t<Range>,
-                                typename std::decay_t<Stream>::char_type,
-                                typename std::decay_t<Stream>::traits_type>)
+  requires(std::derived_from<std::decay_t<Stream>, std::ios_base>
+           and serializable_range<std::decay_t<Range>,
+                                  typename std::decay_t<Stream>::char_type,
+                                  typename std::decay_t<Stream>::traits_type>)
 {
   using char_type = typename std::remove_reference_t<Stream>::char_type;
 
@@ -64,7 +66,7 @@ requires(std::derived_from<std::decay_t<Stream>, std::ios_base>
 
     if constexpr(tuple_like<std::decay_t<decltype(value)>>
                  or serializable_range<std::decay_t<decltype(value)>, char_type, traits_type>)
-      out << ::logging::to_string<decltype(value), char_type, traits_type>(std::forward<decltype(value)>(value));
+      (logging::serialize::operator<<)(out, std::forward<decltype(value)>(value));
     else
       out << value;
   }
@@ -76,7 +78,10 @@ requires(std::derived_from<std::decay_t<Stream>, std::ios_base>
 
 template <class Stream, class Tuple>
 Stream && operator<<(Stream && out, Tuple && tuple)
-requires(std::derived_from<std::decay_t<Stream>, std::ios_base> and tuple_like<std::decay_t<Tuple>>)
+  requires(std::derived_from<std::decay_t<Stream>, std::ios_base> and tuple_like<std::decay_t<Tuple>>
+           and not serializable_range<std::decay_t<Tuple>,
+                                      typename std::decay_t<Stream>::char_type,
+                                      typename std::decay_t<Stream>::traits_type>)
 {
   using char_type   = typename std::remove_reference_t<Stream>::char_type;
   using traits_type = typename std::remove_reference_t<Stream>::traits_type;
@@ -85,35 +90,27 @@ requires(std::derived_from<std::decay_t<Stream>, std::ios_base> and tuple_like<s
 
   auto comma_fold = [&, first = true](auto const &... values) mutable
   {
-    ((first ? (void)(first = false, out) : (void)[&]() { 
-    
-    if constexpr(tuple_like<std::decay_t<decltype(values)>>
-                 or serializable_range<std::decay_t<decltype(values)>, char_type, traits_type>)
-      out << ::logging::to_string<decltype(values), char_type, traits_type>(std::forward<decltype(values)>(values));
-    else
-      out << values;
-  
-    }()), ...);
-  };
+    auto serialize = [&](auto && value)
+    {
+      if(!first)
+        out << char_type{','} << char_type{' '};
 
+      first = false;
+
+      if constexpr(tuple_like<std::decay_t<decltype(value)>>
+                   or serializable_range<std::decay_t<decltype(value)>, char_type, traits_type>)
+        (logging::serialize::operator<<)(out, std::forward<decltype(value)>(value));
+      else
+        out << value;
+    };
+
+    (serialize(values), ...);
+  };
   std::apply(comma_fold, tuple);
 
   out.put(char_type{'}'});
 
   return std::forward<Stream>(out);
 }
-}
-
-template <class Type, class CharT, class Traits>
-[[nodiscard]]
-std::basic_string<CharT, Traits> to_string(Type && value)
-{
-  using namespace serialize;
-
-  std::basic_stringstream<CharT, Traits> out;
-
-  out << value;
-
-  return out.str();
 }
 }

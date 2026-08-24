@@ -10,27 +10,7 @@
 #include <utility>
 
 glfw::window::window(window && other) noexcept
-: when_window_moved(std::move(other.when_window_moved)),
-  when_window_resized(std::move(other.when_window_resized)),
-  when_window_closed(std::move(other.when_window_closed)),
-  when_window_refreshed(std::move(other.when_window_refreshed)),
-  when_window_focused(std::move(other.when_window_focused)),
-  when_window_unfocused(std::move(other.when_window_unfocused)),
-  when_window_minimized(std::move(other.when_window_minimized)),
-  when_window_unminimized(std::move(other.when_window_unminimized)),
-  when_window_maximized(std::move(other.when_window_maximized)),
-  when_window_unmaximized(std::move(other.when_window_unmaximized)),
-  when_framebuffer_resized(std::move(other.when_framebuffer_resized)),
-  when_window_content_scaled(std::move(other.when_window_content_scaled)),
-  when_key_pressed(std::move(other.when_key_pressed)),
-  when_unicode_char_typed(std::move(other.when_unicode_char_typed)),
-  when_mouse_button_pressed(std::move(other.when_mouse_button_pressed)),
-  when_cursor_moved(std::move(other.when_cursor_moved)),
-  when_cursor_entered(std::move(other.when_cursor_entered)),
-  when_cursor_exited(std::move(other.when_cursor_exited)),
-  when_mouse_scrolled(std::move(other.when_mouse_scrolled)),
-  when_file_dropped(std::move(other.when_file_dropped)),
-  ptr(std::move(other.ptr))
+: ptr(std::move(other.ptr))
 {
   if(ptr)
     glfwSetWindowUserPointer(ptr.get(), this);
@@ -38,27 +18,7 @@ glfw::window::window(window && other) noexcept
 
 glfw::window & glfw::window::operator=(window && other) noexcept
 {
-  when_window_moved          = std::move(other.when_window_moved);
-  when_window_resized        = std::move(other.when_window_resized);
-  when_window_closed         = std::move(other.when_window_closed);
-  when_window_refreshed      = std::move(other.when_window_refreshed);
-  when_window_focused        = std::move(other.when_window_focused);
-  when_window_unfocused      = std::move(other.when_window_unfocused);
-  when_window_minimized      = std::move(other.when_window_minimized);
-  when_window_unminimized    = std::move(other.when_window_unminimized);
-  when_window_maximized      = std::move(other.when_window_maximized);
-  when_window_unmaximized    = std::move(other.when_window_unmaximized);
-  when_framebuffer_resized   = std::move(other.when_framebuffer_resized);
-  when_window_content_scaled = std::move(other.when_window_content_scaled);
-  when_key_pressed           = std::move(other.when_key_pressed);
-  when_unicode_char_typed    = std::move(other.when_unicode_char_typed);
-  when_mouse_button_pressed  = std::move(other.when_mouse_button_pressed);
-  when_cursor_moved          = std::move(other.when_cursor_moved);
-  when_cursor_entered        = std::move(other.when_cursor_entered);
-  when_cursor_exited         = std::move(other.when_cursor_exited);
-  when_mouse_scrolled        = std::move(other.when_mouse_scrolled);
-  when_file_dropped          = std::move(other.when_file_dropped);
-  ptr                        = std::move(other.ptr);
+  ptr = std::move(other.ptr);
 
   glfwSetWindowUserPointer(ptr.get(), this);
 
@@ -384,6 +344,86 @@ void glfw::window::request_attention()
 void glfw::window::close() noexcept
 {
   ptr.reset();
+}
+
+void glfw::window::when_window_moved(coordinates<int, 2> const &)
+{
+}
+
+void glfw::window::when_window_resized(dimensions<int, 2> const &)
+{
+}
+
+void glfw::window::when_window_closed()
+{
+}
+
+void glfw::window::when_window_refreshed()
+{
+}
+
+void glfw::window::when_window_focused()
+{
+}
+
+void glfw::window::when_window_unfocused()
+{
+}
+
+void glfw::window::when_window_minimized()
+{
+}
+
+void glfw::window::when_window_unminimized()
+{
+}
+
+void glfw::window::when_window_maximized()
+{
+}
+
+void glfw::window::when_window_unmaximized()
+{
+}
+
+void glfw::window::when_framebuffer_resized(dimensions<int, 2> const &)
+{
+}
+
+void glfw::window::when_window_content_scaled(coordinates<float, 2> const &)
+{
+}
+
+void glfw::window::when_key_pressed(key const, int const, action const, modifier const)
+{
+}
+
+void glfw::window::when_unicode_char_typed(char32_t const)
+{
+}
+
+void glfw::window::when_mouse_button_pressed(mouse_button const, action const, modifier const)
+{
+}
+
+void glfw::window::when_cursor_moved(coordinates<double, 2> const &)
+{
+}
+
+void glfw::window::when_cursor_entered()
+{
+}
+
+void glfw::window::when_cursor_exited()
+{
+}
+
+void glfw::window::when_mouse_scrolled(coordinates<double, 2> const &)
+{
+}
+
+void glfw::window::when_file_dropped(std::span<std::filesystem::path const> const)
+{
 }
 
 glfw::window::window(std::unique_ptr<GLFWwindow, void (*)(GLFWwindow *)> && new_ptr) noexcept

@@ -3,6 +3,10 @@
 #include <khronos/graphics_pipeline.hpp>
 #include <khronos/memory_buffer.hpp>
 
+#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_raii.hpp>
+#include <vulkan/vulkan_to_string.hpp>
+
 extern unsigned int  shader_spv_len;
 extern unsigned char shader_spv[];
 
@@ -49,10 +53,11 @@ khronos::graphics_pipeline::graphics_pipeline(
                                                   .setInputRate(vk::VertexInputRate::eVertex)
                                                   .setStride(sizeof(vertex));
 
-  auto const pipeline_vertex_input_state_create_info
-    = vk::PipelineVertexInputStateCreateInfo{}
-        .setVertexAttributeDescriptions(vertex_input_attribute_description)
-        .setVertexBindingDescriptions(vertex_input_binding_description);
+  auto const pipeline_vertex_input_state_create_info = vk::PipelineVertexInputStateCreateInfo{}
+                                                         .setVertexAttributeDescriptions(
+                                                           vertex_input_attribute_description)
+                                                         .setVertexBindingDescriptions(
+                                                           vertex_input_binding_description);
 
   constexpr auto pipeline_input_assembly_state_create_info = vk::PipelineInputAssemblyStateCreateInfo{}
                                                                .setTopology(vk::PrimitiveTopology::eTriangleList)
@@ -105,19 +110,19 @@ khronos::graphics_pipeline::graphics_pipeline(
 
   detail::emplace_data(pipeline_layout, device);
 
-  auto const & [graphics_pipeline_create_info, _]
-    = vk::StructureChain{vk::GraphicsPipelineCreateInfo{}
-                           .setStages(pipeline_shader_stage_create_info)
-                           .setPVertexInputState(&pipeline_vertex_input_state_create_info)
-                           .setPInputAssemblyState(&pipeline_input_assembly_state_create_info)
-                           .setPViewportState(&pipeline_viewport_state_create_info)
-                           .setPRasterizationState(&pipeline_rasterization_state_create_info)
-                           .setPMultisampleState(&pipeline_multisample_state_create_info)
-                           .setPColorBlendState(&pipeline_color_blend_state_create_info)
-                           .setPDynamicState(&pipeline_dynamic_state_create_info)
-                           .setLayout(*pipeline_layout),
-                         vk::PipelineRenderingCreateInfo{}  //
-                           .setColorAttachmentFormats(default_swapchain_create_info->imageFormat)};
+  auto const & [graphics_pipeline_create_info, _] = vk::StructureChain{
+    vk::GraphicsPipelineCreateInfo{}
+      .setStages(pipeline_shader_stage_create_info)
+      .setPVertexInputState(&pipeline_vertex_input_state_create_info)
+      .setPInputAssemblyState(&pipeline_input_assembly_state_create_info)
+      .setPViewportState(&pipeline_viewport_state_create_info)
+      .setPRasterizationState(&pipeline_rasterization_state_create_info)
+      .setPMultisampleState(&pipeline_multisample_state_create_info)
+      .setPColorBlendState(&pipeline_color_blend_state_create_info)
+      .setPDynamicState(&pipeline_dynamic_state_create_info)
+      .setLayout(*pipeline_layout),
+    vk::PipelineRenderingCreateInfo{}  //
+      .setColorAttachmentFormats(default_swapchain_create_info->imageFormat)};
 
   pipeline = detail::make_shared_with_data<vk::raii::Pipeline const>(*device, nullptr, graphics_pipeline_create_info);
 

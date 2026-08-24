@@ -7,6 +7,10 @@
 #include <khronos/render_window.hpp>
 #include <logging/logging.hpp>
 
+#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_raii.hpp>
+#include <vulkan/vulkan_to_string.hpp>
+
 #include <algorithm>
 #include <cassert>
 #include <cstring>
@@ -51,8 +55,8 @@ khronos::render_window::render_window(
 
     logging::verbose() << "image width = " << image_width << " and image height = " << image_height;
 
-    render_window_self.swapchain_create_info
-      = detail::make_shared_with_data<vk::SwapchainCreateInfoKHR>(*render_window_self.swapchain_create_info);
+    render_window_self.swapchain_create_info = detail::make_shared_with_data<vk::SwapchainCreateInfoKHR>(
+      *render_window_self.swapchain_create_info);
 
     detail::emplace_data(render_window_self.swapchain_create_info, render_window_self.surface);
 
@@ -65,8 +69,9 @@ khronos::render_window::render_window(
       render_window_self.swapchain_create_info->setOldSwapchain(*render_window_self.swapchain);
     }
 
-    render_window_self.swapchain
-      = detail::make_shared_with_data<vk::raii::SwapchainKHR const>(*device, *render_window_self.swapchain_create_info);
+    render_window_self.swapchain = detail::make_shared_with_data<vk::raii::SwapchainKHR const>(
+      *device,
+      *render_window_self.swapchain_create_info);
 
     detail::emplace_data(render_window_self.swapchain, device);
     detail::emplace_data(render_window_self.swapchain, render_window_self.surface);
@@ -94,8 +99,9 @@ khronos::render_window::render_window(
 
       detail::emplace_data(image_view, render_window_self.swapchain);
 
-      auto const render_complete_semaphores
-        = detail::make_shared_with_data<vk::raii::Semaphore const>(*device, vk::SemaphoreCreateInfo{});
+      auto const render_complete_semaphores = detail::make_shared_with_data<vk::raii::Semaphore const>(
+        *device,
+        vk::SemaphoreCreateInfo{});
 
       detail::emplace_data(render_complete_semaphores, device);
       detail::emplace_data(graphics_and_present_queue, render_complete_semaphores);
@@ -121,8 +127,8 @@ khronos::render_window::render_window(
 
   auto const create_shared_command_buffer = [&](vk::raii::CommandBuffer & command_buffer)
   {
-    auto const shared_command_buffer
-      = detail::make_shared_with_data<vk::raii::CommandBuffer const>(std::move(command_buffer));
+    auto const shared_command_buffer = detail::make_shared_with_data<vk::raii::CommandBuffer const>(
+      std::move(command_buffer));
 
     detail::emplace_data(shared_command_buffer, command_pool);
 
@@ -134,16 +140,17 @@ khronos::render_window::render_window(
   {
     auto const in_flight_fence_create_info = vk::FenceCreateInfo{}.setFlags(vk::FenceCreateFlagBits::eSignaled);
 
-    auto const in_flight_fence
-      = detail::make_shared_with_data<vk::raii::Fence const>(*device, in_flight_fence_create_info);
+    auto const in_flight_fence = detail::make_shared_with_data<vk::raii::Fence const>(*device,
+                                                                                      in_flight_fence_create_info);
 
     detail::emplace_data(in_flight_fence, device);
     detail::emplace_data(graphics_and_present_queue, in_flight_fence);
 
     auto const wait_for_in_flight_fence = [=](vk::raii::CommandBuffer const &)
     {
-      auto const wait_for_fences_result
-        = device->waitForFences(**in_flight_fence, vk::True, std::numeric_limits<std::uint64_t>::max());
+      auto const wait_for_fences_result = device->waitForFences(**in_flight_fence,
+                                                                vk::True,
+                                                                std::numeric_limits<std::uint64_t>::max());
 
       if(wait_for_fences_result < vk::Result::eSuccess)
         logging::error() << "wait for fences returned a error: " << vk::to_string(wait_for_fences_result);
@@ -154,8 +161,9 @@ khronos::render_window::render_window(
 
     detail::emplace_function(command_buffer, wait_for_in_flight_fence);
 
-    auto const present_complete_semaphores
-      = detail::make_shared_with_data<vk::raii::Semaphore const>(*device, vk::SemaphoreCreateInfo{});
+    auto const present_complete_semaphores = detail::make_shared_with_data<vk::raii::Semaphore const>(
+      *device,
+      vk::SemaphoreCreateInfo{});
 
     detail::emplace_data(present_complete_semaphores, device);
     detail::emplace_data(graphics_and_present_queue, present_complete_semaphores);

@@ -44,14 +44,13 @@ class graphical_device
   private:
     friend class library;
 
-    graphical_device(std::shared_ptr<vk::raii::Context const> const &    context,
-                     std::shared_ptr<vk::raii::Instance const> const &   instance,
+    graphical_device(std::shared_ptr<vk::raii::Instance const> const &   instance,
                      std::shared_ptr<vk::raii::SurfaceKHR const> const & surface);
 
     std::shared_ptr<vk::raii::PhysicalDevice const>   physical_device;
     std::shared_ptr<vk::raii::Device const>           device;
-    std::shared_ptr<vk::raii::Queue const>            transfer_and_graphics_and_present_queue;
-    std::uint32_t                                     transfer_and_graphics_and_present_queue_family_index;
+    std::shared_ptr<vk::raii::Queue const>            queue;
+    std::uint32_t                                     queue_family_index;
     std::shared_ptr<vk::SwapchainCreateInfoKHR const> default_swapchain_create_info;
 };
 }

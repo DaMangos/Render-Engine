@@ -168,26 +168,45 @@ class window
     virtual void close() noexcept;
 
   protected:
-    std::function<void(window &, coordinates<int, 2> const &)>                        when_window_moved;
-    std::function<void(window &, dimensions<int, 2> const &)>                         when_window_resized;
-    std::function<void(window &)>                                                     when_window_closed;
-    std::function<void(window &)>                                                     when_window_refreshed;
-    std::function<void(window &)>                                                     when_window_focused;
-    std::function<void(window &)>                                                     when_window_unfocused;
-    std::function<void(window &)>                                                     when_window_minimized;
-    std::function<void(window &)>                                                     when_window_unminimized;
-    std::function<void(window &)>                                                     when_window_maximized;
-    std::function<void(window &)>                                                     when_window_unmaximized;
-    std::function<void(window &, dimensions<int, 2> const &)>                         when_framebuffer_resized;
-    std::function<void(window &, coordinates<float, 2> const &)>                      when_window_content_scaled;
-    std::function<void(window &, key const, int const, action const, modifier const)> when_key_pressed;
-    std::function<void(window &, char32_t const)>                                     when_unicode_char_typed;
-    std::function<void(window &, mouse_button const, action const, modifier const)>   when_mouse_button_pressed;
-    std::function<void(window &, coordinates<double, 2> const &)>                     when_cursor_moved;
-    std::function<void(window &)>                                                     when_cursor_entered;
-    std::function<void(window &)>                                                     when_cursor_exited;
-    std::function<void(window &, coordinates<double, 2> const &)>                     when_mouse_scrolled;
-    std::function<void(window &, std::span<std::filesystem::path const> const)>       when_file_dropped;
+    virtual void when_window_moved(coordinates<int, 2> const &);
+
+    virtual void when_window_resized(dimensions<int, 2> const &);
+
+    virtual void when_window_closed();
+
+    virtual void when_window_refreshed();
+
+    virtual void when_window_focused();
+
+    virtual void when_window_unfocused();
+
+    virtual void when_window_minimized();
+
+    virtual void when_window_unminimized();
+
+    virtual void when_window_maximized();
+
+    virtual void when_window_unmaximized();
+
+    virtual void when_framebuffer_resized(dimensions<int, 2> const &);
+
+    virtual void when_window_content_scaled(coordinates<float, 2> const &);
+
+    virtual void when_key_pressed(key const, int const, action const, modifier const);
+
+    virtual void when_unicode_char_typed(char32_t const);
+
+    virtual void when_mouse_button_pressed(mouse_button const, action const, modifier const);
+
+    virtual void when_cursor_moved(coordinates<double, 2> const &);
+
+    virtual void when_cursor_entered();
+
+    virtual void when_cursor_exited();
+
+    virtual void when_mouse_scrolled(coordinates<double, 2> const &);
+
+    virtual void when_file_dropped(std::span<std::filesystem::path const> const);
 
   private:
     friend struct internal;

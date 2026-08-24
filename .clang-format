@@ -72,8 +72,8 @@ NamespaceIndentation: None
 PPIndentWidth: -1
 PenaltyReturnTypeOnItsOwnLine: 1000000
 PenaltyBreakScopeResolution: 1000000
-PenaltyBreakAssignment: 0
-PenaltyBreakBeforeFirstCallParameter: 1000
+PenaltyBreakAssignment: 100000
+PenaltyBreakBeforeFirstCallParameter: 0
 PenaltyBreakBeforeMemberAccess: 100
 PackConstructorInitializers: Never
 PointerAlignment: Middle
@@ -82,7 +82,7 @@ QualifierOrder: [friend, static, inline, constexpr, volatile, restrict, type, co
 ReferenceAlignment: Middle
 ReflowComments: true
 RemoveSemicolon: false
-RequiresClausePosition: OwnLine
+RequiresClausePosition: SingleLine
 RequiresExpressionIndentation: OuterScope
 SeparateDefinitionBlocks: Always
 SortIncludes: CaseInsensitive

@@ -1,9 +1,12 @@
 #include "detail/make_shared_with_data.hpp"
-#include "vulkan/vulkan.hpp"
 
 #include <khronos/memory_buffer.hpp>
 #include <logging/logging.hpp>
 #include <logging/serialize.hpp>
+
+#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_raii.hpp>
+#include <vulkan/vulkan_to_string.hpp>
 
 #include <cstddef>
 #include <iterator>
@@ -19,16 +22,16 @@
 khronos::memory_buffer::memory_buffer(std::shared_ptr<vk::raii::PhysicalDevice const> const & physical_device,
                                       std::shared_ptr<vk::raii::Device const> const &         device,
                                       vk::DeviceSize const                                    size,
-                                      vk::BufferUsageFlags2 const                             usage,
+                                      vk::BufferUsageFlags const                              usage,
                                       vk::MemoryPropertyFlags const                           properties)
 : size(size)
 {
   auto const memory_properties = physical_device->getMemoryProperties();
 
-  auto const [buffer_create_info, _] = vk::StructureChain{vk::BufferCreateInfo{}  //
-                                                            .setSize(size)
-                                                            .setSharingMode(vk::SharingMode::eExclusive),
-                                                          vk::BufferUsageFlags2CreateInfoKHR{}.setUsage(usage)};
+  auto const buffer_create_info = vk::BufferCreateInfo{}  //
+                                    .setSize(size)
+                                    .setUsage(usage)
+                                    .setSharingMode(vk::SharingMode::eExclusive);
 
   buffer = detail::make_shared_with_data<vk::raii::Buffer const>(*device, buffer_create_info);
 
@@ -148,7 +151,7 @@ khronos::staging_buffer::staging_buffer(std::shared_ptr<vk::raii::PhysicalDevice
 : memory_buffer(physical_device,
                 device,
                 size,
-                vk::BufferUsageFlagBits2::eTransferSrc,
+                vk::BufferUsageFlagBits::eTransferSrc,
                 vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent),
   data(static_cast<std::byte *>(device_memory->mapMemory(0ull, size)))
 {
@@ -165,8 +168,8 @@ khronos::staging_buffer::staging_buffer(std::shared_ptr<vk::raii::PhysicalDevice
 
   auto const create_shared_command_buffer = [&](vk::raii::CommandBuffer & command_buffer)
   {
-    auto const shared_command_buffer
-      = detail::make_shared_with_data<vk::raii::CommandBuffer const>(std::move(command_buffer));
+    auto const shared_command_buffer = detail::make_shared_with_data<vk::raii::CommandBuffer const>(
+      std::move(command_buffer));
 
     detail::emplace_data(shared_command_buffer, command_pool);
 
@@ -185,8 +188,9 @@ khronos::staging_buffer::staging_buffer(std::shared_ptr<vk::raii::PhysicalDevice
 
     auto const wait_for_fence = [=](vk::raii::CommandBuffer const &)
     {
-      auto const wait_for_fences_result
-        = device->waitForFences(**fence, vk::True, std::numeric_limits<std::uint64_t>::max());
+      auto const wait_for_fences_result = device->waitForFences(**fence,
+                                                                vk::True,
+                                                                std::numeric_limits<std::uint64_t>::max());
 
       if(wait_for_fences_result < vk::Result::eSuccess)
         logging::error() << "wait for fences returned a error: " << vk::to_string(wait_for_fences_result);
@@ -209,7 +213,7 @@ bool khronos::staging_buffer::staging_buffer::region::operator<(region const & o
 khronos::transfer_buffer::transfer_buffer(std::shared_ptr<vk::raii::PhysicalDevice const> const & physical_device,
                                           std::shared_ptr<vk::raii::Device const> const &         device,
                                           vk::DeviceSize const                                    size,
-                                          vk::BufferUsageFlags2 const                             usage)
+                                          vk::BufferUsageFlags const                              usage)
 : memory_buffer(physical_device, device, size, usage, vk::MemoryPropertyFlagBits::eDeviceLocal)
 {
 }
@@ -221,7 +225,7 @@ khronos::vertex_transfer_buffer::vertex_transfer_buffer(
 : transfer_buffer(physical_device,
                   device,
                   size,
-                  vk::BufferUsageFlagBits2::eVertexBuffer | vk::BufferUsageFlagBits2::eTransferDst)
+                  vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst)
 {
 }
 
@@ -232,6 +236,6 @@ khronos::index_transfer_buffer::index_transfer_buffer(
 : transfer_buffer(physical_device,
                   device,
                   size,
-                  vk::BufferUsageFlagBits2::eIndexBuffer | vk::BufferUsageFlagBits2::eTransferDst)
+                  vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst)
 {
 }

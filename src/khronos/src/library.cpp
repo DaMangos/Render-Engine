@@ -7,6 +7,10 @@
 #include <logging/logging.hpp>
 #include <logging/serialize.hpp>
 
+#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_raii.hpp>
+#include <vulkan/vulkan_to_string.hpp>
+
 #include <algorithm>
 #include <cassert>
 #include <functional>
@@ -134,13 +138,13 @@ khronos::library::library(std::ostream * const vk_verbose_out,
                           std::ostream * const vk_info_out,
                           std::ostream * const vk_warning_out,
                           std::ostream * const vk_error_out)
+: context(std::make_shared<vk::raii::Context const>())
+
 {
   using namespace logging::serialize;
 
-  context = std::make_shared<vk::raii::Context const>();
-
-  auto const is_extension_available
-    = [properties = context->enumerateInstanceExtensionProperties()](std::string_view const extension)
+  auto const is_extension_available =
+    [properties = context->enumerateInstanceExtensionProperties()](std::string_view const extension)
   {
     return std::ranges::any_of(properties, [&](auto const & property) { return property.extensionName == extension; });
   };
@@ -166,7 +170,7 @@ khronos::library::library(std::ostream * const vk_verbose_out,
     extensions.emplace_back(vk::KHRPortabilityEnumerationExtensionName);
   }
 
-  auto const application_info = vk::ApplicationInfo{}.setApiVersion(context->enumerateInstanceVersion());
+  auto const application_info = vk::ApplicationInfo{}.setApiVersion(vk::ApiVersion13);
 
   if(not vk_verbose_out and not vk_info_out and not vk_warning_out and not vk_error_out)
   {
@@ -184,8 +188,8 @@ khronos::library::library(std::ostream * const vk_verbose_out,
     return;
   }
 
-  auto const is_layer_unavailable
-    = [properties = context->enumerateInstanceLayerProperties()](std::string_view const layer)
+  auto const is_layer_unavailable =
+    [properties = context->enumerateInstanceLayerProperties()](std::string_view const layer)
   {
     return std::ranges::none_of(properties, [&](auto const & property) { return property.layerName == layer; });
   };
@@ -197,8 +201,10 @@ khronos::library::library(std::ostream * const vk_verbose_out,
 
   logging::verbose() << "all required instance extensions are available: " << extensions;
 
-  auto const user_data
-    = std::make_shared<::detail::user_data_type>(vk_verbose_out, vk_info_out, vk_warning_out, vk_error_out);
+  auto const user_data = std::make_shared<::detail::user_data_type>(vk_verbose_out,
+                                                                    vk_info_out,
+                                                                    vk_warning_out,
+                                                                    vk_error_out);
 
   auto const message_severity = [=]()
   {
@@ -225,26 +231,26 @@ khronos::library::library(std::ostream * const vk_verbose_out,
 
   constexpr auto layers = "VK_LAYER_KHRONOS_validation";
 
-  auto const & [instance_create_info, debug_utils_messenger_create_info]
-    = vk::StructureChain{vk::InstanceCreateInfo{}
-                           .setFlags(flags)
-                           .setPApplicationInfo(&application_info)
-                           .setPEnabledExtensionNames(extensions)
-                           .setPEnabledLayerNames(layers),
-                         vk::DebugUtilsMessengerCreateInfoEXT{}
-                           .setMessageSeverity(message_severity)
-                           .setMessageType(message_type)
-                           .setPfnUserCallback(&::detail::user_callback)
-                           .setPUserData(user_data.get())};
+  auto const & [instance_create_info, debug_utils_messenger_create_info] = vk::StructureChain{
+    vk::InstanceCreateInfo{}
+      .setFlags(flags)
+      .setPApplicationInfo(&application_info)
+      .setPEnabledExtensionNames(extensions)
+      .setPEnabledLayerNames(layers),
+    vk::DebugUtilsMessengerCreateInfoEXT{}
+      .setMessageSeverity(message_severity)
+      .setMessageType(message_type)
+      .setPfnUserCallback(&::detail::user_callback)
+      .setPUserData(user_data.get())};
 
   instance = detail::make_shared_with_data<vk::raii::Instance const>(*context, instance_create_info);
 
   detail::emplace_data(instance, context);
   detail::emplace_data(instance, user_data);
 
-  debug_utils_messenger
-    = detail::make_shared_with_data<vk::raii::DebugUtilsMessengerEXT const>(*instance,
-                                                                            debug_utils_messenger_create_info);
+  debug_utils_messenger = detail::make_shared_with_data<vk::raii::DebugUtilsMessengerEXT const>(
+    *instance,
+    debug_utils_messenger_create_info);
 
   detail::emplace_data(debug_utils_messenger, instance);
 }
@@ -279,5 +285,5 @@ khronos::present_window khronos::library::create_present_window(glfw::dimensions
 
 khronos::graphical_device khronos::library::find_graphical_device(present_window const & window) const
 {
-  return {context, instance, window.surface};
+  return {instance, window.surface};
 }

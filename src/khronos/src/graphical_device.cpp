@@ -19,6 +19,7 @@
 #include <limits>
 #include <memory>
 #include <ranges>
+#include <sstream>
 #include <string_view>
 #include <vector>
 
@@ -30,8 +31,8 @@ namespace detail
 static std::expected<std::vector<char const *>, std::vector<char const *>> get_required_device_extensions(
   std::shared_ptr<vk::raii::PhysicalDevice const> const & physical_device)
 {
-  auto const is_extension_available
-    = [properties = physical_device->enumerateDeviceExtensionProperties()](std::string_view const extension)
+  auto const is_extension_available =
+    [properties = physical_device->enumerateDeviceExtensionProperties()](std::string_view const extension)
   {
     return std::ranges::any_of(properties, [&](auto const & property) { return property.extensionName == extension; });
   };
@@ -45,16 +46,8 @@ static std::expected<std::vector<char const *>, std::vector<char const *>> get_r
   if(not unavailable_device_extensions.empty())
     return std::unexpected{unavailable_device_extensions};
 
-  auto const & [physical_device_properties, physical_device_properties_12]
-    = physical_device->getProperties2<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceVulkan12Properties>();
-
   if(is_extension_available(vk::KHRPortabilitySubsetExtensionName))
-  {
-    logging::warning() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
-                       << physical_device_properties_12.driverName.data() << ") is not fully compliant";
-
     required_device_extensions.emplace_back(vk::KHRPortabilitySubsetExtensionName);
-  }
 
   return required_device_extensions;
 }
@@ -121,8 +114,8 @@ static int score(std::shared_ptr<vk::raii::PhysicalDevice const> const & physica
   if(not physical_device)
     return 0;
 
-  auto const is_extension_unavailable
-    = [properties = physical_device->enumerateDeviceExtensionProperties()](std::string_view const extension)
+  auto const is_extension_unavailable =
+    [properties = physical_device->enumerateDeviceExtensionProperties()](std::string_view const extension)
   {
     return std::ranges::none_of(properties, [&](auto const & property) { return property.extensionName == extension; });
   };
@@ -147,8 +140,8 @@ khronos::staging_buffer khronos::graphical_device::allocate_staging_buffer(vk::D
   return {
     physical_device,
     device,
-    transfer_and_graphics_and_present_queue,
-    transfer_and_graphics_and_present_queue_family_index,
+    queue,
+    queue_family_index,
     size,
   };
 }
@@ -172,8 +165,8 @@ khronos::render_window khronos::graphical_device::create_render_window(present_w
     physical_device,
     device,
     default_swapchain_create_info,
-    transfer_and_graphics_and_present_queue,
-    transfer_and_graphics_and_present_queue_family_index,
+    queue,
+    queue_family_index,
   };
 }
 
@@ -185,8 +178,9 @@ void khronos::graphical_device::flush(staging_buffer & staging_buffer)
 
   auto const transfer = staging_buffer.transfers.front();
 
-  auto const wait_for_fences_result
-    = device->waitForFences(**transfer.fence, vk::True, std::numeric_limits<std::uint64_t>::max());
+  auto const wait_for_fences_result = device->waitForFences(**transfer.fence,
+                                                            vk::True,
+                                                            std::numeric_limits<std::uint64_t>::max());
 
   if(wait_for_fences_result < vk::Result::eSuccess)
     throw vk::SystemError{vk::make_error_code(wait_for_fences_result), "failed to wait for fence"};
@@ -196,8 +190,8 @@ void khronos::graphical_device::flush(staging_buffer & staging_buffer)
 
   device->resetFences(**transfer.fence);
 
-  auto const command_buffer_begin_info
-    = vk::CommandBufferBeginInfo{}.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+  auto const command_buffer_begin_info = vk::CommandBufferBeginInfo{}.setFlags(
+    vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
 
   transfer.command_buffer->begin(command_buffer_begin_info);
 
@@ -216,7 +210,7 @@ void khronos::graphical_device::flush(staging_buffer & staging_buffer)
 
   auto const submit_info = vk::SubmitInfo{}.setCommandBuffers(**transfer.command_buffer);
 
-  transfer_and_graphics_and_present_queue->submit(submit_info, *transfer.fence);
+  queue->submit(submit_info, *transfer.fence);
 
   staging_buffer.regions.clear();
 }
@@ -230,8 +224,9 @@ void khronos::graphical_device::draw(graphics_pipeline &      graphics_pipeline,
 
   auto const frame = render_window.frames.front();
 
-  auto const wait_for_fences_result
-    = device->waitForFences(**frame.in_flight_fence, vk::True, std::numeric_limits<std::uint64_t>::max());
+  auto const wait_for_fences_result = device->waitForFences(**frame.in_flight_fence,
+                                                            vk::True,
+                                                            std::numeric_limits<std::uint64_t>::max());
 
   if(wait_for_fences_result < vk::Result::eSuccess)
     throw vk::SystemError{vk::make_error_code(wait_for_fences_result), "failed to wait for fence"};
@@ -241,9 +236,9 @@ void khronos::graphical_device::draw(graphics_pipeline &      graphics_pipeline,
 
   device->resetFences(**frame.in_flight_fence);
 
-  auto const & [acquire_next_image_result, next_image_index]
-    = render_window.swapchain->acquireNextImage(std::numeric_limits<std::uint64_t>::max(),
-                                                *frame.present_complete_semaphores);
+  auto const & [acquire_next_image_result, next_image_index] = render_window.swapchain->acquireNextImage(
+    std::numeric_limits<std::uint64_t>::max(),
+    *frame.present_complete_semaphores);
 
   if(acquire_next_image_result < vk::Result::eSuccess)
     throw vk::SystemError{vk::make_error_code(acquire_next_image_result), "failed to acquire next image"};
@@ -272,8 +267,8 @@ void khronos::graphical_device::draw(graphics_pipeline &      graphics_pipeline,
                                             .setImage(current_image.image)
                                             .setSubresourceRange(image_subresource_range);
 
-  auto const write_dependency_info
-    = vk::DependencyInfo{}.setImageMemoryBarrierCount(1).setPImageMemoryBarriers(&write_image_memory_barrier);
+  auto const write_dependency_info = vk::DependencyInfo{}.setImageMemoryBarrierCount(1).setPImageMemoryBarriers(
+    &write_image_memory_barrier);
 
   auto const attachmentInfo = vk::RenderingAttachmentInfo{}
                                 .setImageView(*current_image.image_view)
@@ -294,9 +289,11 @@ void khronos::graphical_device::draw(graphics_pipeline &      graphics_pipeline,
                          .setOffset(vk::Offset2D{}.setX(0).setY(0))
                          .setExtent(render_window.swapchain_create_info->imageExtent);
 
-  auto const rendering_info
-    = vk::RenderingInfo{}.setRenderArea(scissor).setLayerCount(1).setColorAttachmentCount(1).setPColorAttachments(
-      &attachmentInfo);
+  auto const rendering_info = vk::RenderingInfo{}
+                                .setRenderArea(scissor)
+                                .setLayerCount(1)
+                                .setColorAttachmentCount(1)
+                                .setPColorAttachments(&attachmentInfo);
 
   auto const present_image_memory_barrier = vk::ImageMemoryBarrier2{}
                                               .setSrcStageMask(vk::PipelineStageFlagBits2::eColorAttachmentOutput)
@@ -309,8 +306,8 @@ void khronos::graphical_device::draw(graphics_pipeline &      graphics_pipeline,
                                               .setDstQueueFamilyIndex(vk::QueueFamilyIgnored)
                                               .setImage(current_image.image)
                                               .setSubresourceRange(image_subresource_range);
-  auto const present_dependency_info
-    = vk::DependencyInfo{}.setImageMemoryBarrierCount(1).setPImageMemoryBarriers(&present_image_memory_barrier);
+  auto const present_dependency_info      = vk::DependencyInfo{}.setImageMemoryBarrierCount(1).setPImageMemoryBarriers(
+    &present_image_memory_barrier);
 
   auto const wait_destination_stage_mask = vk::PipelineStageFlags{vk::PipelineStageFlagBits::eColorAttachmentOutput};
 
@@ -334,14 +331,14 @@ void khronos::graphical_device::draw(graphics_pipeline &      graphics_pipeline,
                                       .setCommandBuffers(**frame.command_buffer)
                                       .setSignalSemaphores(**current_image.render_complete_semaphores);
 
-  transfer_and_graphics_and_present_queue->submit(graphics_submit_info, **frame.in_flight_fence);
+  queue->submit(graphics_submit_info, **frame.in_flight_fence);
 
   auto const present_info = vk::PresentInfoKHR{}
                               .setWaitSemaphores(**current_image.render_complete_semaphores)
                               .setSwapchains(**render_window.swapchain)
                               .setImageIndices(next_image_index);
 
-  auto const present_result = transfer_and_graphics_and_present_queue->presentKHR(present_info);
+  auto const present_result = queue->presentKHR(present_info);
 
   if(present_result < vk::Result::eSuccess)
     throw vk::SystemError{vk::make_error_code(present_result), "failed to present"};
@@ -350,8 +347,7 @@ void khronos::graphical_device::draw(graphics_pipeline &      graphics_pipeline,
     logging::warning() << "presenting returned a warning: " << vk::to_string(present_result);
 }
 
-khronos::graphical_device::graphical_device(std::shared_ptr<vk::raii::Context const> const &    context,
-                                            std::shared_ptr<vk::raii::Instance const> const &   instance,
+khronos::graphical_device::graphical_device(std::shared_ptr<vk::raii::Instance const> const &   instance,
                                             std::shared_ptr<vk::raii::SurfaceKHR const> const & surface)
 {
   using namespace logging::serialize;
@@ -372,31 +368,34 @@ khronos::graphical_device::graphical_device(std::shared_ptr<vk::raii::Context co
     return shared_physical_device;
   };
 
-  auto const physical_devices
-    = instance->enumeratePhysicalDevices() | std::views::transform(make_shared_physical_device);
+  auto const physical_devices = instance->enumeratePhysicalDevices()
+                              | std::views::transform(make_shared_physical_device);
 
   logging::verbose() << "there are " << physical_devices.size() << " physical devices available";
 
   for(auto const & potential_physical_device : physical_devices)
   {
-    auto const & [physical_device_properties, physical_device_properties_12]
-      = potential_physical_device
-          ->getProperties2<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceVulkan12Properties>();
+    auto const & [physical_device_properties,
+                  physical_device_properties_12] = potential_physical_device
+                                                     ->getProperties2<vk::PhysicalDeviceProperties2,
+                                                                      vk::PhysicalDeviceVulkan12Properties>();
 
-    auto const api_version          = context->enumerateInstanceVersion();
-    auto const physical_api_version = physical_device_properties.properties.apiVersion;
+    auto const physical_device_name = (std::stringstream{}
+                                       << physical_device_properties.properties.deviceName.data() << " : "
+                                       << physical_device_properties_12.driverName.data() << " ("
+                                       << vk::apiVersionMajor(physical_device_properties.properties.apiVersion)
+                                       << vk::apiVersionMinor(physical_device_properties.properties.apiVersion)
+                                       << vk::apiVersionPatch(physical_device_properties.properties.apiVersion) << ") ")
+                                        .str();
 
-    if(not(vk::apiVersionMajor(physical_api_version) >= vk::apiVersionMajor(api_version)
-           and vk::apiVersionMinor(physical_api_version) >= vk::apiVersionMinor(api_version)))
+    if(vk::ApiVersion13 > physical_device_properties.properties.apiVersion)
     {
-      logging::warning() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
-                         << physical_device_properties_12.driverName.data()
-                         << ") is not suitable because it only supports vulkan api version "
-                         << vk::apiVersionMajor(physical_api_version) << '.'
-                         << vk::apiVersionMinor(physical_api_version) << '.'
-                         << vk::apiVersionPatch(physical_api_version) << " and we require "
-                         << vk::apiVersionMajor(api_version) << '.' << vk::apiVersionMinor(api_version) << '.'
-                         << vk::apiVersionPatch(api_version);
+      logging::warning() << physical_device_name << "is not suitable because it only supports vulkan api version "
+                         << vk::apiVersionMajor(physical_device_properties.properties.apiVersion) << '.'
+                         << vk::apiVersionMinor(physical_device_properties.properties.apiVersion) << '.'
+                         << vk::apiVersionPatch(physical_device_properties.properties.apiVersion) << " and we require "
+                         << vk::apiVersionMajor(vk::ApiVersion13) << '.' << vk::apiVersionMinor(vk::ApiVersion13) << '.'
+                         << vk::apiVersionPatch(vk::ApiVersion13);
       continue;
     }
 
@@ -404,37 +403,27 @@ khronos::graphical_device::graphical_device(std::shared_ptr<vk::raii::Context co
 
     if(not device_extensions)
     {
-      logging::warning() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
-                         << physical_device_properties_12.driverName.data()
-                         << ") is not suitable because it's missing physical device extensions: "
+      logging::warning() << physical_device_name << "is not suitable because it's missing physical device extensions: "
                          << device_extensions.error();
       continue;
     }
 
-    logging::verbose() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
-                       << physical_device_properties_12.driverName.data()
-                       << ") has got all required physical device extensions: " << *device_extensions;
+    logging::verbose() << physical_device_name
+                       << "has got all required physical device extensions: " << *device_extensions;
 
-    auto const unavailable_features_indices
-      = ::detail::find_unavailable_feature_indices(potential_physical_device, required_physical_device_features);
+    auto const unavailable_features_indices = ::detail::find_unavailable_feature_indices(
+      potential_physical_device,
+      required_physical_device_features);
 
     if(not unavailable_features_indices.empty())
     {
-      if(unavailable_features_indices.size() == 1)
-        logging::warning() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
-                           << physical_device_properties_12.driverName.data()
-                           << ") is not suitable because it's missing " << unavailable_features_indices.size()
-                           << " required physical device feature at index " << unavailable_features_indices.front();
-      else
-        logging::warning() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
-                           << physical_device_properties_12.driverName.data()
-                           << ") is not suitable because it's missing " << unavailable_features_indices.size()
-                           << " required physical device features at indices " << unavailable_features_indices;
+      logging::warning() << physical_device_name << "is not suitable because it's missing "
+                         << unavailable_features_indices.size() << " required physical device features at indices "
+                         << unavailable_features_indices;
       continue;
     }
 
-    logging::verbose() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
-                       << physical_device_properties_12.driverName.data() << ") has all requires device features";
+    logging::verbose() << physical_device_name << "has all requires device features";
 
     auto const queue_family_properties = potential_physical_device->getQueueFamilyProperties();
 
@@ -445,9 +434,7 @@ khronos::graphical_device::graphical_device(std::shared_ptr<vk::raii::Context co
 
     if(transfer_queue_family_index == queue_family_properties.size())
     {
-      logging::warning() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
-                         << physical_device_properties_12.driverName.data()
-                         << ") is not suitable because it's missing the transfer queue family";
+      logging::warning() << physical_device_name << "is not suitable because it's missing the transfer queue family";
       continue;
     }
 
@@ -458,9 +445,7 @@ khronos::graphical_device::graphical_device(std::shared_ptr<vk::raii::Context co
 
     if(graphics_queue_family_index == queue_family_properties.size())
     {
-      logging::warning() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
-                         << physical_device_properties_12.driverName.data()
-                         << ") is not suitable because it's missing the graphics queue family";
+      logging::warning() << physical_device_name << "is not suitable because it's missing the graphics queue family";
       continue;
     }
 
@@ -471,9 +456,7 @@ khronos::graphical_device::graphical_device(std::shared_ptr<vk::raii::Context co
 
     if(present_queue_family_index == queue_family_properties.size())
     {
-      logging::warning() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
-                         << physical_device_properties_12.driverName.data()
-                         << ") is not suitable because it's missing the present queue family";
+      logging::warning() << physical_device_name << "is not suitable because it's missing the present queue family";
       continue;
     }
 
@@ -481,29 +464,30 @@ khronos::graphical_device::graphical_device(std::shared_ptr<vk::raii::Context co
        or graphics_queue_family_index != present_queue_family_index
        or present_queue_family_index != transfer_queue_family_index)
     {
-      logging::warning() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
-                         << physical_device_properties_12.driverName.data()
-                         << ") is not suitable because the transfer queue family index " << transfer_queue_family_index
-                         << " and the graphics queue family index " << graphics_queue_family_index
-                         << " and the present queue family index " << present_queue_family_index << " are different";
+      logging::warning() << physical_device_name << "is not suitable because the transfer queue family index "
+                         << transfer_queue_family_index << " and the graphics queue family index "
+                         << graphics_queue_family_index << " and the present queue family index "
+                         << present_queue_family_index << " are different";
       continue;
     }
 
-    logging::verbose() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
-                       << physical_device_properties_12.driverName.data()
-                       << ") has transfer, graphics, and present queue family at index " << transfer_queue_family_index;
+    logging::verbose() << physical_device_name << "has transfer, graphics, and present queue family at index "
+                       << transfer_queue_family_index;
 
     if(::detail::score(potential_physical_device) < ::detail::score(physical_device))
       continue;
+
+    logging::info() << physical_device_name << "is suitable";
 
     physical_device = potential_physical_device;
 
     auto const surface_capabilities = potential_physical_device->getSurfaceCapabilitiesKHR(*surface);
 
-    auto const min_image_count
-      = surface_capabilities.maxImageCount == 0
-        ? std::max(3u, surface_capabilities.minImageCount)
-        : std::clamp(3u, surface_capabilities.minImageCount, surface_capabilities.maxImageCount);
+    auto const min_image_count = surface_capabilities.maxImageCount == 0
+                                 ? std::max(3u, surface_capabilities.minImageCount)
+                                 : std::clamp(3u,
+                                              surface_capabilities.minImageCount,
+                                              surface_capabilities.maxImageCount);
 
     default_swapchain_create_info = detail::make_shared_with_data<vk::SwapchainCreateInfoKHR const>(
       vk::SwapchainCreateInfoKHR{}
@@ -521,44 +505,44 @@ khronos::graphical_device::graphical_device(std::shared_ptr<vk::raii::Context co
 
     detail::emplace_data(default_swapchain_create_info, surface);
 
-    transfer_and_graphics_and_present_queue_family_index = transfer_queue_family_index;
+    queue_family_index = transfer_queue_family_index;
   };
 
   if(not physical_device)
     throw std::runtime_error("there are no suitable physical devices");
 
-  auto const & [physical_device_properties, physical_device_properties_12]
-    = physical_device->getProperties2<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceVulkan12Properties>();
+  auto const & [physical_device_properties,
+                physical_device_properties_12] = physical_device
+                                                   ->getProperties2<vk::PhysicalDeviceProperties2,
+                                                                    vk::PhysicalDeviceVulkan12Properties>();
 
-  logging::info() << "physical device: " << physical_device_properties.properties.deviceName.data() << " ("
-                  << physical_device_properties_12.driverName.data() << ") is suitable";
+  logging::info() << physical_device_properties.properties.deviceName.data() << " : "
+                  << physical_device_properties_12.driverName.data() << " ("
+                  << vk::apiVersionMajor(physical_device_properties.properties.apiVersion)
+                  << vk::apiVersionMinor(physical_device_properties.properties.apiVersion)
+                  << vk::apiVersionPatch(physical_device_properties.properties.apiVersion) << ") has been selected";
 
   constexpr auto queue_priority = 0.5f;
 
-  auto const graphics_and_present_device_queue_create_infos
-    = vk::DeviceQueueCreateInfo{}
-        .setQueueFamilyIndex(transfer_and_graphics_and_present_queue_family_index)
-        .setQueueCount(1)
-        .setQueuePriorities(queue_priority);
+  auto const queue_create_infos = vk::DeviceQueueCreateInfo{}
+                                    .setQueueFamilyIndex(queue_family_index)
+                                    .setQueueCount(1)
+                                    .setQueuePriorities(queue_priority);
 
   auto const required_device_extensions = ::detail::get_required_device_extensions(physical_device);
 
-  auto const & [device_create_info, _] = vk::StructureChain{
-    vk::DeviceCreateInfo{}
-      .setQueueCreateInfos(graphics_and_present_device_queue_create_infos)
-      .setPEnabledExtensionNames(*required_device_extensions),
-    required_physical_device_features.get(),
-  };
+  auto const & [device_create_info, _] = vk::StructureChain{vk::DeviceCreateInfo{}
+                                                              .setQueueCreateInfos(queue_create_infos)
+                                                              .setPEnabledExtensionNames(*required_device_extensions),
+                                                            required_physical_device_features.get()};
 
   device = detail::make_shared_with_data<vk::raii::Device const>(*physical_device, device_create_info);
 
-  auto const graphics_and_present_queue_create_info
-    = vk::DeviceQueueInfo2{}.setQueueFamilyIndex(transfer_and_graphics_and_present_queue_family_index).setQueueIndex(0);
+  auto const device_queue_info = vk::DeviceQueueInfo2{}.setQueueFamilyIndex(queue_family_index).setQueueIndex(0);
 
   detail::emplace_data(device, physical_device);
 
-  transfer_and_graphics_and_present_queue
-    = detail::make_shared_with_data<vk::raii::Queue const>(*device, graphics_and_present_queue_create_info);
+  queue = detail::make_shared_with_data<vk::raii::Queue const>(*device, device_queue_info);
 
-  detail::emplace_data(transfer_and_graphics_and_present_queue, device);
+  detail::emplace_data(queue, device);
 }

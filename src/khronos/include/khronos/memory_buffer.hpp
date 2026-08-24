@@ -11,12 +11,6 @@
 
 namespace khronos
 {
-struct vertex
-{
-    std::array<float, 2> pos;
-    std::array<float, 3> colour;
-};
-
 class memory_buffer
 {
   public:
@@ -34,7 +28,7 @@ class memory_buffer
     memory_buffer(std::shared_ptr<vk::raii::PhysicalDevice const> const & physical_device,
                   std::shared_ptr<vk::raii::Device const> const &         device,
                   vk::DeviceSize const                                    size,
-                  vk::BufferUsageFlags2 const                             usage,
+                  vk::BufferUsageFlags const                              usage,
                   vk::MemoryPropertyFlags const                           properties);
 
     vk::DeviceSize                                size;
@@ -96,7 +90,7 @@ class transfer_buffer : public memory_buffer
     transfer_buffer(std::shared_ptr<vk::raii::PhysicalDevice const> const & physical_device,
                     std::shared_ptr<vk::raii::Device const> const &         device,
                     vk::DeviceSize const                                    size,
-                    vk::BufferUsageFlags2 const                             usage);
+                    vk::BufferUsageFlags const                              usage);
 };
 
 class vertex_transfer_buffer : public transfer_buffer
