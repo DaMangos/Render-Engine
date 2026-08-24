@@ -1,5 +1,5 @@
 .PHONY: all
-all: format shaders release debug test_release test_debug
+all: format release debug test
 
 .PHONY: help
 help :
@@ -8,6 +8,7 @@ help :
 	@echo format
 	@echo release
 	@echo debug
+	@echo test
 	@echo test_release
 	@echo test_debug
 	@echo shaders
@@ -43,6 +44,13 @@ release: shaders
 debug: shaders
 	@make -f $(CURDIR)/make/cpp.mk --warn-undefined-variables ROOTDIR="$(CURDIR)" BUILD_MODE="debug/build"
 	@echo finished debug build
+
+.PHONY: test
+test: shaders
+	@make -f $(CURDIR)/make/cpp.mk --warn-undefined-variables ROOTDIR="$(CURDIR)" BUILD_MODE="debug/test"
+	@make -f $(CURDIR)/make/cpp.mk --warn-undefined-variables ROOTDIR="$(CURDIR)" BUILD_MODE="release/test"
+	@echo finished test
+
 
 .PHONY: test_release
 test_release: shaders

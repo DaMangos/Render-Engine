@@ -1,6 +1,6 @@
 #include "internal.hpp"
 
-#include <glfw/window.hpp>
+#include <GLFW/glfw3.h>
 
 glfw::library glfw::internal::init_library()
 {

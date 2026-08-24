@@ -1,4 +1,4 @@
-#include <logging/prefixedbuf.hpp>
+#include <logging/prefixed_syncbuf.hpp>
 
 #include <gtest/gtest.h>
 
@@ -9,11 +9,11 @@
 
 namespace
 {
-TEST(Prefixedbuf, AddsPrefix)
+TEST(prefixed_syncbuf, AddsPrefix)
 {
   std::ostringstream output;
 
-  logging::basic_prefixedbuf buffer{output, [] { return std::string{"[TEST] "}; }};
+  logging::basic_prefixed_syncbuf buffer{output, [] { return std::string{"[TEST] "}; }};
 
   std::ostream stream{&buffer};
 
@@ -22,18 +22,18 @@ TEST(Prefixedbuf, AddsPrefix)
   EXPECT_EQ(output.str(), "[TEST] hello\n");
 }
 
-TEST(Prefixedbuf, PrefixIsGeneratedWhenFlushed)
+TEST(prefixed_syncbuf, PrefixIsGeneratedWhenFlushed)
 {
   std::ostringstream output;
 
   int prefix_count = 0;
 
-  logging::basic_prefixedbuf buffer{output,
-                                    [&]
-                                    {
-                                      ++prefix_count;
-                                      return std::string{"prefix "};
-                                    }};
+  logging::basic_prefixed_syncbuf buffer{output,
+                                         [&]
+                                         {
+                                           ++prefix_count;
+                                           return std::string{"prefix "};
+                                         }};
 
   std::ostream stream{&buffer};
 
@@ -50,11 +50,11 @@ TEST(Prefixedbuf, PrefixIsGeneratedWhenFlushed)
   EXPECT_EQ(output.str(), "prefix one\nprefix two\n");
 }
 
-TEST(Prefixedbuf, MultipleWritesAreCombined)
+TEST(prefixed_syncbuf, MultipleWritesAreCombined)
 {
   std::ostringstream output;
 
-  logging::basic_prefixedbuf buffer{output, [] { return std::string{"[TEST] "}; }};
+  logging::basic_prefixed_syncbuf buffer{output, [] { return std::string{"[TEST] "}; }};
 
   std::ostream stream{&buffer};
 
@@ -65,11 +65,11 @@ TEST(Prefixedbuf, MultipleWritesAreCombined)
   EXPECT_EQ(output.str(), "[TEST] hello world\n");
 }
 
-TEST(Prefixedbuf, EmptyFlushDoesNothing)
+TEST(prefixed_syncbuf, EmptyFlushDoesNothing)
 {
   std::ostringstream output;
 
-  logging::basic_prefixedbuf buffer{output, [] { return std::string{"[TEST] "}; }};
+  logging::basic_prefixed_syncbuf buffer{output, [] { return std::string{"[TEST] "}; }};
 
   std::ostream stream{&buffer};
 
@@ -78,11 +78,11 @@ TEST(Prefixedbuf, EmptyFlushDoesNothing)
   EXPECT_TRUE(output.str().empty());
 }
 
-TEST(Prefixedbuf, BufferIsClearedAfterFlush)
+TEST(prefixed_syncbuf, BufferIsClearedAfterFlush)
 {
   std::ostringstream output;
 
-  logging::basic_prefixedbuf buffer{output, [] { return std::string{"[TEST] "}; }};
+  logging::basic_prefixed_syncbuf buffer{output, [] { return std::string{"[TEST] "}; }};
 
   std::ostream stream{&buffer};
 
@@ -97,13 +97,13 @@ TEST(Prefixedbuf, BufferIsClearedAfterFlush)
   EXPECT_TRUE(buffer.str().empty());
 }
 
-TEST(Prefixedbuf, PrefixCanDependOnState)
+TEST(prefixed_syncbuf, PrefixCanDependOnState)
 {
   std::ostringstream output;
 
   int value = 0;
 
-  logging::basic_prefixedbuf buffer{output, [&] { return std::to_string(value) + ": "; }};
+  logging::basic_prefixed_syncbuf buffer{output, [&] { return std::to_string(value) + ": "; }};
 
   std::ostream stream{&buffer};
 
@@ -118,12 +118,12 @@ TEST(Prefixedbuf, PrefixCanDependOnState)
             "2: two\n");
 }
 
-TEST(Prefixedbuf, DestructorFlushesBuffer)
+TEST(prefixed_syncbuf, DestructorFlushesBuffer)
 {
   std::ostringstream output;
 
   {
-    logging::basic_prefixedbuf buffer{output, [] { return std::string{"[TEST] "}; }};
+    logging::basic_prefixed_syncbuf buffer{output, [] { return std::string{"[TEST] "}; }};
 
     std::ostream stream{&buffer};
 
@@ -133,11 +133,11 @@ TEST(Prefixedbuf, DestructorFlushesBuffer)
   EXPECT_EQ(output.str(), "[TEST] hello\n");
 }
 
-TEST(Prefixedbuf, FailingWrappedStreamCausesFlushToFail)
+TEST(prefixed_syncbuf, FailingWrappedStreamCausesFlushToFail)
 {
   std::ostringstream output;
 
-  logging::basic_prefixedbuf buffer{output, [] { return std::string{"[TEST] "}; }};
+  logging::basic_prefixed_syncbuf buffer{output, [] { return std::string{"[TEST] "}; }};
 
   std::ostream stream{&buffer};
 
@@ -149,13 +149,13 @@ TEST(Prefixedbuf, FailingWrappedStreamCausesFlushToFail)
   EXPECT_TRUE(output.str().empty());
 }
 
-TEST(Prefixedbuf, DifferentBuffersCanWrapDifferentStreams)
+TEST(prefixed_syncbuf, DifferentBuffersCanWrapDifferentStreams)
 {
   std::ostringstream output1;
   std::ostringstream output2;
 
-  logging::basic_prefixedbuf buffer1{output1, [] { return std::string{"one: "}; }};
-  logging::basic_prefixedbuf buffer2{output2, [] { return std::string{"two: "}; }};
+  logging::basic_prefixed_syncbuf buffer1{output1, [] { return std::string{"one: "}; }};
+  logging::basic_prefixed_syncbuf buffer2{output2, [] { return std::string{"two: "}; }};
 
   std::ostream stream1{&buffer1};
   std::ostream stream2{&buffer2};
@@ -167,11 +167,11 @@ TEST(Prefixedbuf, DifferentBuffersCanWrapDifferentStreams)
   EXPECT_EQ(output2.str(), "two: world\n");
 }
 
-TEST(Prefixedbuf, WideCharacters)
+TEST(prefixed_syncbuf, WideCharacters)
 {
   std::wostringstream output;
 
-  logging::wprefixedbuf<decltype([] { return std::wstring{L"[TEST] "}; })> buffer{output, {}};
+  logging::wprefixed_syncbuf<decltype([] { return std::wstring{L"[TEST] "}; })> buffer{output, {}};
 
   std::wostream stream{&buffer};
 
@@ -180,11 +180,11 @@ TEST(Prefixedbuf, WideCharacters)
   EXPECT_EQ(output.str(), L"[TEST] hello\n");
 }
 
-TEST(Prefixedbuf, WideCharactersMultipleWrites)
+TEST(prefixed_syncbuf, WideCharactersMultipleWrites)
 {
   std::wostringstream output;
 
-  logging::wprefixedbuf<decltype([] { return std::wstring{L"[TEST] "}; })> buffer{output, {}};
+  logging::wprefixed_syncbuf<decltype([] { return std::wstring{L"[TEST] "}; })> buffer{output, {}};
 
   std::wostream stream{&buffer};
 
@@ -195,7 +195,7 @@ TEST(Prefixedbuf, WideCharactersMultipleWrites)
   EXPECT_EQ(output.str(), L"[TEST] hello world\n");
 }
 
-TEST(Prefixedbuf, ConcurrentWritesAreNotInterleaved)
+TEST(prefixed_syncbuf, ConcurrentWritesAreNotInterleaved)
 {
   std::stringstream inoutput;
 
@@ -209,7 +209,7 @@ TEST(Prefixedbuf, ConcurrentWritesAreNotInterleaved)
     threads.emplace_back(
       [&inoutput, thread]
       {
-        logging::basic_prefixedbuf buffer{inoutput, [] { return std::string{"[TEST] "}; }};
+        logging::basic_prefixed_syncbuf buffer{inoutput, [] { return std::string{"[TEST] "}; }};
 
         std::ostream stream{&buffer};
 

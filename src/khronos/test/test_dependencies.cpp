@@ -1,7 +1,8 @@
-#include <khronos/dependencies.hpp>
+#include <../src/dependencies.hpp>
 
 #include <gtest/gtest.h>
 
+#include <functional>
 #include <utility>
 
 namespace
@@ -22,6 +23,42 @@ struct D
 {
 };
 
+static_assert(std::tuple_size_v<khronos::dependencies<A>> == 1);
+static_assert(std::tuple_size_v<khronos::dependencies<A, B>> == 2);
+static_assert(std::tuple_size_v<khronos::dependencies<A, B, C>> == 3);
+static_assert(std::tuple_size_v<khronos::dependencies<A, B, C, D>> == 4);
+static_assert(std::same_as<std::tuple_element_t<0, khronos::dependencies<A, B, C, D>>, A const &>);
+static_assert(std::same_as<std::tuple_element_t<1, khronos::dependencies<A, B, C, D>>, B const &>);
+static_assert(std::same_as<std::tuple_element_t<2, khronos::dependencies<A, B, C, D>>, C const &>);
+static_assert(std::same_as<std::tuple_element_t<3, khronos::dependencies<A, B, C, D>>, D const &>);
+
+TEST(DependentTest, StructuredBindings)
+{
+  khronos::dependent<A> a;
+  khronos::dependent<B> b;
+
+  auto deps = khronos::dependency_union(a.as_dependencies(), b.as_dependencies());
+
+  static_assert(std::is_same_v<decltype(deps), khronos::dependencies<A, B>>);
+
+  EXPECT_EQ(&deps.get<A>(), &a.get());
+  EXPECT_EQ(&deps.get<B>(), &b.get());
+
+  EXPECT_EQ(&deps.get<0>(), &a.get());
+  EXPECT_EQ(&deps.get<1>(), &b.get());
+
+  EXPECT_EQ(&khronos::get<A>(deps), &a.get());
+  EXPECT_EQ(&khronos::get<B>(deps), &b.get());
+
+  EXPECT_EQ(&khronos::get<0>(deps), &a.get());
+  EXPECT_EQ(&khronos::get<1>(deps), &b.get());
+
+  auto const & [a_dep, b_dep] = deps;
+
+  EXPECT_EQ(&a_dep, &a.get());
+  EXPECT_EQ(&b_dep, &b.get());
+}
+
 TEST(DependentTest, CleanUpInvoked)
 {
   bool destructor_called = false;
@@ -35,28 +72,29 @@ TEST(DependentTest, CleanUpInvoked)
 
 TEST(DependentTest, CleanUpInvokedWithDependencies)
 {
-  bool destructor_called = false;
+  bool cleanup_invoked = false;
 
   khronos::dependent<A> a;
 
   {
-    khronos::dependent<bool *, khronos::dependencies<A>>([](bool *& destructor_called) { *destructor_called = true; },
+    khronos::dependent<bool *, khronos::dependencies<A>>([](bool *& cleanup_invoked, A const &)
+                                                         { *cleanup_invoked = true; },
                                                          a.as_dependencies(),
-                                                         &destructor_called);
+                                                         &cleanup_invoked);
   }
 
-  EXPECT_TRUE(destructor_called);
+  EXPECT_TRUE(cleanup_invoked);
+}
 
-  destructor_called = false;
+TEST(DependentTest, CleanUpInvokedWithoutDependencies)
+{
+  bool cleanup_invoked = false;
 
   {
-    khronos::dependent<bool *, khronos::dependencies<A>>([](bool *& destructor_called, A const &)
-                                                         { *destructor_called = true; },
-                                                         a.as_dependencies(),
-                                                         &destructor_called);
+    khronos::dependent<bool *>([](bool *& cleanup_invoked) { *cleanup_invoked = true; }, &cleanup_invoked);
   }
 
-  EXPECT_TRUE(destructor_called);
+  EXPECT_TRUE(cleanup_invoked);
 }
 
 TEST(DependentTest, DependencyIsRetained)

@@ -1,51 +1,50 @@
-#pragma once
+// #pragma once
 
-#include <khronos/fwd.hpp>
-#include <khronos/present_window.hpp>
+// #include <khronos/fwd.hpp>
+// #include <khronos/present_window.hpp>
 
-#include <vulkan/vulkan_raii.hpp>
+// #include <vulkan/vulkan_raii.hpp>
 
-#include <list>
-#include <memory>
-#include <vector>
+// #include <list>
+// #include <memory>
+// #include <vector>
 
-namespace khronos
-{
-class render_window : public present_window
-{
-  public:
+// namespace khronos
+// {
+// class render_window : public present_window
+// {
+//   private:
+//     virtual void when_framebuffer_resized(glfw::dimensions<int, 2> const &) override;
 
-  private:
-    friend class graphical_device;
+//     friend graphical_device;
 
-    render_window(present_window &&                                         window,
-                  std::shared_ptr<vk::raii::PhysicalDevice const> const &   physical_device,
-                  std::shared_ptr<vk::raii::Device const> const &           device,
-                  std::shared_ptr<vk::SwapchainCreateInfoKHR const> const & default_swapchain_create_info,
-                  std::shared_ptr<vk::raii::Queue const> const &            graphics_and_present_queue,
-                  std::uint32_t const                                       graphics_and_present_queue_family_index);
+//     render_window(graphical_device const & graphical_device, present_window && present_window);
 
-    std::shared_ptr<vk::SwapchainCreateInfoKHR>   swapchain_create_info;
-    std::shared_ptr<vk::raii::SwapchainKHR const> swapchain;
+//     handle<vk::raii::Device, dependences<vk::raii::PhysicalDevice>> device = nullhandle;
 
-    struct image
-    {
-        vk::Image                                  image;
-        std::shared_ptr<vk::raii::ImageView const> image_view;
-        std::shared_ptr<vk::raii::Semaphore const> render_complete_semaphores;
-    };
+//     vk::SwapchainCreateInfoKHR swapchain_create_info;
 
-    std::vector<image> images;
+//     handle<vk::raii::SwapchainKHR, dependences<vk::raii::Device, vk::raii::SurfaceKHR, vk::raii::Queue>>
+//       swapchain = nullhandle;
 
-    std::shared_ptr<vk::raii::CommandPool const> command_pool;
+//     struct image
+//     {
+//         vk::Image                                  image;
+//         std::shared_ptr<vk::raii::ImageView const> image_view;
+//         std::shared_ptr<vk::raii::Semaphore const> render_complete_semaphores;
+//     };
 
-    struct frame
-    {
-        std::shared_ptr<vk::raii::CommandBuffer const> command_buffer;
-        std::shared_ptr<vk::raii::Fence const>         in_flight_fence;
-        std::shared_ptr<vk::raii::Semaphore const>     present_complete_semaphores;
-    };
+//     std::vector<image> images;
 
-    std::list<frame> frames;
-};
-}
+//     handle<vk::raii::CommandPool, dependences<vk::raii::Device>> command_pool = nullhandle;
+
+//     struct frame
+//     {
+//         std::shared_ptr<vk::raii::CommandBuffer const> command_buffer;
+//         std::shared_ptr<vk::raii::Fence const>         in_flight_fence;
+//         std::shared_ptr<vk::raii::Semaphore const>     present_complete_semaphores;
+//     };
+
+//     std::list<frame> frames;
+// };
+// }

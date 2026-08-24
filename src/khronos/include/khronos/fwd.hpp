@@ -20,4 +20,5 @@ struct vertex
     std::array<float, 2> pos;
     std::array<float, 3> colour;
 };
+
 }

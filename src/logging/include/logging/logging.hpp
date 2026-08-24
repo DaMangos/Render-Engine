@@ -1,6 +1,6 @@
 #pragma once
 
-#include <logging/prefixedostream.hpp>
+#include <logging/prefixed_syncstream.hpp>
 
 #include <ostream>
 
@@ -17,26 +17,26 @@ extern std::wostream * default_wwarning_out;
 extern std::wostream * default_werror_out;
 
 [[nodiscard]]
-prefixedostream verbose(std::ostream * const out = default_verbose_out);
+prefixed_syncstream verbose(std::ostream * const out = default_verbose_out);
 
 [[nodiscard]]
-prefixedostream info(std::ostream * const out = default_info_out);
+prefixed_syncstream info(std::ostream * const out = default_info_out);
 
 [[nodiscard]]
-prefixedostream warning(std::ostream * const out = default_warning_out);
+prefixed_syncstream warning(std::ostream * const out = default_warning_out);
 
 [[nodiscard]]
-prefixedostream error(std::ostream * const out = default_error_out);
+prefixed_syncstream error(std::ostream * const out = default_error_out);
 
 [[nodiscard]]
-wprefixedostream wverbose(std::wostream * const out = default_wverbose_out);
+wprefixed_syncstream wverbose(std::wostream * const out = default_wverbose_out);
 
 [[nodiscard]]
-wprefixedostream winfo(std::wostream * const out = default_winfo_out);
+wprefixed_syncstream winfo(std::wostream * const out = default_winfo_out);
 
 [[nodiscard]]
-wprefixedostream wwarning(std::wostream * const out = default_wwarning_out);
+wprefixed_syncstream wwarning(std::wostream * const out = default_wwarning_out);
 
 [[nodiscard]]
-wprefixedostream werror(std::wostream * const out = default_werror_out);
+wprefixed_syncstream werror(std::wostream * const out = default_werror_out);
 }

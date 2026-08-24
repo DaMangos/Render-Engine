@@ -1,4 +1,5 @@
-#include <logging/serialize.hpp>
+#include <serialize/ranges.hpp>
+#include <serialize/tuple.hpp>
 
 #include <gtest/gtest.h>
 
@@ -13,10 +14,11 @@
 
 namespace
 {
-using namespace logging::serialize;
+using namespace serialize::ranges;
+using namespace serialize::tuple;
 using namespace std::literals;
 
-TEST(Serialize, SerializesEmptyVector)
+TEST(SerializeRange, EmptyVector)
 {
   std::ostringstream stream;
 
@@ -25,7 +27,7 @@ TEST(Serialize, SerializesEmptyVector)
   EXPECT_EQ(stream.str(), "[]");
 }
 
-TEST(Serialize, SerializesVector)
+TEST(SerializeRange, Vector)
 {
   std::ostringstream stream;
 
@@ -34,7 +36,7 @@ TEST(Serialize, SerializesVector)
   EXPECT_EQ(stream.str(), "[1, 2, 3]");
 }
 
-TEST(Serialize, SerializesArray)
+TEST(SerializeRange, Array)
 {
   std::ostringstream stream;
 
@@ -43,7 +45,7 @@ TEST(Serialize, SerializesArray)
   EXPECT_EQ(stream.str(), "[1, 2, 3]");
 }
 
-TEST(Serialize, SerializesList)
+TEST(SerializeRange, List)
 {
   std::ostringstream stream;
 
@@ -52,7 +54,7 @@ TEST(Serialize, SerializesList)
   EXPECT_EQ(stream.str(), "[4, 5, 6]");
 }
 
-TEST(Serialize, SerializesRangeOfCharArrays)
+TEST(SerializeRange, RangeOfCharArrays)
 {
   std::ostringstream stream;
 
@@ -61,7 +63,7 @@ TEST(Serialize, SerializesRangeOfCharArrays)
   EXPECT_EQ(stream.str(), "[one, two, three]");
 }
 
-TEST(Serialize, SerializesRangeOfStrings)
+TEST(SerializeRange, RangeOfStrings)
 {
   std::ostringstream stream;
 
@@ -70,7 +72,7 @@ TEST(Serialize, SerializesRangeOfStrings)
   EXPECT_EQ(stream.str(), "[one, two, three]");
 }
 
-TEST(Serialize, SerializesRangeOfStringViews)
+TEST(SerializeRange, RangeOfStringViews)
 {
   std::ostringstream stream;
 
@@ -79,7 +81,7 @@ TEST(Serialize, SerializesRangeOfStringViews)
   EXPECT_EQ(stream.str(), "[one, two, three]");
 }
 
-TEST(Serialize, SerializesRangeOfPaths)
+TEST(SerializeRange, RangeOfPaths)
 {
   std::ostringstream stream;
 
@@ -88,7 +90,7 @@ TEST(Serialize, SerializesRangeOfPaths)
   EXPECT_EQ(stream.str(), "[\"one\", \"two\", \"three\"]");
 }
 
-TEST(Serialize, SerializesStringAsCharArrays)
+TEST(SerializeRange, StringAsCharArrays)
 {
   std::ostringstream stream;
 
@@ -97,7 +99,7 @@ TEST(Serialize, SerializesStringAsCharArrays)
   EXPECT_EQ(stream.str(), "hello");
 }
 
-TEST(Serialize, SerializesStringAsString)
+TEST(SerializeRange, StringAsString)
 {
   std::ostringstream stream;
 
@@ -106,7 +108,7 @@ TEST(Serialize, SerializesStringAsString)
   EXPECT_EQ(stream.str(), "hello");
 }
 
-TEST(Serialize, SerializesStringViewAsString)
+TEST(SerializeRange, StringViewAsString)
 {
   std::ostringstream stream;
 
@@ -115,7 +117,7 @@ TEST(Serialize, SerializesStringViewAsString)
   EXPECT_EQ(stream.str(), "hello");
 }
 
-TEST(Serialize, SerializesStringViewAsPath)
+TEST(SerializeRange, StringViewAsPath)
 {
   std::ostringstream stream;
 
@@ -124,7 +126,7 @@ TEST(Serialize, SerializesStringViewAsPath)
   EXPECT_EQ(stream.str(), "\"hello\"");
 }
 
-TEST(Serialize, SerializesNestedVectors)
+TEST(SerializeRange, NestedVectors)
 {
   std::ostringstream stream;
 
@@ -137,7 +139,7 @@ TEST(Serialize, SerializesNestedVectors)
   EXPECT_EQ(stream.str(), "[[1, 2], [3, 4], [5, 6]]");
 }
 
-TEST(Serialize, SerializesEmptyNestedRanges)
+TEST(SerializeRange, EmptyNestedRanges)
 {
   std::ostringstream stream;
 
@@ -150,47 +152,7 @@ TEST(Serialize, SerializesEmptyNestedRanges)
   EXPECT_EQ(stream.str(), "[[], [1, 2], []]");
 }
 
-TEST(Serialize, SerializesTuple)
-{
-  std::ostringstream stream;
-
-  stream << std::tuple{1, 2, 3};
-
-  EXPECT_EQ(stream.str(), "{1, 2, 3}");
-}
-
-TEST(Serialize, SerializesEmptyTuple)
-{
-  std::ostringstream stream;
-
-  stream << std::tuple{};
-
-  EXPECT_EQ(stream.str(), "{}");
-}
-
-TEST(Serialize, SerializesTupleWithDifferentTypes)
-{
-  std::ostringstream stream;
-
-  stream << std::tuple{42, "hello"s, 3.14};
-
-  EXPECT_EQ(stream.str(), "{42, hello, 3.14}");
-}
-
-TEST(Serialize, SerializesNestedTuple)
-{
-  std::ostringstream stream;
-
-  stream << std::tuple{
-    1,
-    std::tuple{2, 3},
-    4
-  };
-
-  EXPECT_EQ(stream.str(), "{1, {2, 3}, 4}");
-}
-
-TEST(Serialize, SerializesVectorOfTuples)
+TEST(SerializeRange, VectorOfTuples)
 {
   std::ostringstream stream;
 
@@ -203,7 +165,7 @@ TEST(Serialize, SerializesVectorOfTuples)
   EXPECT_EQ(stream.str(), "[{1, 2}, {3, 4}, {5, 6}]");
 }
 
-TEST(Serialize, SerializesArrayOfTuples)
+TEST(SerializeRange, ArrayOfTuples)
 {
   std::ostringstream stream;
 
@@ -215,32 +177,7 @@ TEST(Serialize, SerializesArrayOfTuples)
   EXPECT_EQ(stream.str(), "[{1, 2}, {3, 4}]");
 }
 
-TEST(Serialize, SerializesTupleContainingVector)
-{
-  std::ostringstream stream;
-
-  stream << std::tuple{
-    1,
-    std::vector{2, 3},
-    4
-  };
-
-  EXPECT_EQ(stream.str(), "{1, [2, 3], 4}");
-}
-
-TEST(Serialize, SerializesNestedTupleAndRange)
-{
-  std::ostringstream stream;
-
-  stream << std::tuple{
-    std::vector{                1, 2},
-    std::tuple{std::vector{3, 4}, 5}
-  };
-
-  EXPECT_EQ(stream.str(), "{[1, 2], {[3, 4], 5}}");
-}
-
-TEST(Serialize, SerializesVectorOfCharacters)
+TEST(SerializeRange, VectorOfCharacters)
 {
   std::ostringstream stream;
 
@@ -249,7 +186,7 @@ TEST(Serialize, SerializesVectorOfCharacters)
   EXPECT_EQ(stream.str(), "[a, b, c]");
 }
 
-TEST(Serialize, SerializesWideCharacterRange)
+TEST(SerializeRange, WideCharacterRange)
 {
   std::wostringstream stream;
 
@@ -258,7 +195,7 @@ TEST(Serialize, SerializesWideCharacterRange)
   EXPECT_EQ(stream.str(), L"[a, b, c]");
 }
 
-TEST(Serialize, SerializesWideString)
+TEST(SerializeRange, WideString)
 {
   std::wostringstream stream;
 
@@ -267,7 +204,7 @@ TEST(Serialize, SerializesWideString)
   EXPECT_EQ(stream.str(), L"hello");
 }
 
-TEST(Serialize, SerializesWithViews)
+TEST(SerializeRange, WithViews)
 {
   std::ostringstream stream;
 
@@ -277,20 +214,11 @@ TEST(Serialize, SerializesWithViews)
   EXPECT_EQ(stream.str(), "[f, b, b]");
 }
 
-TEST(Serialize, ReturnsTheOriginalStream)
+TEST(SerializeRange, ReturnsTheOriginalStream)
 {
   std::ostringstream stream;
 
   auto & result = (stream << std::vector{1, 2, 3});
-
-  EXPECT_EQ(&result, &stream);
-}
-
-TEST(Serialize, ReturnsTheOriginalStreamForTuple)
-{
-  std::ostringstream stream;
-
-  auto & result = (stream << std::tuple{1, 2, 3});
 
   EXPECT_EQ(&result, &stream);
 }

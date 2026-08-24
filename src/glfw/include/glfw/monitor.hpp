@@ -6,6 +6,8 @@
 #include <string_view>
 #include <vector>
 
+typedef struct GLFWmonitor GLFWmonitor;
+
 namespace glfw
 {
 class monitor

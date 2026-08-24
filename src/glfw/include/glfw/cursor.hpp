@@ -4,6 +4,8 @@
 
 #include <memory>
 
+typedef struct GLFWcursor GLFWcursor;
+
 namespace glfw
 {
 class cursor

@@ -6,6 +6,8 @@
 #include <glfw/window.hpp>
 #include <logging/logging.hpp>
 
+#include <GLFW/glfw3.h>
+
 #include <filesystem>
 #include <utility>
 

@@ -3,8 +3,6 @@
 #include <glfw/fwd.hpp>
 #include <khronos/fwd.hpp>
 
-#include <vulkan/vulkan_raii.hpp>
-
 #include <ostream>
 
 namespace khronos
@@ -17,41 +15,9 @@ class library
             std::ostream * const vk_warning_out,
             std::ostream * const vk_error_out);
 
-    library(library &&) noexcept = default;
-
-    library(library const &) noexcept = delete;
-
-    library & operator=(library &&) noexcept = default;
-
-    library & operator=(library const &) noexcept = delete;
-
-    ~library() = default;
-
-    [[nodiscard]]
-    present_window create_present_window(glfw::dimensions<int, 2> const & size, std::string const & title) const;
-
-    [[nodiscard]]
-    present_window create_present_window(glfw::dimensions<int, 2> const & size,
-                                         std::string const &              title,
-                                         glfw::window const &             share) const;
-
-    [[nodiscard]]
-    present_window create_present_window(glfw::dimensions<int, 2> const & size,
-                                         std::string const &              title,
-                                         glfw::monitor const &            monitor) const;
-
-    [[nodiscard]]
-    present_window create_present_window(glfw::dimensions<int, 2> const & size,
-                                         std::string const &              title,
-                                         glfw::window const &             share,
-                                         glfw::monitor const &            monitor) const;
-
-    [[nodiscard]]
-    graphical_device find_graphical_device(present_window const & window) const;
-
   private:
-    std::shared_ptr<vk::raii::Context const>                context;
-    std::shared_ptr<vk::raii::Instance const>               instance;
-    std::shared_ptr<vk::raii::DebugUtilsMessengerEXT const> debug_utils_messenger;
+    friend graphical_device;
+
+    std::unique_ptr<struct library_impl, void (*)(library_impl *)> ptr;
 };
 }

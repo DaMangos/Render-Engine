@@ -6,10 +6,11 @@
 
 #include <cuchar>
 #include <filesystem>
-#include <functional>
 #include <memory>
 #include <string>
 #include <string_view>
+
+typedef struct GLFWwindow GLFWwindow;
 
 namespace glfw
 {

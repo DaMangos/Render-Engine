@@ -2,6 +2,7 @@
 
 #include <glfw/library.hpp>
 #include <glfw/monitor.hpp>
+#include <glfw/window.hpp>
 
 #include <set>
 

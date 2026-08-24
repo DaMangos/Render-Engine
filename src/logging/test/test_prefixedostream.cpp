@@ -1,5 +1,5 @@
-#include <logging/prefixedbuf.hpp>
-#include <logging/prefixedostream.hpp>
+#include <logging/prefixed_syncbuf.hpp>
+#include <logging/prefixed_syncstream.hpp>
 
 #include <gtest/gtest.h>
 
@@ -9,9 +9,9 @@
 
 namespace
 {
-TEST(Prefixedostream, NullStreamIsConstructible)
+TEST(prefixed_syncstream, NullStreamIsConstructible)
 {
-  logging::prefixedostream stream{nullptr};
+  logging::prefixed_syncstream stream{nullptr};
 
   EXPECT_TRUE(stream.bad());
 
@@ -20,7 +20,7 @@ TEST(Prefixedostream, NullStreamIsConstructible)
   EXPECT_TRUE(stream.bad());
 }
 
-TEST(Prefixedostream, WritesToWrappedStream)
+TEST(prefixed_syncstream, WritesToWrappedStream)
 {
   std::ostringstream output;
 
@@ -29,16 +29,16 @@ TEST(Prefixedostream, WritesToWrappedStream)
     return std::string{"[TEST] "};
   };
 
-  auto buffer = std::make_unique<logging::basic_prefixedbuf<decltype(prefix), char>>(output, std::move(prefix));
+  auto buffer = std::make_unique<logging::basic_prefixed_syncbuf<decltype(prefix), char>>(output, std::move(prefix));
 
-  logging::prefixedostream stream{std::move(buffer)};
+  logging::prefixed_syncstream stream{std::move(buffer)};
 
   stream << "hello" << std::flush;
 
   EXPECT_EQ(output.str(), "[TEST] hello\n");
 }
 
-TEST(Prefixedostream, MultipleWritesAreCombined)
+TEST(prefixed_syncstream, MultipleWritesAreCombined)
 {
   std::ostringstream output;
 
@@ -47,9 +47,9 @@ TEST(Prefixedostream, MultipleWritesAreCombined)
     return std::string{"[TEST] "};
   };
 
-  auto buffer = std::make_unique<logging::basic_prefixedbuf<decltype(prefix), char>>(output, std::move(prefix));
+  auto buffer = std::make_unique<logging::basic_prefixed_syncbuf<decltype(prefix), char>>(output, std::move(prefix));
 
-  logging::prefixedostream stream{std::move(buffer)};
+  logging::prefixed_syncstream stream{std::move(buffer)};
 
   stream << "hello ";
   stream << "world";
@@ -59,7 +59,7 @@ TEST(Prefixedostream, MultipleWritesAreCombined)
   EXPECT_EQ(output.str(), "[TEST] hello world\n");
 }
 
-TEST(Prefixedostream, MultipleMessagesGetSeparatePrefixes)
+TEST(prefixed_syncstream, MultipleMessagesGetSeparatePrefixes)
 {
   std::ostringstream output;
 
@@ -68,9 +68,9 @@ TEST(Prefixedostream, MultipleMessagesGetSeparatePrefixes)
     return std::string{"[TEST] "};
   };
 
-  auto buffer = std::make_unique<logging::basic_prefixedbuf<decltype(prefix), char>>(output, std::move(prefix));
+  auto buffer = std::make_unique<logging::basic_prefixed_syncbuf<decltype(prefix), char>>(output, std::move(prefix));
 
-  logging::prefixedostream stream{std::move(buffer)};
+  logging::prefixed_syncstream stream{std::move(buffer)};
 
   stream << "first" << std::flush;
   stream << "second" << std::flush;
@@ -80,7 +80,7 @@ TEST(Prefixedostream, MultipleMessagesGetSeparatePrefixes)
             "[TEST] second\n");
 }
 
-TEST(Prefixedostream, PrefixIsEvaluatedForEachMessage)
+TEST(prefixed_syncstream, PrefixIsEvaluatedForEachMessage)
 {
   std::ostringstream output;
 
@@ -91,9 +91,9 @@ TEST(Prefixedostream, PrefixIsEvaluatedForEachMessage)
     return std::to_string(++count) + ": ";
   };
 
-  auto buffer = std::make_unique<logging::basic_prefixedbuf<decltype(prefix), char>>(output, std::move(prefix));
+  auto buffer = std::make_unique<logging::basic_prefixed_syncbuf<decltype(prefix), char>>(output, std::move(prefix));
 
-  logging::prefixedostream stream{std::move(buffer)};
+  logging::prefixed_syncstream stream{std::move(buffer)};
 
   stream << "first" << std::flush;
   stream << "second" << std::flush;
@@ -107,7 +107,7 @@ TEST(Prefixedostream, PrefixIsEvaluatedForEachMessage)
             "3: third\n");
 }
 
-TEST(Prefixedostream, FlushesThroughOstream)
+TEST(prefixed_syncstream, FlushesThroughOstream)
 {
   std::ostringstream output;
 
@@ -116,9 +116,9 @@ TEST(Prefixedostream, FlushesThroughOstream)
     return std::string{"[TEST] "};
   };
 
-  auto buffer = std::make_unique<logging::basic_prefixedbuf<decltype(prefix), char>>(output, std::move(prefix));
+  auto buffer = std::make_unique<logging::basic_prefixed_syncbuf<decltype(prefix), char>>(output, std::move(prefix));
 
-  logging::prefixedostream stream{std::move(buffer)};
+  logging::prefixed_syncstream stream{std::move(buffer)};
 
   stream << "hello";
 
@@ -129,7 +129,7 @@ TEST(Prefixedostream, FlushesThroughOstream)
   EXPECT_EQ(output.str(), "[TEST] hello\n");
 }
 
-TEST(Prefixedostream, MovedUniquePtrIsEmpty)
+TEST(prefixed_syncstream, MovedUniquePtrIsEmpty)
 {
   std::ostringstream output;
 
@@ -138,11 +138,11 @@ TEST(Prefixedostream, MovedUniquePtrIsEmpty)
     return std::string{"[TEST] "};
   };
 
-  auto buffer = std::make_unique<logging::basic_prefixedbuf<decltype(prefix), char>>(output, std::move(prefix));
+  auto buffer = std::make_unique<logging::basic_prefixed_syncbuf<decltype(prefix), char>>(output, std::move(prefix));
 
   auto * buffer_ptr = buffer.get();
 
-  logging::prefixedostream stream{std::move(buffer)};
+  logging::prefixed_syncstream stream{std::move(buffer)};
 
   EXPECT_EQ(buffer, nullptr);
 
@@ -152,7 +152,7 @@ TEST(Prefixedostream, MovedUniquePtrIsEmpty)
   EXPECT_EQ(stream.rdbuf(), buffer_ptr);
 }
 
-TEST(Prefixedostream, WideCharacters)
+TEST(prefixed_syncstream, WideCharacters)
 {
   std::wostringstream output;
 
@@ -161,16 +161,16 @@ TEST(Prefixedostream, WideCharacters)
     return std::wstring{L"[INFO] "};
   };
 
-  auto buffer = std::make_unique<logging::basic_prefixedbuf<decltype(prefix), wchar_t>>(output, std::move(prefix));
+  auto buffer = std::make_unique<logging::basic_prefixed_syncbuf<decltype(prefix), wchar_t>>(output, std::move(prefix));
 
-  logging::wprefixedostream stream{std::move(buffer)};
+  logging::wprefixed_syncstream stream{std::move(buffer)};
 
   stream << L"hello" << std::flush;
 
   EXPECT_EQ(output.str(), L"[INFO] hello\n");
 }
 
-TEST(Prefixedostream, WideCharactersMultipleWrites)
+TEST(prefixed_syncstream, WideCharactersMultipleWrites)
 {
   std::wostringstream output;
 
@@ -179,9 +179,9 @@ TEST(Prefixedostream, WideCharactersMultipleWrites)
     return std::wstring{L"[TEST] "};
   };
 
-  auto buffer = std::make_unique<logging::basic_prefixedbuf<decltype(prefix), wchar_t>>(output, std::move(prefix));
+  auto buffer = std::make_unique<logging::basic_prefixed_syncbuf<decltype(prefix), wchar_t>>(output, std::move(prefix));
 
-  logging::wprefixedostream stream{std::move(buffer)};
+  logging::wprefixed_syncstream stream{std::move(buffer)};
 
   stream << L"hello ";
   stream << L"world";

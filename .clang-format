@@ -82,7 +82,7 @@ QualifierOrder: [friend, static, inline, constexpr, volatile, restrict, type, co
 ReferenceAlignment: Middle
 ReflowComments: true
 RemoveSemicolon: false
-RequiresClausePosition: SingleLine
+RequiresClausePosition: WithPreceding
 RequiresExpressionIndentation: OuterScope
 SeparateDefinitionBlocks: Always
 SortIncludes: CaseInsensitive

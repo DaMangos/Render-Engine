@@ -1,5 +1,5 @@
 #include <logging/logging.hpp>
-#include <logging/prefixedbuf.hpp>
+#include <logging/prefixed_syncbuf.hpp>
 
 #include <chrono>
 #include <format>
@@ -178,82 +178,86 @@ std::wostream * logging::default_winfo_out    = &std::wclog;
 std::wostream * logging::default_wwarning_out = &std::wcerr;
 std::wostream * logging::default_werror_out   = &std::wcerr;
 
-logging::prefixedostream logging::verbose(std::ostream * const out)
+logging::prefixed_syncstream logging::verbose(std::ostream * const out)
 {
   if(not out)
-    return prefixedostream(nullptr);
+    return prefixed_syncstream(nullptr);
 
   return dynamic_cast<std::filebuf const *>(out->rdbuf())
-         ? prefixedostream(std::make_unique<prefixedbuf<verbose_prefix>>(*out, verbose_prefix{}))
-         : prefixedostream(std::make_unique<prefixedbuf<verbose_colour_prefix>>(*out, verbose_colour_prefix{}));
+         ? prefixed_syncstream(std::make_unique<prefixed_syncbuf<verbose_prefix>>(*out, verbose_prefix{}))
+         : prefixed_syncstream(
+             std::make_unique<prefixed_syncbuf<verbose_colour_prefix>>(*out, verbose_colour_prefix{}));
 }
 
-logging::prefixedostream logging::info(std::ostream * const out)
+logging::prefixed_syncstream logging::info(std::ostream * const out)
 {
   if(not out)
-    return prefixedostream(nullptr);
+    return prefixed_syncstream(nullptr);
 
   return dynamic_cast<std::filebuf const *>(out->rdbuf())
-         ? prefixedostream(std::make_unique<prefixedbuf<info_prefix>>(*out, info_prefix{}))
-         : prefixedostream(std::make_unique<prefixedbuf<info_colour_prefix>>(*out, info_colour_prefix{}));
+         ? prefixed_syncstream(std::make_unique<prefixed_syncbuf<info_prefix>>(*out, info_prefix{}))
+         : prefixed_syncstream(std::make_unique<prefixed_syncbuf<info_colour_prefix>>(*out, info_colour_prefix{}));
 }
 
-logging::prefixedostream logging::warning(std::ostream * const out)
+logging::prefixed_syncstream logging::warning(std::ostream * const out)
 {
   if(not out)
-    return prefixedostream(nullptr);
+    return prefixed_syncstream(nullptr);
 
   return dynamic_cast<std::filebuf const *>(out->rdbuf())
-         ? prefixedostream(std::make_unique<prefixedbuf<warn_prefix>>(*out, warn_prefix{}))
-         : prefixedostream(std::make_unique<prefixedbuf<warn_colour_prefix>>(*out, warn_colour_prefix{}));
+         ? prefixed_syncstream(std::make_unique<prefixed_syncbuf<warn_prefix>>(*out, warn_prefix{}))
+         : prefixed_syncstream(std::make_unique<prefixed_syncbuf<warn_colour_prefix>>(*out, warn_colour_prefix{}));
 }
 
-logging::prefixedostream logging::error(std::ostream * const out)
+logging::prefixed_syncstream logging::error(std::ostream * const out)
 {
   if(not out)
-    return prefixedostream(nullptr);
+    return prefixed_syncstream(nullptr);
 
   return dynamic_cast<std::filebuf const *>(out->rdbuf())
-         ? prefixedostream(std::make_unique<prefixedbuf<error_prefix>>(*out, error_prefix{}))
-         : prefixedostream(std::make_unique<prefixedbuf<error_colour_prefix>>(*out, error_colour_prefix{}));
+         ? prefixed_syncstream(std::make_unique<prefixed_syncbuf<error_prefix>>(*out, error_prefix{}))
+         : prefixed_syncstream(std::make_unique<prefixed_syncbuf<error_colour_prefix>>(*out, error_colour_prefix{}));
 }
 
-logging::wprefixedostream logging::wverbose(std::wostream * const out)
+logging::wprefixed_syncstream logging::wverbose(std::wostream * const out)
 {
   if(not out)
-    return wprefixedostream(nullptr);
+    return wprefixed_syncstream(nullptr);
 
   return dynamic_cast<std::wfilebuf const *>(out->rdbuf())
-         ? wprefixedostream(std::make_unique<wprefixedbuf<wverbose_prefix>>(*out, wverbose_prefix{}))
-         : wprefixedostream(std::make_unique<wprefixedbuf<wverbose_colour_prefix>>(*out, wverbose_colour_prefix{}));
+         ? wprefixed_syncstream(std::make_unique<wprefixed_syncbuf<wverbose_prefix>>(*out, wverbose_prefix{}))
+         : wprefixed_syncstream(
+             std::make_unique<wprefixed_syncbuf<wverbose_colour_prefix>>(*out, wverbose_colour_prefix{}));
 }
 
-logging::wprefixedostream logging::winfo(std::wostream * const out)
+logging::wprefixed_syncstream logging::winfo(std::wostream * const out)
 {
   if(not out)
-    return wprefixedostream(nullptr);
+    return wprefixed_syncstream(nullptr);
 
   return dynamic_cast<std::wfilebuf const *>(out->rdbuf())
-         ? wprefixedostream(std::make_unique<wprefixedbuf<winfo_prefix>>(*out, winfo_prefix{}))
-         : wprefixedostream(std::make_unique<wprefixedbuf<winfo_colour_prefix>>(*out, winfo_colour_prefix{}));
+         ? wprefixed_syncstream(std::make_unique<wprefixed_syncbuf<winfo_prefix>>(*out, winfo_prefix{}))
+         : wprefixed_syncstream(std::make_unique<wprefixed_syncbuf<winfo_colour_prefix>>(*out, winfo_colour_prefix{}));
 }
 
-logging::wprefixedostream logging::wwarning(std::wostream * const out)
+logging::wprefixed_syncstream logging::wwarning(std::wostream * const out)
 {
   if(not out)
-    return wprefixedostream(nullptr);
+    return wprefixed_syncstream(nullptr);
 
   return dynamic_cast<std::wfilebuf const *>(out->rdbuf())
-         ? wprefixedostream(std::make_unique<wprefixedbuf<wwarning_prefix>>(*out, wwarning_prefix{}))
-         : wprefixedostream(std::make_unique<wprefixedbuf<wwarning_colour_prefix>>(*out, wwarning_colour_prefix{}));
+         ? wprefixed_syncstream(std::make_unique<wprefixed_syncbuf<wwarning_prefix>>(*out, wwarning_prefix{}))
+         : wprefixed_syncstream(
+             std::make_unique<wprefixed_syncbuf<wwarning_colour_prefix>>(*out, wwarning_colour_prefix{}));
 }
 
-logging::wprefixedostream logging::werror(std::wostream * const out)
+logging::wprefixed_syncstream logging::werror(std::wostream * const out)
 {
   if(not out)
-    return wprefixedostream(nullptr);
+    return wprefixed_syncstream(nullptr);
 
   return dynamic_cast<std::wfilebuf const *>(out->rdbuf())
-         ? wprefixedostream(std::make_unique<wprefixedbuf<werror_prefix>>(*out, werror_prefix{}))
-         : wprefixedostream(std::make_unique<wprefixedbuf<werror_colour_prefix>>(*out, werror_colour_prefix{}));
+         ? wprefixed_syncstream(std::make_unique<wprefixed_syncbuf<werror_prefix>>(*out, werror_prefix{}))
+         : wprefixed_syncstream(
+             std::make_unique<wprefixed_syncbuf<werror_colour_prefix>>(*out, werror_colour_prefix{}));
 }
