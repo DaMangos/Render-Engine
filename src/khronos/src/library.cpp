@@ -225,9 +225,6 @@ khronos::library::library(std::ostream * const vk_verbose_out,
       ? std::make_unique<library_impl>(create_library_impl(vk_verbose_out, vk_info_out, vk_warning_out, vk_error_out))
       : std::make_unique<library_impl>(create_library_impl()))
 {
-  logging::info() << "Header: " << VK_HEADER_VERSION << '\n';
-
-  // logging::info() << "Dispatcher: " << (self->instance.get().getDispatcher())getVkHeaderVersion() << '\n';
 }
 
 khronos::library::~library() noexcept = default;
