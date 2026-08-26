@@ -21,7 +21,7 @@ class monitor
 
     monitor & operator=(monitor const &) noexcept = delete;
 
-    ~monitor() = default;
+    ~monitor() noexcept = default;
 
     [[nodiscard]]
     std::strong_ordering operator<=>(monitor const & other) const noexcept;

@@ -7,6 +7,7 @@
 #include <vulkan/vulkan_raii.hpp>
 #include <vulkan/vulkan_to_string.hpp>
 
+#include <concepts>
 #include <functional>
 #include <span>
 #include <string_view>
@@ -15,7 +16,9 @@
 
 namespace khronos
 {
-static auto const required_device_extensions = vk::StructureChain{
+static constexpr auto min_api_version = vk::ApiVersion14;
+
+static auto const required_device_features = vk::StructureChain{
   vk::PhysicalDeviceFeatures2{},                       //
   vk::PhysicalDeviceVulkan11Features{}                 //
     .setShaderDrawParameters(vk::True),                //
@@ -24,6 +27,14 @@ static auto const required_device_extensions = vk::StructureChain{
     .setSynchronization2(vk::True),                    //
   vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT{}  //
     .setExtendedDynamicState(vk::True),                //
+};
+
+static auto const required_surface_capabilities = vk::StructureChain{
+  vk::SurfaceCapabilities2KHR{},            //
+  vk::SurfaceCapabilitiesPresentId2KHR{}    //
+    .setPresentId2Supported(vk::True),      //
+  vk::SurfaceCapabilitiesPresentWait2KHR{}  //
+    .setPresentWait2Supported(vk::True),    //
 };
 
 [[nodiscard]]
@@ -55,39 +66,47 @@ bool is_extension_available(std::span<vk::ExtensionProperties const> const prope
 bool is_layer_available(std::span<vk::LayerProperties const> const properties, std::string_view const layer) noexcept;
 
 [[nodiscard]]
-bool is_feature_available(vk::PhysicalDeviceFeatures2 const & supported,
-                          vk::PhysicalDeviceFeatures2 const & requested) noexcept;
+bool is_available(vk::PhysicalDeviceFeatures2 const & supported,
+                  vk::PhysicalDeviceFeatures2 const & requested) noexcept;
 
-template <class Feature>
-requires(static_cast<bool>(vk::StructExtends<Feature, vk::PhysicalDeviceFeatures2>::value))
 [[nodiscard]]
-bool is_feature_available(Feature const & supported, Feature const & requested) noexcept
-{
-  return tuple::inner_product(tuple::drop<2>(supported.reflect()),
-                              tuple::drop<2>(requested.reflect()),
-                              true,
-                              std::logical_and<>{},
-                              std::greater_equal<>{});
-}
+bool is_available(vk::SurfaceCapabilities2KHR const & supported,
+                  vk::SurfaceCapabilities2KHR const & requested) noexcept;
 
-template <class... Feature>
+template <class Structure>
 [[nodiscard]]
-std::vector<std::string> find_unavailable_feature_names(
-  vk::StructureChain<vk::PhysicalDeviceFeatures2, Feature...> const & supported,
-  vk::StructureChain<vk::PhysicalDeviceFeatures2, Feature...> const & requested) noexcept
+bool is_available(Structure const & supported, Structure const & requested) noexcept
 {
   return tuple::inner_product(
-    static_cast<std::tuple<vk::PhysicalDeviceFeatures2, Feature...> const &>(supported),
-    static_cast<std::tuple<vk::PhysicalDeviceFeatures2, Feature...> const &>(requested),
-    std::vector<std::string>{},
-    [](auto && unavailable_feature_names, auto && unavailable_feature_name)
+    tuple::drop<2>(supported.reflect()),
+    tuple::drop<2>(requested.reflect()),
+    true,
+    std::logical_and<>{},
+    [](auto const & supported, auto const & requested)
     {
-      if(not unavailable_feature_name.empty())
-        unavailable_feature_names.emplace_back(std::move(unavailable_feature_name));
-      return std::move(unavailable_feature_names);
+      if constexpr(std::same_as<decltype(supported), vk::Bool32> and std::same_as<decltype(requested), vk::Bool32>)
+        return supported >= requested;
+      return true;
+    });
+}
+
+template <class... Structures>
+[[nodiscard]]
+std::vector<std::string> find_unavailable_structure_names(vk::StructureChain<Structures...> const & supported,
+                                                          vk::StructureChain<Structures...> const & requested) noexcept
+{
+  return tuple::inner_product(
+    static_cast<std::tuple<Structures...> const &>(supported),
+    static_cast<std::tuple<Structures...> const &>(requested),
+    std::vector<std::string>{},
+    [](auto && unavailable_structure_names, auto && unavailable_structure_name)
+    {
+      if(not unavailable_structure_name.empty())
+        unavailable_structure_names.emplace_back(std::move(unavailable_structure_name));
+      return std::move(unavailable_structure_names);
     },
     [](auto const & supported, auto const & requested)
-    { return is_feature_available(supported, requested) ? std::string{} : vk::to_string(requested.sType); });
+    { return is_available(supported, requested) ? std::string{} : vk::to_string(requested.sType); });
 }
 
 [[nodiscard]]
@@ -96,6 +115,17 @@ inline auto get_features_2(vk::raii::PhysicalDevice const & physical_device) noe
   return [&]<class... Features>(vk::StructureChain<vk::PhysicalDeviceFeatures2, Features...>)
   {
     return physical_device.getFeatures2<vk::PhysicalDeviceFeatures2, Features...>();
-  }(required_device_extensions);
+  }(required_device_features);
+}
+
+template <class... Args>
+[[nodiscard]]
+inline auto get_surface_capabilities_2(vk::raii::PhysicalDevice const & physical_device, Args &&... args) noexcept
+{
+  return [&]<class... Capabilities>(vk::StructureChain<vk::SurfaceCapabilities2KHR, Capabilities...>)
+  {
+    return physical_device.getSurfaceCapabilities2KHR<vk::SurfaceCapabilities2KHR, Capabilities...>(
+      std::forward<Args>(args)...);
+  }(required_surface_capabilities);
 }
 }

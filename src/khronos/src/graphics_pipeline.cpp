@@ -1,138 +1,157 @@
-// #include "khronos/graphical_device.hpp"
-// #include "khronos/handle.hpp"
+#include "impl.hpp"
 
-// #include <khronos/graphics_pipeline.hpp>
-// #include <khronos/memory_buffer.hpp>
+#include <khronos/graphical_device.hpp>
+#include <khronos/graphics_pipeline.hpp>
 
-// #include <vulkan/vulkan.hpp>
-// #include <vulkan/vulkan_raii.hpp>
-// #include <vulkan/vulkan_to_string.hpp>
+extern unsigned int  shader_spv_len;
+extern unsigned char shader_spv[];
 
-// extern unsigned int  shader_spv_len;
-// extern unsigned char shader_spv[];
+namespace
+{
+[[nodiscard]]
+static vk::raii::ShaderModule create_shader_module(vk::raii::Device const & device,
+                                                   unsigned int const       spv_len,
+                                                   unsigned char const      spv[])
+{
+  auto const shader_binary = std::make_unique_for_overwrite<std::uint32_t[]>(spv_len);
 
-// khronos::graphics_pipeline::graphics_pipeline(graphical_device const & graphical_device)
-// : pipeline_layout(nullhandle),
-//   pipeline(nullhandle)
-// {
-//   assert(shader_spv_len % sizeof(std::uint32_t) == 0);
+  std::memcpy(shader_binary.get(), spv, spv_len);
 
-//   auto const shader_binary = std::make_unique_for_overwrite<std::uint32_t[]>(shader_spv_len);
+  auto const shader_module_create_info = vk::ShaderModuleCreateInfo{}.setCodeSize(spv_len).setPCode(
+    shader_binary.get());
 
-//   std::memcpy(shader_binary.get(), shader_spv, shader_spv_len);
+  return {device, shader_module_create_info};
+}
 
-//   auto const shader_module_create_info = vk::ShaderModuleCreateInfo{}
-//                                            .setCodeSize(shader_spv_len)
-//                                            .setPCode(shader_binary.get());
+[[nodiscard]]
+static vk::raii::PipelineLayout create_pipeline_layout(vk::raii::Device const & device)
+{
+  auto const pipeline_layout_info = vk::PipelineLayoutCreateInfo{};
 
-//   auto const shader_module = graphical_device.device->createShaderModule(shader_module_create_info);
+  return {device, pipeline_layout_info};
+}
 
-//   auto const pipeline_shader_stage_create_info = std::array{
-//     vk::PipelineShaderStageCreateInfo{}
-//       .setStage(vk::ShaderStageFlagBits::eVertex)
-//       .setModule(shader_module)
-//       .setPName("vert_main"),
-//     vk::PipelineShaderStageCreateInfo{}
-//       .setStage(vk::ShaderStageFlagBits::eFragment)
-//       .setModule(shader_module)
-//       .setPName("frag_main"),
-//   };
+[[nodiscard]]
+static vk::raii::Pipeline create_pipeline(vk::raii::Device const &         device,
+                                          vk::raii::PipelineLayout const & pipeline_layout,
+                                          vk::raii::ShaderModule const &   shader_module)
+{
+  auto const pipeline_shader_stage_create_info = std::array{
+    vk::PipelineShaderStageCreateInfo{}
+      .setStage(vk::ShaderStageFlagBits::eVertex)
+      .setModule(shader_module)
+      .setPName("vert_main"),
+    vk::PipelineShaderStageCreateInfo{}
+      .setStage(vk::ShaderStageFlagBits::eFragment)
+      .setModule(shader_module)
+      .setPName("frag_main"),
+  };
 
-//   auto const vertex_input_attribute_description = std::array{
-//     vk::VertexInputAttributeDescription{}
-//       .setLocation(0)
-//       .setBinding(0)
-//       .setFormat(vk::Format::eR32G32Sfloat)
-//       .setOffset(offsetof(vertex, pos)),
-//     vk::VertexInputAttributeDescription{}
-//       .setLocation(1)
-//       .setBinding(0)
-//       .setFormat(vk::Format::eR32G32B32Sfloat)
-//       .setOffset(offsetof(vertex, colour)),
-//   };
+  auto const vertex_input_attribute_description = std::array{
+    vk::VertexInputAttributeDescription{}
+      .setLocation(0)
+      .setBinding(0)
+      .setFormat(vk::Format::eR32G32Sfloat)
+      .setOffset(offsetof(khronos::graphics_pipeline::vertex, pos)),
+    vk::VertexInputAttributeDescription{}
+      .setLocation(1)
+      .setBinding(0)
+      .setFormat(vk::Format::eR32G32B32Sfloat)
+      .setOffset(offsetof(khronos::graphics_pipeline::vertex, colour)),
+  };
 
-//   auto const vertex_input_binding_description = vk::VertexInputBindingDescription{}
-//                                                   .setBinding(0)
-//                                                   .setInputRate(vk::VertexInputRate::eVertex)
-//                                                   .setStride(sizeof(vertex));
+  auto const vertex_input_binding_description = vk::VertexInputBindingDescription{}.setBinding(0).setInputRate(
+    vk::VertexInputRate::eVertex);
 
-//   auto const pipeline_vertex_input_state_create_info = vk::PipelineVertexInputStateCreateInfo{}
-//                                                          .setVertexAttributeDescriptions(
-//                                                            vertex_input_attribute_description)
-//                                                          .setVertexBindingDescriptions(
-//                                                            vertex_input_binding_description);
+  auto const pipeline_vertex_input_state_create_info = vk::PipelineVertexInputStateCreateInfo{}
+                                                         .setVertexAttributeDescriptions(
+                                                           vertex_input_attribute_description)
+                                                         .setVertexBindingDescriptions(
+                                                           vertex_input_binding_description);
 
-//   constexpr auto pipeline_input_assembly_state_create_info = vk::PipelineInputAssemblyStateCreateInfo{}
-//                                                                .setTopology(vk::PrimitiveTopology::eTriangleList)
-//                                                                .setPrimitiveRestartEnable(vk::False);
+  constexpr auto pipeline_input_assembly_state_create_info = vk::PipelineInputAssemblyStateCreateInfo{}
+                                                               .setTopology(vk::PrimitiveTopology::eTriangleList)
+                                                               .setPrimitiveRestartEnable(vk::False);
 
-//   constexpr auto pipeline_viewport_state_create_info = vk::PipelineViewportStateCreateInfo{}  //
-//                                                          .setViewportCount(1)
-//                                                          .setScissorCount(1);
+  constexpr auto pipeline_viewport_state_create_info = vk::PipelineViewportStateCreateInfo{}  //
+                                                         .setViewportCount(1)
+                                                         .setScissorCount(1);
 
-//   constexpr auto pipeline_rasterization_state_create_info = vk::PipelineRasterizationStateCreateInfo{}
-//                                                               .setDepthClampEnable(vk::False)
-//                                                               .setRasterizerDiscardEnable(vk::False)
-//                                                               .setPolygonMode(vk::PolygonMode::eFill)
-//                                                               .setCullMode(vk::CullModeFlagBits::eBack)
-//                                                               .setFrontFace(vk::FrontFace::eClockwise)
-//                                                               .setDepthBiasEnable(vk::False)
-//                                                               .setLineWidth(1.0f);
+  constexpr auto pipeline_rasterization_state_create_info = vk::PipelineRasterizationStateCreateInfo{}
+                                                              .setDepthClampEnable(vk::False)
+                                                              .setRasterizerDiscardEnable(vk::False)
+                                                              .setPolygonMode(vk::PolygonMode::eFill)
+                                                              .setCullMode(vk::CullModeFlagBits::eBack)
+                                                              .setFrontFace(vk::FrontFace::eClockwise)
+                                                              .setDepthBiasEnable(vk::False)
+                                                              .setLineWidth(1.0f);
 
-//   constexpr auto pipeline_multisample_state_create_info = vk::PipelineMultisampleStateCreateInfo{}
-//                                                             .setRasterizationSamples(vk::SampleCountFlagBits::e1)
-//                                                             .setSampleShadingEnable(vk::False);
+  constexpr auto pipeline_multisample_state_create_info = vk::PipelineMultisampleStateCreateInfo{}
+                                                            .setRasterizationSamples(vk::SampleCountFlagBits::e1)
+                                                            .setSampleShadingEnable(vk::False);
 
-//   constexpr auto pipeline_color_blend_attachment_states = std::array{
-//     vk::PipelineColorBlendAttachmentState{}
-//       .setBlendEnable(vk::True)
-//       .setSrcColorBlendFactor(vk::BlendFactor::eSrcAlpha)
-//       .setDstColorBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
-//       .setColorBlendOp(vk::BlendOp::eAdd)
-//       .setSrcAlphaBlendFactor(vk::BlendFactor::eOne)
-//       .setDstAlphaBlendFactor(vk::BlendFactor::eZero)
-//       .setAlphaBlendOp(vk::BlendOp::eAdd)
-//       .setColorWriteMask(vk::ColorComponentFlagBits::eR    //
-//                          | vk::ColorComponentFlagBits::eG  //
-//                          | vk::ColorComponentFlagBits::eB  //
-//                          | vk::ColorComponentFlagBits::eA),
-//   };
+  constexpr auto pipeline_color_blend_attachment_states = std::array{
+    vk::PipelineColorBlendAttachmentState{}
+      .setBlendEnable(vk::True)
+      .setSrcColorBlendFactor(vk::BlendFactor::eSrcAlpha)
+      .setDstColorBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
+      .setColorBlendOp(vk::BlendOp::eAdd)
+      .setSrcAlphaBlendFactor(vk::BlendFactor::eOne)
+      .setDstAlphaBlendFactor(vk::BlendFactor::eZero)
+      .setAlphaBlendOp(vk::BlendOp::eAdd)
+      .setColorWriteMask(vk::ColorComponentFlagBits::eR    //
+                         | vk::ColorComponentFlagBits::eG  //
+                         | vk::ColorComponentFlagBits::eB  //
+                         | vk::ColorComponentFlagBits::eA),
+  };
 
-//   auto const pipeline_color_blend_state_create_info = vk::PipelineColorBlendStateCreateInfo{}
-//                                                         .setLogicOpEnable(vk::False)
-//                                                         .setLogicOp(vk::LogicOp::eCopy)
-//                                                         .setAttachments(pipeline_color_blend_attachment_states);
+  auto const pipeline_color_blend_state_create_info = vk::PipelineColorBlendStateCreateInfo{}
+                                                        .setLogicOpEnable(vk::False)
+                                                        .setLogicOp(vk::LogicOp::eCopy)
+                                                        .setAttachments(pipeline_color_blend_attachment_states);
 
-//   constexpr auto dynamic_states = std::array{vk::DynamicState::eViewport, vk::DynamicState::eScissor};
+  constexpr auto dynamic_states = std::array{vk::DynamicState::eViewport,
+                                             vk::DynamicState::eScissor,
+                                             vk::DynamicState::eVertexInputBindingStride};
 
-//   auto const pipeline_dynamic_state_create_info =
-//   vk::PipelineDynamicStateCreateInfo{}.setDynamicStates(dynamic_states);
+  auto const pipeline_dynamic_state_create_info = vk::PipelineDynamicStateCreateInfo{}.setDynamicStates(dynamic_states);
 
-//   auto const pipeline_layout_info = vk::PipelineLayoutCreateInfo{};
+  constexpr auto formats = vk::Format::eB8G8R8A8Srgb;
 
-//   auto const pipeline_layout_dependence = dependency_builder<vk::raii::PipelineLayout, vk::raii::Device>{}
-//                                             .add_dependency(graphical_device.device);
+  auto const graphics_pipeline_create_info = vk::StructureChain{
+    vk::GraphicsPipelineCreateInfo{}
+      .setStages(pipeline_shader_stage_create_info)
+      .setPVertexInputState(&pipeline_vertex_input_state_create_info)
+      .setPInputAssemblyState(&pipeline_input_assembly_state_create_info)
+      .setPViewportState(&pipeline_viewport_state_create_info)
+      .setPRasterizationState(&pipeline_rasterization_state_create_info)
+      .setPMultisampleState(&pipeline_multisample_state_create_info)
+      .setPColorBlendState(&pipeline_color_blend_state_create_info)
+      .setPDynamicState(&pipeline_dynamic_state_create_info)
+      .setLayout(*pipeline_layout),
+    vk::PipelineRenderingCreateInfo{}  //
+      .setColorAttachmentFormats(formats)};
 
-//   pipeline_layout.reset(pipeline_layout_dependence, *graphical_device.device, pipeline_layout_info);
+  return {device, nullptr, graphics_pipeline_create_info.get()};
+}
 
-//   auto const formats = vk::Format::eB8G8R8A8Srgb;
+[[nodiscard]]
+static khronos::graphics_pipeline_impl create_graphics_pipeline_impl(khronos::device const & device)
+{
+  auto pipeline_layout = khronos::pipeline_layout(device.as_dependencies(), create_pipeline_layout(device.get()));
 
-//   auto const & [graphics_pipeline_create_info, _] = vk::StructureChain{
-//     vk::GraphicsPipelineCreateInfo{}
-//       .setStages(pipeline_shader_stage_create_info)
-//       .setPVertexInputState(&pipeline_vertex_input_state_create_info)
-//       .setPInputAssemblyState(&pipeline_input_assembly_state_create_info)
-//       .setPViewportState(&pipeline_viewport_state_create_info)
-//       .setPRasterizationState(&pipeline_rasterization_state_create_info)
-//       .setPMultisampleState(&pipeline_multisample_state_create_info)
-//       .setPColorBlendState(&pipeline_color_blend_state_create_info)
-//       .setPDynamicState(&pipeline_dynamic_state_create_info)
-//       .setLayout(*pipeline_layout),
-//     vk::PipelineRenderingCreateInfo{}  //
-//       .setColorAttachmentFormats(formats)};
+  auto pipeline = khronos::pipeline(pipeline_layout.as_dependencies(),
+                                    create_pipeline(device.get(),
+                                                    pipeline_layout.get(),
+                                                    create_shader_module(device.get(), shader_spv_len, shader_spv)));
 
-//   auto const pipeline_dependence = dependency_builder<vk::raii::Pipeline, vk::raii::PipelineLayout>{}.add_dependency(
-//     pipeline_layout);
+  return {std::move(pipeline_layout), std::move(pipeline)};
+}
+}
 
-//   pipeline.reset(pipeline_dependence, *graphical_device.device, nullptr, graphics_pipeline_create_info);
-// }
+khronos::graphics_pipeline::graphics_pipeline(graphical_device const & graphical_device)
+: self(std::make_unique<graphics_pipeline_impl>(create_graphics_pipeline_impl(graphical_device.self->device)))
+{
+}
+
+khronos::graphics_pipeline::~graphics_pipeline() noexcept = default;

@@ -1,12 +1,9 @@
 #include "dependencies.hpp"
-#include "library_impl.hpp"
-#include "make_impl.hpp"
+#include "impl.hpp"
 #include "settings.hpp"
 
 #include <glfw/library.hpp>
-#include <khronos/graphical_device.hpp>
 #include <khronos/library.hpp>
-#include <khronos/present_window.hpp>
 #include <logging/logging.hpp>
 #include <serialize/ranges.hpp>
 #include <serialize/tuple.hpp>
@@ -106,11 +103,10 @@ static constexpr vk::DebugUtilsMessageSeverityFlagsEXT get_debug_utils_message_s
 }
 
 [[nodiscard]]
-static std::unique_ptr<khronos::library_impl, void (*)(khronos::library_impl *)> create_debug_library_impl(
-  std::ostream * const vk_verbose_out,
-  std::ostream * const vk_info_out,
-  std::ostream * const vk_warning_out,
-  std::ostream * const vk_error_out)
+static khronos::library_impl create_library_impl(std::ostream * const vk_verbose_out,
+                                                 std::ostream * const vk_info_out,
+                                                 std::ostream * const vk_warning_out,
+                                                 std::ostream * const vk_error_out)
 {
   assert(vk_verbose_out or vk_info_out or vk_warning_out or vk_error_out);
 
@@ -142,7 +138,7 @@ static std::unique_ptr<khronos::library_impl, void (*)(khronos::library_impl *)>
 
   logging::verbose() << "all required instance layers are available: " << required_layers;
 
-  auto const application_info = vk::ApplicationInfo{}.setApiVersion(vk::ApiVersion13);
+  auto const application_info = vk::ApplicationInfo{}.setApiVersion(khronos::min_api_version);
 
   auto user_data = khronos::dependent<khronos::user_data>{
     vk_verbose_out,
@@ -174,19 +170,17 @@ static std::unique_ptr<khronos::library_impl, void (*)(khronos::library_impl *)>
       .setPfnUserCallback(&user_callback)
       .setPUserData(&user_data.get())};
 
-  khronos::instance instance{instance_dependencies, context, instance_create_info};
+  auto instance = khronos::instance{instance_dependencies, context, instance_create_info};
 
-  khronos::debug_utils_messenger debug_utils_messenger{instance.as_dependencies(),
-                                                       instance,
-                                                       debug_utils_messenger_create_info};
+  auto debug_utils_messenger = khronos::debug_utils_messenger{instance.as_dependencies(),
+                                                              instance,
+                                                              debug_utils_messenger_create_info};
 
-  return khronos::make_impl<khronos::library_impl>(std::move(context),
-                                                   std::move(instance),
-                                                   std::move(debug_utils_messenger));
+  return {std::move(context), std::move(instance), std::move(debug_utils_messenger)};
 }
 
 [[nodiscard]]
-static std::unique_ptr<khronos::library_impl, void (*)(khronos::library_impl *)> create_library_impl()
+static khronos::library_impl create_library_impl()
 {
   using namespace serialize::tuple;
   using namespace serialize::ranges;
@@ -216,9 +210,9 @@ static std::unique_ptr<khronos::library_impl, void (*)(khronos::library_impl *)>
 
   auto const instance_dependencies = khronos::dependency_union(context.as_dependencies(), user_data.as_dependencies());
 
-  khronos::instance instance{instance_dependencies, context, instance_create_info};
+  auto instance = khronos::instance{instance_dependencies, context, instance_create_info};
 
-  return khronos::make_impl<khronos::library_impl>(std::move(context), std::move(instance), std::nullopt);
+  return {std::move(context), std::move(instance), std::nullopt};
 }
 }
 
@@ -226,8 +220,14 @@ khronos::library::library(std::ostream * const vk_verbose_out,
                           std::ostream * const vk_info_out,
                           std::ostream * const vk_warning_out,
                           std::ostream * const vk_error_out)
-: ptr(vk_verbose_out or vk_info_out or vk_warning_out or vk_error_out
-        ? create_debug_library_impl(vk_verbose_out, vk_info_out, vk_warning_out, vk_error_out)
-        : create_library_impl())
+: self(
+    vk_verbose_out or vk_info_out or vk_warning_out or vk_error_out
+      ? std::make_unique<library_impl>(create_library_impl(vk_verbose_out, vk_info_out, vk_warning_out, vk_error_out))
+      : std::make_unique<library_impl>(create_library_impl()))
 {
+  logging::info() << "Header: " << VK_HEADER_VERSION << '\n';
+
+  // logging::info() << "Dispatcher: " << (self->instance.get().getDispatcher())getVkHeaderVersion() << '\n';
 }
+
+khronos::library::~library() noexcept = default;

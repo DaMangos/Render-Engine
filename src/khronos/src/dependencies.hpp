@@ -79,6 +79,10 @@ struct dependency-union-type
 
 inline constexpr dependency-union-type dependency_union;
 
+template <class LhsDependencies, class RhsLhsDependencies>
+using dependency_union_type = decltype(dependency_union(std::declval<LhsDependencies>(),
+                                                        std::declval<RhsLhsDependencies>()));
+
 template <class Element, class Dependencies = void>
 requires(not contains-dependency<Element, Dependencies>)
 class dependent
@@ -111,7 +115,10 @@ class dependent
     constexpr auto const & get_dependency() const noexcept
 
     [[nodiscard]]
-    constexpr dependencies_type as_dependencies() const noexcept;
+    constexpr dependencies_type get_dependencies() const noexcept
+
+    [[nodiscard]]
+    constexpr as_dependencies_type as_dependencies() const noexcept;
 
     [[nodiscard]]
     constexpr element_type & get() & noexcept;
@@ -385,6 +392,10 @@ struct dependency_union_t
 
 inline constexpr auto dependency_union = detail::dependency_union_t{0};
 
+template <class LhsDependencies, class RhsLhsDependencies>
+using dependency_union_type = decltype(dependency_union(std::declval<LhsDependencies>(),
+                                                        std::declval<RhsLhsDependencies>()));
+
 template <class Element, class Dependencies = void>
 requires(not detail::contains_dependency_v<Dependencies, Element>)
 class dependent
@@ -410,6 +421,11 @@ class dependent
 
     template <class Return, class... Args>
     struct function_traits<Return (*)(Args...)> : function_traits<Return(Args...)>
+    {
+    };
+
+    template <class Return, class... Args>
+    struct function_traits<Return (*)(Args...) noexcept> : function_traits<Return(Args...)>
     {
     };
 
@@ -508,6 +524,12 @@ class dependent
     constexpr auto const & get_dependency() const noexcept
     {
       return deps->template get<I>();
+    }
+
+    [[nodiscard]]
+    constexpr dependencies_type get_dependencies() const noexcept
+    {
+      return *deps;
     }
 
     [[nodiscard]]

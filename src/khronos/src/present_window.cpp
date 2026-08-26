@@ -1,12 +1,31 @@
 
-// // #include <khronos/library.hpp>
-// #include <khronos/present_window.hpp>
+#include "impl.hpp"
 
-// khronos::present_window::present_window(library const & library, glfw::window && window)
-// : glfw::window(std::move(window))
-// {
-//   auto const surface_dependencies = dependency_builder<vk::raii::SurfaceKHR, vk::raii::Instance>{}  //
-//                                       .add_dependency(library.instance);
+#include <glfw/window.hpp>
+#include <khronos/graphical_device.hpp>
+#include <khronos/library.hpp>
+#include <khronos/render_window.hpp>
+#include <logging/logging.hpp>
 
-//   surface.reset(surface_dependencies, glfw::window::create_surface(*library.instance));
-// }
+#include <vulkan/vulkan_raii.hpp>
+
+namespace
+{
+
+[[nodiscard]]
+static khronos::present_window_impl create_present_window_impl(glfw::window const &      window,
+                                                               khronos::instance const & instance)
+{
+  return {
+    {instance.as_dependencies(), window.create_surface(instance.get())}
+  };
+}
+}
+
+khronos::present_window::present_window(glfw::window && window, class library const & library)
+: glfw::window(std::move(window)),
+  self(std::make_unique<present_window_impl>(create_present_window_impl(*this, library.self->instance)))
+{
+}
+
+khronos::present_window::~present_window() noexcept = default;

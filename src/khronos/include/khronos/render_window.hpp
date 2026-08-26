@@ -1,50 +1,30 @@
-// #pragma once
+#pragma once
 
-// #include <khronos/fwd.hpp>
-// #include <khronos/present_window.hpp>
+#include <khronos/present_window.hpp>
 
-// #include <vulkan/vulkan_raii.hpp>
+namespace khronos
+{
+class render_window : public present_window
+{
+  public:
+    render_window(present_window && present_window, class graphical_device const & graphical_device);
 
-// #include <list>
-// #include <memory>
-// #include <vector>
+    render_window(render_window &&) noexcept = default;
 
-// namespace khronos
-// {
-// class render_window : public present_window
-// {
-//   private:
-//     virtual void when_framebuffer_resized(glfw::dimensions<int, 2> const &) override;
+    render_window(render_window const &) noexcept = delete;
 
-//     friend graphical_device;
+    render_window & operator=(render_window const &) noexcept = delete;
 
-//     render_window(graphical_device const & graphical_device, present_window && present_window);
+    render_window & operator=(render_window &&) noexcept = default;
 
-//     handle<vk::raii::Device, dependences<vk::raii::PhysicalDevice>> device = nullhandle;
+    ~render_window() noexcept override;
 
-//     vk::SwapchainCreateInfoKHR swapchain_create_info;
+  protected:
+    friend class draw_command;
 
-//     handle<vk::raii::SwapchainKHR, dependences<vk::raii::Device, vk::raii::SurfaceKHR, vk::raii::Queue>>
-//       swapchain = nullhandle;
+    void when_framebuffer_resized(glfw::dimensions<int, 2> const & size) override;
 
-//     struct image
-//     {
-//         vk::Image                                  image;
-//         std::shared_ptr<vk::raii::ImageView const> image_view;
-//         std::shared_ptr<vk::raii::Semaphore const> render_complete_semaphores;
-//     };
-
-//     std::vector<image> images;
-
-//     handle<vk::raii::CommandPool, dependences<vk::raii::Device>> command_pool = nullhandle;
-
-//     struct frame
-//     {
-//         std::shared_ptr<vk::raii::CommandBuffer const> command_buffer;
-//         std::shared_ptr<vk::raii::Fence const>         in_flight_fence;
-//         std::shared_ptr<vk::raii::Semaphore const>     present_complete_semaphores;
-//     };
-
-//     std::list<frame> frames;
-// };
-// }
+  private:
+    std::unique_ptr<struct render_window_impl> self;
+};
+}

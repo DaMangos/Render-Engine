@@ -15,11 +15,11 @@ extern library default_library;
 class library
 {
   public:
-    library(library const &) = delete;
+    library(library const &) noexcept = delete;
 
-    library & operator=(library const &) = delete;
+    library & operator=(library const &) noexcept = delete;
 
-    ~library();
+    ~library() noexcept;
 
     [[nodiscard]]
     window create_window(dimensions<int, 2> const & size, std::string const & title) const;
@@ -93,10 +93,12 @@ class library
   private:
     friend struct internal;
 
+    bool is_owner;
+
     library();
 
-    library(library &&) = default;
+    library(library && other) noexcept;
 
-    library & operator=(library &&) = default;
+    library & operator=(library && other) noexcept;
 };
 }

@@ -1,5 +1,7 @@
 #include "settings.hpp"
 
+#include "vulkan/vulkan.hpp"
+
 #include <glfw/library.hpp>
 
 #include <ranges>
@@ -42,6 +44,8 @@ std::vector<char const *> khronos::get_required_instance_extensions(
 {
   auto extensions = glfw::default_library.get_required_instance_extensions() | std::ranges::to<std::vector>();
 
+  extensions.emplace_back(vk::KHRGetSurfaceCapabilities2ExtensionName);
+
   if(is_extension_available(properties, vk::KHRPortabilityEnumerationExtensionName))
     extensions.emplace_back(vk::KHRPortabilityEnumerationExtensionName);
 
@@ -56,7 +60,13 @@ std::vector<char const *> khronos::get_required_debug_instance_layers()
 std::vector<char const *> khronos::get_required_device_extensions(
   std::span<vk::ExtensionProperties const> const properties)
 {
-  auto extensions = std::vector{vk::KHRSwapchainExtensionName, vk::KHRSynchronization2ExtensionName};
+  auto extensions = std::vector{vk::KHRSwapchainExtensionName,
+                                vk::KHRSynchronization2ExtensionName,
+                                vk::KHRPresentId2ExtensionName,
+                                vk::KHRPresentWait2ExtensionName};
+
+  if(is_extension_available(properties, vk::KHRDeviceAddressCommandsExtensionName))
+    extensions.emplace_back(vk::KHRDeviceAddressCommandsExtensionName);
 
   if(is_extension_available(properties, vk::KHRPortabilitySubsetExtensionName))
     extensions.emplace_back(vk::KHRPortabilitySubsetExtensionName);
@@ -76,12 +86,17 @@ bool khronos::is_layer_available(std::span<vk::LayerProperties const> const prop
   return std::ranges::any_of(properties, [=](auto const & property) { return property.layerName == layer; });
 }
 
-bool khronos::is_feature_available(vk::PhysicalDeviceFeatures2 const & supported,
-                                   vk::PhysicalDeviceFeatures2 const & requested) noexcept
+bool khronos::is_available(vk::PhysicalDeviceFeatures2 const & supported,
+                           vk::PhysicalDeviceFeatures2 const & requested) noexcept
 {
   return tuple::inner_product(supported.features.reflect(),
                               requested.features.reflect(),
                               true,
                               std::logical_and<>{},
                               std::greater_equal<>{});
+}
+
+bool khronos::is_available(vk::SurfaceCapabilities2KHR const &, vk::SurfaceCapabilities2KHR const &) noexcept
+{
+  return true;
 }

@@ -63,7 +63,7 @@ $(if $(wildcard $(1)/pkg-config.mk),$(shell pkg-config --cflags $(shell cat $(1)
 endef
 
 define pkg_config_libs
-$(if $(wildcard $(1)/pkg-config.mk),$(shell pkg-config --libs $(shell cat $(1)/pkg-config.mk)))
+$(if $(wildcard $(1)/pkg-config.mk),$(shell pkg-config --static --libs $(shell cat $(1)/pkg-config.mk)))
 endef
 
 define src_directory

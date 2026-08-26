@@ -10,6 +10,7 @@
 #include <set>
 #include <stdexcept>
 #include <system_error>
+#include <utility>
 
 glfw::library glfw::default_library = glfw::internal::init_library();
 
@@ -91,6 +92,7 @@ static void monitor_callback(GLFWmonitor * glfw_monitor, int connected)
 }
 
 glfw::library::library()
+: is_owner(true)
 {
   [[maybe_unused]]
   static bool has_default_library_been_initialized = false;
@@ -110,9 +112,22 @@ glfw::library::library()
   glfwSetMonitorCallback(::detail::monitor_callback);
 }
 
-glfw::library::~library()
+glfw::library::library(library && other) noexcept
+: is_owner(std::exchange(other.is_owner, false))
 {
-  glfwTerminate();
+}
+
+glfw::library & glfw::library::operator=(library && other) noexcept
+{
+  is_owner = std::exchange(other.is_owner, false);
+
+  return *this;
+}
+
+glfw::library::~library() noexcept
+{
+  if(is_owner)
+    glfwTerminate();
 }
 
 glfw::window glfw::library::create_window(dimensions<int, 2> const & size, std::string const & title) const
@@ -228,8 +243,6 @@ std::span<char const * const> glfw::library::get_required_instance_extensions() 
 {
   std::uint32_t count      = 0;
   char const ** extensions = glfwGetRequiredInstanceExtensions(&count);
-
-  assert(extensions);
 
   return {extensions, static_cast<std::size_t>(count)};
 }

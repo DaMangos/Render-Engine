@@ -1,8 +1,5 @@
 #pragma once
 
-#include <glfw/fwd.hpp>
-#include <khronos/fwd.hpp>
-
 #include <ostream>
 
 namespace khronos
@@ -15,9 +12,19 @@ class library
             std::ostream * const vk_warning_out,
             std::ostream * const vk_error_out);
 
-  private:
-    friend graphical_device;
+    library(library &&) noexcept = default;
 
-    std::unique_ptr<struct library_impl, void (*)(library_impl *)> ptr;
+    library(library const &) noexcept = delete;
+
+    library & operator=(library const &) noexcept = delete;
+
+    library & operator=(library &&) noexcept = default;
+
+    ~library() noexcept;
+
+  private:
+    friend class present_window;
+
+    std::unique_ptr<struct library_impl> self;
 };
 }

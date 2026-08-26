@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 
+#include <concepts>
 #include <functional>
 #include <utility>
 
@@ -31,6 +32,8 @@ static_assert(std::same_as<std::tuple_element_t<0, khronos::dependencies<A, B, C
 static_assert(std::same_as<std::tuple_element_t<1, khronos::dependencies<A, B, C, D>>, B const &>);
 static_assert(std::same_as<std::tuple_element_t<2, khronos::dependencies<A, B, C, D>>, C const &>);
 static_assert(std::same_as<std::tuple_element_t<3, khronos::dependencies<A, B, C, D>>, D const &>);
+static_assert(std::same_as<khronos::dependency_union_type<khronos::dependencies<A, B>, khronos::dependencies<B, C>>,
+                           khronos::dependencies<A, B, C>>);
 
 TEST(DependentTest, StructuredBindings)
 {

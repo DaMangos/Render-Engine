@@ -1,7 +1,5 @@
 #pragma once
 
-#include <khronos/fwd.hpp>
-
 #include <memory>
 
 namespace khronos
@@ -9,16 +7,26 @@ namespace khronos
 class graphical_device
 {
   public:
-    explicit graphical_device(library const & library);
+    explicit graphical_device(class present_window const & present_window);
 
-    void flush(staging_buffer & staging_buffer);
+    graphical_device(graphical_device &&) noexcept = default;
 
-    void draw(graphics_pipeline &      graphics_pipeline,
-              index_transfer_buffer &  index_transfer_buffer,
-              vertex_transfer_buffer & vertex_transfer_buffer,
-              render_window &          render_window) const;
+    graphical_device(graphical_device const &) noexcept = delete;
+
+    graphical_device & operator=(graphical_device const &) noexcept = delete;
+
+    graphical_device & operator=(graphical_device &&) noexcept = default;
+
+    ~graphical_device() noexcept;
 
   private:
-    std::unique_ptr<struct graphical_device_impl, void (*)(graphical_device_impl *)> ptr;
+    friend class graphics_pipeline;
+    friend class transfer_command;
+    friend class draw_command;
+    friend class render_window;
+    friend class staging_buffer;
+    friend class transfer_buffer;
+
+    std::unique_ptr<struct graphical_device_impl> self;
 };
 }

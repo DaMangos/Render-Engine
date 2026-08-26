@@ -1,10 +1,14 @@
+#include "khronos/present_window.hpp"
+
 #include <glfw/library.hpp>
+#include <khronos/draw_command.hpp>
 #include <khronos/graphical_device.hpp>
 #include <khronos/graphics_pipeline.hpp>
 #include <khronos/library.hpp>
-#include <khronos/memory_buffer.hpp>
-#include <khronos/present_window.hpp>
 #include <khronos/render_window.hpp>
+#include <khronos/staging_buffer.hpp>
+#include <khronos/transfer_buffer.hpp>
+#include <khronos/transfer_command.hpp>
 #include <logging/logging.hpp>
 #include <serialize/ranges.hpp>
 #include <serialize/tuple.hpp>
@@ -237,44 +241,48 @@ int main(int const argc, char const * const * const args) noexcept
     if(auto file = arg_files.find("error"); file != arg_files.end())
       logging::default_error_out = file->second;
 
-    // khronos::library library{arg_files["vk-verbose"],
-    //                          arg_files["vk-info"],
-    //                          arg_files["vk-warning"],
-    //                          arg_files["vk-error"]};
+    std::array vertices = {
+      khronos::graphics_pipeline::vertex{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+      khronos::graphics_pipeline::vertex{ {0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+      khronos::graphics_pipeline::vertex{  {0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+      khronos::graphics_pipeline::vertex{ {-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+    };
 
-    // std::array<khronos::vertex, 4> vertices = {
-    //   khronos::vertex{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-    //   khronos::vertex{ {0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-    //   khronos::vertex{  {0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-    //   khronos::vertex{ {-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
-    // };
+    std::array<std::uint32_t, 6> const indices = {0, 1, 2, 2, 3, 0};
 
-    // std::array<std::uint32_t, 6> const indices = {0, 1, 2, 2, 3, 0};
+    auto library = khronos::library{arg_files["vk-verbose"],
+                                    arg_files["vk-info"],
+                                    arg_files["vk-warning"],
+                                    arg_files["vk-error"]};
 
-    // auto present_window   = library.create_present_window({.height = 500, .width = 500}, "demo");
-    // auto graphical_device = library.find_graphical_device(present_window);
+    auto window = glfw::default_library.create_window({.height = 500, .width = 500}, "demo");
 
-    // auto graphics_pipeline      = graphical_device.create_graphics_pipeline();
-    // auto staging_buffer         = graphical_device.allocate_staging_buffer(std::span{vertices}.size_bytes()
-    //                                                                        + std::span{indices}.size_bytes());
-    // auto vertex_transfer_buffer = graphical_device.allocate_vertex_transfer_buffer(std::span{vertices}.size_bytes());
-    // auto index_transfer_buffer  = graphical_device.allocate_index_transfer_buffer(std::span{indices}.size_bytes());
-    // auto render_window          = graphical_device.create_render_window(std::move(present_window));
+    auto present_window    = khronos::present_window{std::move(window), library};
+    auto graphical_device  = khronos::graphical_device{present_window};
+    auto render_window     = khronos::render_window{std::move(present_window), graphical_device};
+    auto graphics_pipeline = khronos::graphics_pipeline{graphical_device};
 
-    // staging_buffer.copy(vertices, vertex_transfer_buffer);
-    // staging_buffer.copy(indices, index_transfer_buffer);
+    auto const buffer_size = std::span{vertices}.size_bytes() + std::span{indices}.size_bytes();
 
-    // graphical_device.flush(staging_buffer);
+    auto staging_buffer  = khronos::staging_buffer{graphical_device, buffer_size};
+    auto transfer_buffer = khronos::transfer_buffer{graphical_device, buffer_size};
+    auto draw            = khronos::draw_command{graphical_device, render_window, 2};
+    auto transfer        = khronos::transfer_command{graphical_device, 2};
 
-    // while(not render_window.should_close())
-    // {
-    //   glfw::default_library.poll_events();
+    staging_buffer.memcpy(vertices);
+    staging_buffer.memcpy(indices);
 
-    //   if(not render_window.is_minimized())
-    //   {
-    //     graphical_device.draw(graphics_pipeline, index_transfer_buffer, vertex_transfer_buffer, render_window);
-    //   }
-    // }
+    transfer(staging_buffer, transfer_buffer);
+
+    while(not render_window.should_close())
+    {
+      glfw::default_library.poll_events();
+
+      if(not render_window.is_minimized())
+      {
+        draw(graphics_pipeline, transfer_buffer, render_window);
+      }
+    }
   }
 
   catch(std::system_error const & error)
