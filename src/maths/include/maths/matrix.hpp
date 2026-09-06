@@ -1073,11 +1073,16 @@ template <class LhsArithmetic,
           layout      LhsLayout,
           layout      RhsLayout>
 [[nodiscard]]
-constexpr matrix<LhsArithmetic, ColumnSize, RowSize, LhsLayout> operator+(
-  matrix<LhsArithmetic, ColumnSize, RowSize, LhsLayout>         lhs,
-  matrix<RhsArithmetic, ColumnSize, RowSize, RhsLayout> const & rhs) noexcept
+constexpr auto operator+(matrix<LhsArithmetic, ColumnSize, RowSize, LhsLayout> const & lhs,
+                         matrix<RhsArithmetic, ColumnSize, RowSize, RhsLayout> const & rhs) noexcept
 {
-  return lhs += rhs;
+  matrix<std::common_type_t<LhsArithmetic, RhsArithmetic>, ColumnSize, RowSize, LhsLayout> result;
+
+  for(auto [to, lhs_from, rhs_from] :
+      std::views::zip(result.rows() | std::views::join, lhs.rows() | std::views::join, rhs.rows() | std::views::join))
+    to = lhs_from + rhs_from;
+
+  return result;
 }
 
 template <class LhsIter,
@@ -1091,7 +1096,7 @@ template <class LhsIter,
 constexpr auto operator+(basic_column_view<LhsIter, ColumnSize, LhsRowSize, LhsLayout> const & lhs,
                          basic_column_view<RhsIter, ColumnSize, RhsRowSize, RhsLayout> const & rhs) noexcept
 {
-  matrix<std::common_type_t<std::iter_value_t<LhsIter>, std::iter_value_t<RhsIter>>, ColumnSize, 1uz, RhsLayout> result;
+  matrix<std::common_type_t<std::iter_value_t<LhsIter>, std::iter_value_t<RhsIter>>, ColumnSize, 1uz, LhsLayout> result;
 
   for(auto [to, lhs_from, rhs_from] : std::views::zip(result.column(0), lhs, rhs))
     to = lhs_from + rhs_from;
@@ -1101,20 +1106,18 @@ constexpr auto operator+(basic_column_view<LhsIter, ColumnSize, LhsRowSize, LhsL
 
 template <class Iter, std::size_t ColumnSize, std::size_t RowSize, layout LhsLayout, class Arithmetic, layout RhsLayout>
 [[nodiscard]]
-constexpr matrix<Arithmetic, ColumnSize, 1uz, RhsLayout> operator+(
-  basic_column_view<Iter, ColumnSize, RowSize, LhsLayout> const & lhs,
-  matrix<Arithmetic, ColumnSize, 1uz, RhsLayout>                  rhs) noexcept
+constexpr auto operator+(basic_column_view<Iter, ColumnSize, RowSize, LhsLayout> const & lhs,
+                         matrix<Arithmetic, ColumnSize, 1uz, RhsLayout> const &          rhs) noexcept
 {
-  return rhs += lhs;
+  return lhs + rhs.column(0);
 }
 
 template <class Arithmetic, std::size_t ColumnSize, layout LhsLayout, class Iter, std::size_t RowSize, layout RhsLayout>
 [[nodiscard]]
-constexpr matrix<Arithmetic, ColumnSize, 1uz, LhsLayout> operator+(
-  matrix<Arithmetic, ColumnSize, 1uz, LhsLayout> const &  lhs,
-  basic_column_view<Iter, ColumnSize, RowSize, RhsLayout> rhs) noexcept
+constexpr auto operator+(matrix<Arithmetic, ColumnSize, 1uz, LhsLayout> const &          lhs,
+                         basic_column_view<Iter, ColumnSize, RowSize, RhsLayout> const & rhs) noexcept
 {
-  return lhs += rhs;
+  return lhs.column(0) + rhs;
 }
 
 template <class LhsIter,
@@ -1128,7 +1131,7 @@ template <class LhsIter,
 constexpr auto operator+(basic_row_view<LhsIter, LhsColumnSize, RowSize, LhsLayout> const & lhs,
                          basic_row_view<RhsIter, RhsColumnSize, RowSize, RhsLayout> const & rhs) noexcept
 {
-  matrix<std::common_type_t<std::iter_value_t<LhsIter>, std::iter_value_t<RhsIter>>, 1uz, RowSize, RhsLayout> result;
+  matrix<std::common_type_t<std::iter_value_t<LhsIter>, std::iter_value_t<RhsIter>>, 1uz, RowSize, LhsLayout> result;
 
   for(auto [to, lhs_from, rhs_from] : std::views::zip(result.row(0), lhs, rhs))
     to = lhs_from + rhs_from;
@@ -1138,20 +1141,18 @@ constexpr auto operator+(basic_row_view<LhsIter, LhsColumnSize, RowSize, LhsLayo
 
 template <class Iter, std::size_t ColumnSize, std::size_t RowSize, layout LhsLayout, class Arithmetic, layout RhsLayout>
 [[nodiscard]]
-constexpr matrix<Arithmetic, 1uz, RowSize, RhsLayout> operator+(
-  basic_row_view<Iter, ColumnSize, RowSize, LhsLayout> const & lhs,
-  matrix<Arithmetic, 1uz, RowSize, RhsLayout>                  rhs) noexcept
+constexpr auto operator+(basic_row_view<Iter, ColumnSize, RowSize, LhsLayout> const & lhs,
+                         matrix<Arithmetic, 1uz, RowSize, RhsLayout> const &          rhs) noexcept
 {
-  return rhs += lhs;
+  return lhs + rhs.row(0);
 }
 
 template <class Arithmetic, std::size_t RowSize, layout LhsLayout, class Iter, std::size_t ColumnSize, layout RhsLayout>
 [[nodiscard]]
-constexpr matrix<Arithmetic, 1uz, RowSize, LhsLayout> operator+(
-  matrix<Arithmetic, 1uz, RowSize, LhsLayout>                  lhs,
-  basic_row_view<Iter, ColumnSize, RowSize, RhsLayout> const & rhs) noexcept
+constexpr auto operator+(matrix<Arithmetic, 1uz, RowSize, LhsLayout> const &          lhs,
+                         basic_row_view<Iter, ColumnSize, RowSize, RhsLayout> const & rhs) noexcept
 {
-  return lhs += rhs;
+  return lhs.row(0) + rhs;
 }
 
 template <class LhsArithmetic,
@@ -1271,8 +1272,8 @@ constexpr matrix<Arithmetic, 1uz, RowSize, LhsLayout> & operator-=(
 
 template <class Arithmetic, std::size_t RowSize, layout LhsLayout, class Iter, std::size_t ColumnSize, layout RhsLayout>
 constexpr matrix<Arithmetic, 1uz, RowSize, LhsLayout> && operator-=(
-  matrix<Arithmetic, 1uz, RowSize, LhsLayout> &&       lhs,
-  basic_row_view<Iter, ColumnSize, RowSize, RhsLayout> rhs) noexcept
+  matrix<Arithmetic, 1uz, RowSize, LhsLayout> &&               lhs,
+  basic_row_view<Iter, ColumnSize, RowSize, RhsLayout> const & rhs) noexcept
 {
   return std::move(lhs -= rhs);
 }
@@ -1284,11 +1285,16 @@ template <class LhsArithmetic,
           layout      LhsLayout,
           layout      RhsLayout>
 [[nodiscard]]
-constexpr matrix<LhsArithmetic, ColumnSize, RowSize, LhsLayout> operator-(
-  matrix<LhsArithmetic, ColumnSize, RowSize, LhsLayout>         lhs,
-  matrix<RhsArithmetic, ColumnSize, RowSize, RhsLayout> const & rhs) noexcept
+constexpr auto operator-(matrix<LhsArithmetic, ColumnSize, RowSize, LhsLayout> const & lhs,
+                         matrix<RhsArithmetic, ColumnSize, RowSize, RhsLayout> const & rhs) noexcept
 {
-  return lhs -= rhs;
+  matrix<std::common_type_t<LhsArithmetic, RhsArithmetic>, ColumnSize, RowSize, LhsLayout> result;
+
+  for(auto [to, lhs_from, rhs_from] :
+      std::views::zip(result.rows() | std::views::join, lhs.rows() | std::views::join, rhs.rows() | std::views::join))
+    to = lhs_from - rhs_from;
+
+  return result;
 }
 
 template <class LhsIter,
@@ -1302,7 +1308,7 @@ template <class LhsIter,
 constexpr auto operator-(basic_column_view<LhsIter, ColumnSize, LhsRowSize, LhsLayout> const & lhs,
                          basic_column_view<RhsIter, ColumnSize, RhsRowSize, RhsLayout> const & rhs) noexcept
 {
-  matrix<std::common_type_t<std::iter_value_t<LhsIter>, std::iter_value_t<RhsIter>>, ColumnSize, 1uz, RhsLayout> result;
+  matrix<std::common_type_t<std::iter_value_t<LhsIter>, std::iter_value_t<RhsIter>>, ColumnSize, 1uz, LhsLayout> result;
 
   for(auto [to, lhs_from, rhs_from] : std::views::zip(result.column(0), lhs, rhs))
     to = lhs_from - rhs_from;
@@ -1312,20 +1318,18 @@ constexpr auto operator-(basic_column_view<LhsIter, ColumnSize, LhsRowSize, LhsL
 
 template <class Iter, std::size_t ColumnSize, std::size_t RowSize, layout LhsLayout, class Arithmetic, layout RhsLayout>
 [[nodiscard]]
-constexpr matrix<Arithmetic, ColumnSize, 1uz, RhsLayout> operator-(
-  basic_column_view<Iter, ColumnSize, RowSize, LhsLayout> const & lhs,
-  matrix<Arithmetic, ColumnSize, 1uz, RhsLayout>                  rhs) noexcept
+constexpr auto operator-(basic_column_view<Iter, ColumnSize, RowSize, LhsLayout> const & lhs,
+                         matrix<Arithmetic, ColumnSize, 1uz, RhsLayout> const &          rhs) noexcept
 {
-  return -(rhs -= lhs);
+  return lhs - rhs.column(0);
 }
 
 template <class Arithmetic, std::size_t ColumnSize, layout LhsLayout, class Iter, std::size_t RowSize, layout RhsLayout>
 [[nodiscard]]
-constexpr matrix<Arithmetic, ColumnSize, 1uz, LhsLayout> operator-(
-  matrix<Arithmetic, ColumnSize, 1uz, LhsLayout>                  lhs,
-  basic_column_view<Iter, ColumnSize, RowSize, RhsLayout> const & rhs) noexcept
+constexpr auto operator-(matrix<Arithmetic, ColumnSize, 1uz, LhsLayout> const &          lhs,
+                         basic_column_view<Iter, ColumnSize, RowSize, RhsLayout> const & rhs) noexcept
 {
-  return lhs -= rhs;
+  return lhs.column(0) - rhs;
 }
 
 template <class LhsIter,
@@ -1339,7 +1343,7 @@ template <class LhsIter,
 constexpr auto operator-(basic_row_view<LhsIter, LhsColumnSize, RowSize, LhsLayout> const & lhs,
                          basic_row_view<RhsIter, RhsColumnSize, RowSize, RhsLayout> const & rhs) noexcept
 {
-  matrix<std::common_type_t<std::iter_value_t<LhsIter>, std::iter_value_t<RhsIter>>, 1uz, RowSize, RhsLayout> result;
+  matrix<std::common_type_t<std::iter_value_t<LhsIter>, std::iter_value_t<RhsIter>>, 1uz, RowSize, LhsLayout> result;
 
   for(auto [to, lhs_from, rhs_from] : std::views::zip(result.row(0), lhs, rhs))
     to = lhs_from - rhs_from;
@@ -1349,20 +1353,18 @@ constexpr auto operator-(basic_row_view<LhsIter, LhsColumnSize, RowSize, LhsLayo
 
 template <class Iter, std::size_t ColumnSize, std::size_t RowSize, layout LhsLayout, class Arithmetic, layout RhsLayout>
 [[nodiscard]]
-constexpr matrix<Arithmetic, 1uz, RowSize, RhsLayout> operator-(
-  basic_row_view<Iter, ColumnSize, RowSize, LhsLayout> const & lhs,
-  matrix<Arithmetic, 1uz, RowSize, RhsLayout>                  rhs) noexcept
+constexpr auto operator-(basic_row_view<Iter, ColumnSize, RowSize, LhsLayout> const & lhs,
+                         matrix<Arithmetic, 1uz, RowSize, RhsLayout> const &          rhs) noexcept
 {
-  return -(rhs -= lhs);
+  return lhs - rhs.row(0);
 }
 
 template <class Arithmetic, std::size_t RowSize, layout LhsLayout, class Iter, std::size_t ColumnSize, layout RhsLayout>
 [[nodiscard]]
-constexpr matrix<Arithmetic, 1uz, RowSize, LhsLayout> operator-(
-  matrix<Arithmetic, 1uz, RowSize, LhsLayout>                  lhs,
-  basic_row_view<Iter, ColumnSize, RowSize, RhsLayout> const & rhs) noexcept
+constexpr auto operator-(matrix<Arithmetic, 1uz, RowSize, LhsLayout> const &          lhs,
+                         basic_row_view<Iter, ColumnSize, RowSize, RhsLayout> const & rhs) noexcept
 {
-  return lhs -= rhs;
+  return lhs.row(0) - rhs;
 }
 
 template <class LhsArithmetic,
