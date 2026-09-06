@@ -39,8 +39,7 @@ std::vector<char const *> khronos::get_required_debug_instance_extensions(
   return extensions;
 }
 
-std::vector<char const *> khronos::get_required_instance_extensions(
-  std::span<vk::ExtensionProperties const> const properties)
+std::vector<char const *> khronos::get_required_instance_extensions(std::span<vk::ExtensionProperties const> const properties)
 {
   auto extensions = glfw::default_library.get_required_instance_extensions() | std::ranges::to<std::vector>();
 
@@ -57,8 +56,7 @@ std::vector<char const *> khronos::get_required_debug_instance_layers()
   return {"VK_LAYER_KHRONOS_validation"};
 }
 
-std::vector<char const *> khronos::get_required_device_extensions(
-  std::span<vk::ExtensionProperties const> const properties)
+std::vector<char const *> khronos::get_required_device_extensions(std::span<vk::ExtensionProperties const> const properties)
 {
   auto extensions = std::vector{vk::KHRSwapchainExtensionName,
                                 vk::KHRSynchronization2ExtensionName,
@@ -80,8 +78,7 @@ bool khronos::is_extension_available(std::span<vk::ExtensionProperties const> co
   return std::ranges::any_of(properties, [=](auto const & property) { return property.extensionName == extension; });
 }
 
-bool khronos::is_layer_available(std::span<vk::LayerProperties const> const properties,
-                                 std::string_view const                     layer) noexcept
+bool khronos::is_layer_available(std::span<vk::LayerProperties const> const properties, std::string_view const layer) noexcept
 {
   return std::ranges::any_of(properties, [=](auto const & property) { return property.layerName == layer; });
 }

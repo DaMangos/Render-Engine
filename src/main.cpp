@@ -1,10 +1,9 @@
-#include "khronos/present_window.hpp"
-
 #include <glfw/library.hpp>
 #include <khronos/draw_command.hpp>
 #include <khronos/graphical_device.hpp>
 #include <khronos/graphics_pipeline.hpp>
 #include <khronos/library.hpp>
+#include <khronos/present_window.hpp>
 #include <khronos/render_window.hpp>
 #include <khronos/staging_buffer.hpp>
 #include <khronos/transfer_buffer.hpp>
@@ -89,8 +88,7 @@ int main(int const argc, char const * const * const args) noexcept
       }
       else if(arg.starts_with("--vk-verbose="))
       {
-        auto const [_, inserted] = arg_files.try_emplace("vk-verbose",
-                                                         &create_file(arg.substr(arg.find_first_of('=') + 1)));
+        auto const [_, inserted] = arg_files.try_emplace("vk-verbose", &create_file(arg.substr(arg.find_first_of('=') + 1)));
 
         if(not inserted)
           throw std::invalid_argument("duplicate: --vk-verbose");
@@ -104,8 +102,7 @@ int main(int const argc, char const * const * const args) noexcept
       }
       else if(arg.starts_with("--vk-info="))
       {
-        auto const [_, inserted] = arg_files.try_emplace("vk-info",
-                                                         &create_file(arg.substr(arg.find_first_of('=') + 1)));
+        auto const [_, inserted] = arg_files.try_emplace("vk-info", &create_file(arg.substr(arg.find_first_of('=') + 1)));
 
         if(not inserted)
           throw std::invalid_argument("duplicate: --vk-info");
@@ -119,8 +116,7 @@ int main(int const argc, char const * const * const args) noexcept
       }
       else if(arg.starts_with("--vk-warning="))
       {
-        auto const [_, inserted] = arg_files.try_emplace("vk-warning",
-                                                         &create_file(arg.substr(arg.find_first_of('=') + 1)));
+        auto const [_, inserted] = arg_files.try_emplace("vk-warning", &create_file(arg.substr(arg.find_first_of('=') + 1)));
 
         if(not inserted)
           throw std::invalid_argument("duplicate: --vk-warning");
@@ -133,8 +129,7 @@ int main(int const argc, char const * const * const args) noexcept
       }
       else if(arg.starts_with("--vk-error="))
       {
-        auto const [_, inserted] = arg_files.try_emplace("vk-error",
-                                                         &create_file(arg.substr(arg.find_first_of('=') + 1)));
+        auto const [_, inserted] = arg_files.try_emplace("vk-error", &create_file(arg.substr(arg.find_first_of('=') + 1)));
 
         if(not inserted)
           throw std::invalid_argument("duplicate: --vk-error");
@@ -148,8 +143,7 @@ int main(int const argc, char const * const * const args) noexcept
       }
       else if(arg.starts_with("--verbose="))
       {
-        auto const [_, inserted] = arg_files.try_emplace("verbose",
-                                                         &create_file(arg.substr(arg.find_first_of('=') + 1)));
+        auto const [_, inserted] = arg_files.try_emplace("verbose", &create_file(arg.substr(arg.find_first_of('=') + 1)));
 
         if(not inserted)
           throw std::invalid_argument("duplicate: --verbose");
@@ -191,8 +185,7 @@ int main(int const argc, char const * const * const args) noexcept
       }
       else if(arg.starts_with("--warning="))
       {
-        auto const [_, inserted] = arg_files.try_emplace("warning",
-                                                         &create_file(arg.substr(arg.find_first_of('=') + 1)));
+        auto const [_, inserted] = arg_files.try_emplace("warning", &create_file(arg.substr(arg.find_first_of('=') + 1)));
 
         if(not inserted)
           throw std::invalid_argument("duplicate: --warning");

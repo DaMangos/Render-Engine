@@ -122,8 +122,7 @@ static khronos::library_impl create_library_impl(std::ostream * const vk_verbose
   auto const unavailable_extensions = khronos::find_unavailable_extension(available_extension, required_extensions);
 
   if(not unavailable_extensions.empty())
-    throw std::runtime_error(
-      (std::stringstream{} << "unavailable instance extensions: " << unavailable_extensions).str());
+    throw std::runtime_error((std::stringstream{} << "unavailable instance extensions: " << unavailable_extensions).str());
 
   logging::verbose() << "all required instance extensions are available: " << required_extensions;
 
@@ -149,13 +148,9 @@ static khronos::library_impl create_library_impl(std::ostream * const vk_verbose
 
   auto const instance_dependencies = khronos::dependency_union(context.as_dependencies(), user_data.as_dependencies());
 
-  auto const message_severity = get_debug_utils_message_severity(vk_verbose_out,
-                                                                 vk_info_out,
-                                                                 vk_warning_out,
-                                                                 vk_error_out);
+  auto const message_severity = get_debug_utils_message_severity(vk_verbose_out, vk_info_out, vk_warning_out, vk_error_out);
 
-  auto const message_type = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral
-                          | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance
+  auto const message_type = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance
                           | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation;
 
   auto const & [instance_create_info, debug_utils_messenger_create_info] = vk::StructureChain{
@@ -194,8 +189,7 @@ static khronos::library_impl create_library_impl()
   auto const unavailable_extensions = khronos::find_unavailable_extension(available_extension, required_extensions);
 
   if(not unavailable_extensions.empty())
-    throw std::runtime_error(
-      (std::stringstream{} << "unavailable instance extensions: " << unavailable_extensions).str());
+    throw std::runtime_error((std::stringstream{} << "unavailable instance extensions: " << unavailable_extensions).str());
 
   logging::verbose() << "all required instance extensions are available: " << required_extensions;
 
@@ -220,10 +214,9 @@ khronos::library::library(std::ostream * const vk_verbose_out,
                           std::ostream * const vk_info_out,
                           std::ostream * const vk_warning_out,
                           std::ostream * const vk_error_out)
-: self(
-    vk_verbose_out or vk_info_out or vk_warning_out or vk_error_out
-      ? std::make_unique<library_impl>(create_library_impl(vk_verbose_out, vk_info_out, vk_warning_out, vk_error_out))
-      : std::make_unique<library_impl>(create_library_impl()))
+: self(vk_verbose_out or vk_info_out or vk_warning_out or vk_error_out
+         ? std::make_unique<library_impl>(create_library_impl(vk_verbose_out, vk_info_out, vk_warning_out, vk_error_out))
+         : std::make_unique<library_impl>(create_library_impl()))
 {
 }
 

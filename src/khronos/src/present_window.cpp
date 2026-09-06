@@ -13,8 +13,7 @@ namespace
 {
 
 [[nodiscard]]
-static khronos::present_window_impl create_present_window_impl(glfw::window const &      window,
-                                                               khronos::instance const & instance)
+static khronos::present_window_impl create_present_window_impl(glfw::window const & window, khronos::instance const & instance)
 {
   return {
     {instance.as_dependencies(), window.create_surface(instance.get())}

@@ -208,8 +208,7 @@ TEST(SerializeRange, WithViews)
 {
   std::ostringstream stream;
 
-  stream << (std::forward_list{"foo"s, "bar"s, "baz"s}
-             | std::views::transform([](auto const & str) { return str.front(); }));
+  stream << (std::forward_list{"foo"s, "bar"s, "baz"s} | std::views::transform([](auto const & str) { return str.front(); }));
 
   EXPECT_EQ(stream.str(), "[f, b, b]");
 }

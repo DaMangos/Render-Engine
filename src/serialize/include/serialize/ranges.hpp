@@ -38,11 +38,10 @@ Stream && operator<<(Stream && out, Tuple && tuple)
 inline namespace ranges
 {
 template <class Stream, class Range>
-Stream && operator<<(Stream && out, Range && range)
-  requires(std::derived_from<std::decay_t<Stream>, std::ios_base>
-           and serializable_range<std::decay_t<Range>,
-                                  typename std::decay_t<Stream>::char_type,
-                                  typename std::decay_t<Stream>::traits_type>)
+Stream && operator<<(Stream && out, Range && range) requires(std::derived_from<std::decay_t<Stream>, std::ios_base>
+                                                             and serializable_range<std::decay_t<Range>,
+                                                                                    typename std::decay_t<Stream>::char_type,
+                                                                                    typename std::decay_t<Stream>::traits_type>)
 {
   using char_type = typename std::remove_reference_t<Stream>::char_type;
 

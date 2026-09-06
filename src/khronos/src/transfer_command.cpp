@@ -1,4 +1,5 @@
 #include "command.hpp"
+#include "impl.hpp"
 
 #include <khronos/graphical_device.hpp>
 #include <khronos/staging_buffer.hpp>
@@ -18,14 +19,13 @@ static constexpr vk::BufferCopy2 to_buffer_copy_2(vk::StridedDeviceAddressRangeK
 }
 
 [[nodiscard]]
-static std::vector<vk::BufferCopy2> make_regions(std::set<vk::StridedDeviceAddressRangeKHR> const & regions)
+static std::vector<vk::BufferCopy2> make_regions(khronos::occupied_regions const & regions)
 {
   return regions | std::views::transform(to_buffer_copy_2) | std::ranges::to<std::vector>();
 }
 }
 
-khronos::transfer_command::transfer_command(graphical_device const & graphical_device,
-                                            std::size_t const        command_buffer_count)
+khronos::transfer_command::transfer_command(graphical_device const & graphical_device, std::size_t const command_buffer_count)
 : self(std::make_unique<transfer_command_impl>(create_transfer_command_impl(graphical_device.self->queue,
                                                                             graphical_device.self->queue_family_index,
                                                                             command_buffer_count)))

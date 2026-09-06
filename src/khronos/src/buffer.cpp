@@ -61,14 +61,12 @@ khronos::staging_buffer_impl khronos::create_staging_buffer_impl(physical_device
   auto const memory_type_index = find_memory_type_index(memory_requirements, memory_properties, memory_property);
 
   if(not memory_type_index)
-    throw std::runtime_error((std::stringstream{} << "cannot find a memory properties "
-                                                  << vk::to_string(memory_property) << " for usage "
-                                                  << vk::to_string(usage))
+    throw std::runtime_error((std::stringstream{} << "cannot find a memory properties " << vk::to_string(memory_property)
+                                                  << " for usage " << vk::to_string(usage))
                                .str());
 
-  auto device_memory = khronos::device_memory{
-    buffer.as_dependencies(),
-    allocate_device_memory(device.get(), *memory_type_index, memory_requirements)};
+  auto device_memory = khronos::device_memory{buffer.as_dependencies(),
+                                              allocate_device_memory(device.get(), *memory_type_index, memory_requirements)};
 
   buffer.get().bindMemory(device_memory.get(), 0);
 
@@ -95,14 +93,12 @@ khronos::transfer_buffer_impl khronos::create_transfer_buffer_impl(physical_devi
   auto const memory_type_index = find_memory_type_index(memory_requirements, memory_properties, memory_property);
 
   if(not memory_type_index)
-    throw std::runtime_error((std::stringstream{} << "cannot find a memory properties "
-                                                  << vk::to_string(memory_property) << " for usage "
-                                                  << vk::to_string(usage))
+    throw std::runtime_error((std::stringstream{} << "cannot find a memory properties " << vk::to_string(memory_property)
+                                                  << " for usage " << vk::to_string(usage))
                                .str());
 
-  auto device_memory = khronos::device_memory{
-    buffer.as_dependencies(),
-    allocate_device_memory(device.get(), *memory_type_index, memory_requirements)};
+  auto device_memory = khronos::device_memory{buffer.as_dependencies(),
+                                              allocate_device_memory(device.get(), *memory_type_index, memory_requirements)};
 
   buffer.get().bindMemory(device_memory.get(), 0);
 

@@ -35,9 +35,8 @@ using command_pool          = dependent<vk::raii::CommandPool, fences::as_depend
 using command_buffers       = dependent<std::list<vk::raii::CommandBuffer>, command_pool::as_dependencies_type>;
 using swapchain_create_info = dependent<vk::SwapchainCreateInfoKHR, surface::as_dependencies_type>;
 
-using swapchain = dependent<
-  vk::raii::SwapchainKHR,
-  dependency_union_type<queue::as_dependencies_type, swapchain_create_info::as_dependencies_type>>;
+using swapchain = dependent<vk::raii::SwapchainKHR,
+                            dependency_union_type<queue::as_dependencies_type, swapchain_create_info::as_dependencies_type>>;
 
 using image_views   = dependent<std::vector<vk::raii::ImageView>, swapchain::as_dependencies_type>;
 using buffer        = dependent<vk::raii::Buffer, device::as_dependencies_type>;
@@ -94,27 +93,35 @@ struct render_window_impl
     image_views                image_views;
 };
 
+struct address_less
+{
+    [[nodiscard]]
+    constexpr bool operator()(vk::StridedDeviceAddressRangeKHR const & lhs,
+                              vk::StridedDeviceAddressRangeKHR const & rhs) const noexcept
+    {
+      return lhs.address < rhs.address;
+    }
+};
+
+using occupied_regions         = std::set<vk::StridedDeviceAddressRangeKHR, address_less>;
+using usage_to_occupied_region = std::unordered_map<vk::BufferUsageFlagBits, occupied_regions::iterator>;
+
 struct staging_buffer_impl
 {
-    buffer                                     buffer;
-    device_memory                              device_memory;
-    vk::DeviceSize                             capacity;
-    std::set<vk::StridedDeviceAddressRangeKHR> occupied_regions;
-
-    std::unordered_map<vk::BufferUsageFlagBits, std::set<vk::StridedDeviceAddressRangeKHR>::const_iterator>
-      usage_to_occupied_region;
-
-    std::byte * mapped_memory;
+    buffer                   buffer;
+    device_memory            device_memory;
+    vk::DeviceSize           capacity;
+    occupied_regions         occupied_regions;
+    usage_to_occupied_region usage_to_occupied_region;
+    std::byte *              mapped_memory;
 };
 
 struct transfer_buffer_impl
 {
-    buffer                                     buffer;
-    device_memory                              device_memory;
-    vk::DeviceSize                             capacity;
-    std::set<vk::StridedDeviceAddressRangeKHR> occupied_regions;
-
-    std::unordered_map<vk::BufferUsageFlagBits, std::set<vk::StridedDeviceAddressRangeKHR>::const_iterator>
-      usage_to_occupied_region;
+    buffer                   buffer;
+    device_memory            device_memory;
+    vk::DeviceSize           capacity;
+    occupied_regions         occupied_regions;
+    usage_to_occupied_region usage_to_occupied_region;
 };
 }

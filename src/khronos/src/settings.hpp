@@ -39,15 +39,14 @@ static auto const required_surface_capabilities = vk::StructureChain{
 
 [[nodiscard]]
 std::vector<char const *> find_unavailable_extension(std::span<vk::ExtensionProperties const> const properties,
-                                                     std::span<char const * const> const extensions) noexcept;
+                                                     std::span<char const * const> const            extensions) noexcept;
 
 [[nodiscard]]
 std::vector<char const *> find_unavailable_layer(std::span<vk::LayerProperties const> const properties,
                                                  std::span<char const * const> const        layers) noexcept;
 
 [[nodiscard]]
-std::vector<char const *> get_required_debug_instance_extensions(
-  std::span<vk::ExtensionProperties const> const properties);
+std::vector<char const *> get_required_debug_instance_extensions(std::span<vk::ExtensionProperties const> const properties);
 
 [[nodiscard]]
 std::vector<char const *> get_required_instance_extensions(std::span<vk::ExtensionProperties const> const properties);
@@ -66,12 +65,10 @@ bool is_extension_available(std::span<vk::ExtensionProperties const> const prope
 bool is_layer_available(std::span<vk::LayerProperties const> const properties, std::string_view const layer) noexcept;
 
 [[nodiscard]]
-bool is_available(vk::PhysicalDeviceFeatures2 const & supported,
-                  vk::PhysicalDeviceFeatures2 const & requested) noexcept;
+bool is_available(vk::PhysicalDeviceFeatures2 const & supported, vk::PhysicalDeviceFeatures2 const & requested) noexcept;
 
 [[nodiscard]]
-bool is_available(vk::SurfaceCapabilities2KHR const & supported,
-                  vk::SurfaceCapabilities2KHR const & requested) noexcept;
+bool is_available(vk::SurfaceCapabilities2KHR const & supported, vk::SurfaceCapabilities2KHR const & requested) noexcept;
 
 template <class Structure>
 [[nodiscard]]

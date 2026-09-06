@@ -80,8 +80,7 @@ TEST(DependentTest, CleanUpInvokedWithDependencies)
   khronos::dependent<A> a;
 
   {
-    khronos::dependent<bool *, khronos::dependencies<A>>([](bool *& cleanup_invoked, A const &)
-                                                         { *cleanup_invoked = true; },
+    khronos::dependent<bool *, khronos::dependencies<A>>([](bool *& cleanup_invoked, A const &) { *cleanup_invoked = true; },
                                                          a.as_dependencies(),
                                                          &cleanup_invoked);
   }

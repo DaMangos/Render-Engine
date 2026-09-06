@@ -48,8 +48,8 @@ template <class... Properties>
 static std::string get_fancy_device_name(
   vk::StructureChain<vk::PhysicalDeviceProperties2, Properties...> const & device_properties)
 {
-  return (std::stringstream{} << get_device_name(device_properties) << " : " << get_driver_name(device_properties)
-                              << " (" << vk::apiVersionMajor(get_api_version(device_properties)) << '.'
+  return (std::stringstream{} << get_device_name(device_properties) << " : " << get_driver_name(device_properties) << " ("
+                              << vk::apiVersionMajor(get_api_version(device_properties)) << '.'
                               << vk::apiVersionMinor(get_api_version(device_properties)) << '.'
                               << vk::apiVersionPatch(get_api_version(device_properties)) << ")")
     .str();
@@ -81,8 +81,8 @@ static physical_device_type get_physical_device_type(vk::raii::SurfaceKHR const 
   using namespace serialize::tuple;
   using namespace serialize::ranges;
 
-  auto const device_properties = physical_device.getProperties2<vk::PhysicalDeviceProperties2,
-                                                                vk::PhysicalDeviceVulkan12Properties>();
+  auto const device_properties = physical_device
+                                   .getProperties2<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceVulkan12Properties>();
 
   if(get_api_version(device_properties) < khronos::min_api_version)
   {
@@ -91,9 +91,8 @@ static physical_device_type get_physical_device_type(vk::raii::SurfaceKHR const 
                        << vk::apiVersionMajor(get_api_version(device_properties)) << '.'
                        << vk::apiVersionMinor(get_api_version(device_properties)) << '.'
                        << vk::apiVersionPatch(get_api_version(device_properties)) << " and we require "
-                       << vk::apiVersionMajor(khronos::min_api_version) << '.'
-                       << vk::apiVersionMinor(khronos::min_api_version) << '.'
-                       << vk::apiVersionPatch(khronos::min_api_version);
+                       << vk::apiVersionMajor(khronos::min_api_version) << '.' << vk::apiVersionMinor(khronos::min_api_version)
+                       << '.' << vk::apiVersionPatch(khronos::min_api_version);
 
     return physical_device_type::not_suitable;
   }
@@ -179,8 +178,7 @@ static physical_device_type get_physical_device_type(vk::raii::SurfaceKHR const 
 }
 
 [[nodiscard]]
-static vk::raii::PhysicalDevice find_physical_device(vk::raii::Instance const &   instance,
-                                                     vk::raii::SurfaceKHR const & surface)
+static vk::raii::PhysicalDevice find_physical_device(vk::raii::Instance const & instance, vk::raii::SurfaceKHR const & surface)
 {
   std::unordered_map<physical_device_type, vk::raii::PhysicalDevice> physical_devices;
 

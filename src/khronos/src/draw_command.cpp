@@ -54,11 +54,9 @@ void khronos::draw_command::operator()(graphics_pipeline & graphics_pipeline,
   auto const & swapchain_create_info = render_window.self->swapchain_create_info.get();
   auto const & swapchain             = render_window.self->swapchain.get();
 
-  auto const & index_buffer_region = transfer_buffer.self->usage_to_occupied_region.at(
-    vk::BufferUsageFlagBits::eIndexBuffer);
+  auto const & index_buffer_region = transfer_buffer.self->usage_to_occupied_region.at(vk::BufferUsageFlagBits::eIndexBuffer);
 
-  auto const & vertex_buffer_region = transfer_buffer.self->usage_to_occupied_region.at(
-    vk::BufferUsageFlagBits::eVertexBuffer);
+  auto const & vertex_buffer_region = transfer_buffer.self->usage_to_occupied_region.at(vk::BufferUsageFlagBits::eVertexBuffer);
 
   auto const & buffer = transfer_buffer.self->buffer.get();
 
@@ -110,9 +108,7 @@ void khronos::draw_command::operator()(graphics_pipeline & graphics_pipeline,
                           .setMinDepth(0.0f)
                           .setMaxDepth(1.0f);
 
-  auto const scissor = vk::Rect2D{}
-                         .setOffset(vk::Offset2D{}.setX(0).setY(0))
-                         .setExtent(swapchain_create_info.imageExtent);
+  auto const scissor = vk::Rect2D{}.setOffset(vk::Offset2D{}.setX(0).setY(0)).setExtent(swapchain_create_info.imageExtent);
 
   auto const rendering_info = vk::RenderingInfo{}
                                 .setRenderArea(scissor)

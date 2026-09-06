@@ -22,9 +22,9 @@ static constexpr vk::DeviceSize align_up(vk::DeviceSize const offset) noexcept
 template <class Type>
 [[nodiscard]]
 static constexpr std::optional<vk::StridedDeviceAddressRangeKHR> find_available_region(
-  std::span<Type const> const                        objects,
-  vk::DeviceSize const                               capacity,
-  std::set<vk::StridedDeviceAddressRangeKHR> const & occupied_regions) noexcept
+  std::span<Type const> const       objects,
+  vk::DeviceSize const              capacity,
+  khronos::occupied_regions const & occupied_regions) noexcept
 {
   if(objects.size() > std::numeric_limits<std::uint32_t>::max())
     return std::nullopt;

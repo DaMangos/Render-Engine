@@ -139,8 +139,7 @@ glfw::window glfw::library::create_window(dimensions<int, 2> const & size,
                                           std::string const &        title,
                                           window const &             share) const
 {
-  return window(
-    {glfwCreateWindow(size.width, size.height, title.c_str(), nullptr, share.ptr.get()), glfwDestroyWindow});
+  return window({glfwCreateWindow(size.width, size.height, title.c_str(), nullptr, share.ptr.get()), glfwDestroyWindow});
 }
 
 glfw::window glfw::library::create_window(dimensions<int, 2> const & size,
@@ -155,8 +154,7 @@ glfw::window glfw::library::create_window(dimensions<int, 2> const & size,
                                           window const &             share,
                                           monitor const &            monitor) const
 {
-  return window(
-    {glfwCreateWindow(size.width, size.height, title.c_str(), monitor.ptr, share.ptr.get()), glfwDestroyWindow});
+  return window({glfwCreateWindow(size.width, size.height, title.c_str(), monitor.ptr, share.ptr.get()), glfwDestroyWindow});
 }
 
 std::set<glfw::monitor> const & glfw::library::get_monitors() const

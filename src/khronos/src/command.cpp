@@ -10,8 +10,7 @@
 namespace
 {
 [[nodiscard]]
-static vk::raii::CommandPool create_command_pool(vk::raii::Device const & device,
-                                                 std::uint32_t const      queue_family_index)
+static vk::raii::CommandPool create_command_pool(vk::raii::Device const & device, std::uint32_t const queue_family_index)
 {
   auto const command_pool_create_info = vk::CommandPoolCreateInfo{}
                                           .setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer)

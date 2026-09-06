@@ -14,6 +14,13 @@ class graphics_pipeline
         std::array<float, 3> colour;
     };
 
+    struct uniform_buffer_object
+    {
+        std::array<std::array<float, 4>, 4> model;
+        std::array<std::array<float, 4>, 4> view;
+        std::array<std::array<float, 4>, 4> proj;
+    };
+
     explicit graphics_pipeline(class graphical_device const & graphical_device);
 
     graphics_pipeline(graphics_pipeline &&) noexcept = default;

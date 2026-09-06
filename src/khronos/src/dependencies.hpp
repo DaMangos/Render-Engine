@@ -238,8 +238,7 @@ template <class Dependencies, class Element>
 struct contains_dependency;
 
 template <class Element, class... Elements>
-struct contains_dependency<dependencies<Elements...>, Element>
-: std::bool_constant<(std::is_same_v<Element, Elements> or ...)>
+struct contains_dependency<dependencies<Elements...>, Element> : std::bool_constant<(std::is_same_v<Element, Elements> or ...)>
 {
 };
 
@@ -260,8 +259,7 @@ class dependencies
 {
   public:
     template <class... OtherElement>
-    constexpr dependencies(dependencies<OtherElement...> const & other)
-      requires(sizeof...(Elements) == sizeof...(OtherElement))
+    constexpr dependencies(dependencies<OtherElement...> const & other) requires(sizeof...(Elements) == sizeof...(OtherElement))
     : ptrs(std::get<std::shared_ptr<Elements const>>(other.ptrs)...)
     {
     }
@@ -393,8 +391,7 @@ struct dependency_union_t
 inline constexpr auto dependency_union = detail::dependency_union_t{0};
 
 template <class LhsDependencies, class RhsLhsDependencies>
-using dependency_union_type = decltype(dependency_union(std::declval<LhsDependencies>(),
-                                                        std::declval<RhsLhsDependencies>()));
+using dependency_union_type = decltype(dependency_union(std::declval<LhsDependencies>(), std::declval<RhsLhsDependencies>()));
 
 template <class Element, class Dependencies = void>
 requires(not detail::contains_dependency_v<Dependencies, Element>)
@@ -456,10 +453,8 @@ class dependent
           {
             [this, p]<std::size_t... I>(std::index_sequence<I...>)
             {
-              callback(
-                *p,
-                this
-                  ->template get<std::tuple_element_t<I + 1, typename function_traits<FunctionLike>::args_type>>()...);
+              callback(*p,
+                       this->template get<std::tuple_element_t<I + 1, typename function_traits<FunctionLike>::args_type>>()...);
             }(std::make_index_sequence<function_traits<FunctionLike>::arg_size - 1>{});
 
             std::default_delete<element_type>{}(p);
@@ -619,10 +614,8 @@ class dependent<Element, void>
 
   public:
     template <class FunctionLike, class... Args>
-    constexpr dependent(FunctionLike callback, Args &&... args)
-      requires(std::is_invocable_v<FunctionLike, element_type &>)
-    : ptr(std::make_unique<element_type>(std::forward<Args>(args)...).release(),
-          deleter_with_callback<FunctionLike>{callback})
+    constexpr dependent(FunctionLike callback, Args &&... args) requires(std::is_invocable_v<FunctionLike, element_type &>)
+    : ptr(std::make_unique<element_type>(std::forward<Args>(args)...).release(), deleter_with_callback<FunctionLike>{callback})
     {
     }
 
@@ -713,7 +706,6 @@ struct std::tuple_size<khronos::dependencies<Elements...>> : std::integral_const
 };
 
 template <std::size_t I, class... Elements>
-struct std::tuple_element<I, khronos::dependencies<Elements...>>
-: std::tuple_element<I, std::tuple<Elements const &...>>
+struct std::tuple_element<I, khronos::dependencies<Elements...>> : std::tuple_element<I, std::tuple<Elements const &...>>
 {
 };

@@ -65,11 +65,10 @@ static vk::SwapchainCreateInfoKHR get_swapchain_create_info(glfw::dimensions<int
 }
 
 [[nodiscard]]
-static vk::SwapchainCreateInfoKHR get_swapchain_create_info(
-  glfw::dimensions<int, 2> const &   size,
-  vk::SurfaceCapabilitiesKHR const & surface_capabilities,
-  vk::SwapchainCreateInfoKHR const & old_swapchain_create_info,
-  vk::raii::SwapchainKHR const &     old_swapchain)
+static vk::SwapchainCreateInfoKHR get_swapchain_create_info(glfw::dimensions<int, 2> const &   size,
+                                                            vk::SurfaceCapabilitiesKHR const & surface_capabilities,
+                                                            vk::SwapchainCreateInfoKHR const & old_swapchain_create_info,
+                                                            vk::raii::SwapchainKHR const &     old_swapchain)
 {
   return vk::SwapchainCreateInfoKHR{old_swapchain_create_info}
     .setImageExtent(get_image_extent(size, surface_capabilities))
@@ -127,9 +126,8 @@ static khronos::render_window_impl create_render_window_impl(glfw::dimensions<in
                                       .getSurfaceCapabilities2KHR(physical_device_surface_info)
                                       .surfaceCapabilities;
 
-  auto swapchain_create_info = khronos::swapchain_create_info{
-    surface.as_dependencies(),
-    get_swapchain_create_info(size, surface_capabilities, surface)};
+  auto swapchain_create_info = khronos::swapchain_create_info{surface.as_dependencies(),
+                                                              get_swapchain_create_info(size, surface_capabilities, surface)};
 
   auto const swapchain_dependencies = khronos::dependency_union(swapchain_create_info.as_dependencies(),
                                                                 queue.as_dependencies());
@@ -165,15 +163,12 @@ khronos::render_window::~render_window() noexcept = default;
 
 void khronos::render_window::when_framebuffer_resized(glfw::dimensions<int, 2> const & size)
 {
-  self->swapchain_create_info.get() = get_swapchain_create_info(size,
-                                                                self->surface_capabilities,
-                                                                self->swapchain_create_info.get(),
-                                                                self->swapchain);
+  self->swapchain_create_info
+    .get() = get_swapchain_create_info(size, self->surface_capabilities, self->swapchain_create_info.get(), self->swapchain);
 
   self->swapchain.template get_dependency<vk::raii::Queue>().waitIdle();
 
-  self->swapchain.get() = {self->swapchain.template get_dependency<vk::raii::Device>(),
-                           self->swapchain_create_info.get()};
+  self->swapchain.get() = {self->swapchain.template get_dependency<vk::raii::Device>(), self->swapchain_create_info.get()};
 
   self->images = self->swapchain.get().getImages();
 

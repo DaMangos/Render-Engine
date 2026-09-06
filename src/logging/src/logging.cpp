@@ -15,8 +15,7 @@ struct verbose_colour_prefix
     [[nodiscard]]
     std::string operator()() const
     {
-      return std::format("\033[1m[{:%Y-%m-%d %H:%M:%S}] \033[1;35m[ VERBOSE ]\033[0m ",
-                         std::chrono::system_clock::now());
+      return std::format("\033[1m[{:%Y-%m-%d %H:%M:%S}] \033[1;35m[ VERBOSE ]\033[0m ", std::chrono::system_clock::now());
     }
 };
 
@@ -34,8 +33,7 @@ struct wverbose_colour_prefix
     [[nodiscard]]
     std::wstring operator()() const
     {
-      return std::format(L"\033[1m[{:%Y-%m-%d %H:%M:%S}] \033[1;35m[ VERBOSE ]\033[0m ",
-                         std::chrono::system_clock::now());
+      return std::format(L"\033[1m[{:%Y-%m-%d %H:%M:%S}] \033[1;35m[ VERBOSE ]\033[0m ", std::chrono::system_clock::now());
     }
 };
 
@@ -89,8 +87,7 @@ struct warn_colour_prefix
     [[nodiscard]]
     std::string operator()() const
     {
-      return std::format("\033[1m[{:%Y-%m-%d %H:%M:%S}] \033[1;33m[ WARNING ]\033[0m ",
-                         std::chrono::system_clock::now());
+      return std::format("\033[1m[{:%Y-%m-%d %H:%M:%S}] \033[1;33m[ WARNING ]\033[0m ", std::chrono::system_clock::now());
     }
 };
 
@@ -108,8 +105,7 @@ struct wwarning_colour_prefix
     [[nodiscard]]
     std::wstring operator()() const
     {
-      return std::format(L"\033[1m[{:%Y-%m-%d %H:%M:%S}] \033[1;33m[ WARNING ]\033[0m ",
-                         std::chrono::system_clock::now());
+      return std::format(L"\033[1m[{:%Y-%m-%d %H:%M:%S}] \033[1;33m[ WARNING ]\033[0m ", std::chrono::system_clock::now());
     }
 };
 
@@ -145,8 +141,7 @@ struct werror_colour_prefix
     [[nodiscard]]
     std::wstring operator()() const
     {
-      return std::format(L"\033[1m[{:%Y-%m-%d %H:%M:%S}] \033[1;31m[ ERROR ]\033[0m ",
-                         std::chrono::system_clock::now());
+      return std::format(L"\033[1m[{:%Y-%m-%d %H:%M:%S}] \033[1;31m[ ERROR ]\033[0m ", std::chrono::system_clock::now());
     }
 };
 
@@ -185,8 +180,7 @@ logging::prefixed_syncstream logging::verbose(std::ostream * const out)
 
   return dynamic_cast<std::filebuf const *>(out->rdbuf())
          ? prefixed_syncstream(std::make_unique<prefixed_syncbuf<verbose_prefix>>(*out, verbose_prefix{}))
-         : prefixed_syncstream(
-             std::make_unique<prefixed_syncbuf<verbose_colour_prefix>>(*out, verbose_colour_prefix{}));
+         : prefixed_syncstream(std::make_unique<prefixed_syncbuf<verbose_colour_prefix>>(*out, verbose_colour_prefix{}));
 }
 
 logging::prefixed_syncstream logging::info(std::ostream * const out)
@@ -226,8 +220,7 @@ logging::wprefixed_syncstream logging::wverbose(std::wostream * const out)
 
   return dynamic_cast<std::wfilebuf const *>(out->rdbuf())
          ? wprefixed_syncstream(std::make_unique<wprefixed_syncbuf<wverbose_prefix>>(*out, wverbose_prefix{}))
-         : wprefixed_syncstream(
-             std::make_unique<wprefixed_syncbuf<wverbose_colour_prefix>>(*out, wverbose_colour_prefix{}));
+         : wprefixed_syncstream(std::make_unique<wprefixed_syncbuf<wverbose_colour_prefix>>(*out, wverbose_colour_prefix{}));
 }
 
 logging::wprefixed_syncstream logging::winfo(std::wostream * const out)
@@ -247,8 +240,7 @@ logging::wprefixed_syncstream logging::wwarning(std::wostream * const out)
 
   return dynamic_cast<std::wfilebuf const *>(out->rdbuf())
          ? wprefixed_syncstream(std::make_unique<wprefixed_syncbuf<wwarning_prefix>>(*out, wwarning_prefix{}))
-         : wprefixed_syncstream(
-             std::make_unique<wprefixed_syncbuf<wwarning_colour_prefix>>(*out, wwarning_colour_prefix{}));
+         : wprefixed_syncstream(std::make_unique<wprefixed_syncbuf<wwarning_colour_prefix>>(*out, wwarning_colour_prefix{}));
 }
 
 logging::wprefixed_syncstream logging::werror(std::wostream * const out)
@@ -258,6 +250,5 @@ logging::wprefixed_syncstream logging::werror(std::wostream * const out)
 
   return dynamic_cast<std::wfilebuf const *>(out->rdbuf())
          ? wprefixed_syncstream(std::make_unique<wprefixed_syncbuf<werror_prefix>>(*out, werror_prefix{}))
-         : wprefixed_syncstream(
-             std::make_unique<wprefixed_syncbuf<werror_colour_prefix>>(*out, werror_colour_prefix{}));
+         : wprefixed_syncstream(std::make_unique<wprefixed_syncbuf<werror_colour_prefix>>(*out, werror_colour_prefix{}));
 }

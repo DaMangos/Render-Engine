@@ -17,8 +17,7 @@ static vk::raii::ShaderModule create_shader_module(vk::raii::Device const & devi
 
   std::memcpy(shader_binary.get(), spv, spv_len);
 
-  auto const shader_module_create_info = vk::ShaderModuleCreateInfo{}.setCodeSize(spv_len).setPCode(
-    shader_binary.get());
+  auto const shader_module_create_info = vk::ShaderModuleCreateInfo{}.setCodeSize(spv_len).setPCode(shader_binary.get());
 
   return {device, shader_module_create_info};
 }
@@ -64,10 +63,8 @@ static vk::raii::Pipeline create_pipeline(vk::raii::Device const &         devic
     vk::VertexInputRate::eVertex);
 
   auto const pipeline_vertex_input_state_create_info = vk::PipelineVertexInputStateCreateInfo{}
-                                                         .setVertexAttributeDescriptions(
-                                                           vertex_input_attribute_description)
-                                                         .setVertexBindingDescriptions(
-                                                           vertex_input_binding_description);
+                                                         .setVertexAttributeDescriptions(vertex_input_attribute_description)
+                                                         .setVertexBindingDescriptions(vertex_input_binding_description);
 
   constexpr auto pipeline_input_assembly_state_create_info = vk::PipelineInputAssemblyStateCreateInfo{}
                                                                .setTopology(vk::PrimitiveTopology::eTriangleList)
@@ -140,10 +137,9 @@ static khronos::graphics_pipeline_impl create_graphics_pipeline_impl(khronos::de
 {
   auto pipeline_layout = khronos::pipeline_layout(device.as_dependencies(), create_pipeline_layout(device.get()));
 
-  auto pipeline = khronos::pipeline(pipeline_layout.as_dependencies(),
-                                    create_pipeline(device.get(),
-                                                    pipeline_layout.get(),
-                                                    create_shader_module(device.get(), shader_spv_len, shader_spv)));
+  auto pipeline = khronos::pipeline(
+    pipeline_layout.as_dependencies(),
+    create_pipeline(device.get(), pipeline_layout.get(), create_shader_module(device.get(), shader_spv_len, shader_spv)));
 
   return {std::move(pipeline_layout), std::move(pipeline)};
 }

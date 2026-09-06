@@ -13,4 +13,4 @@ $(GENERATE): $(SPV)
 
 $(SPV): $(SRCS)
 	@mkdir -p $(@D)
-	@$(SLANG) $< -target spirv -profile spirv_1_4 -emit-spirv-directly -fvk-use-entrypoint-name -entry vert_main -entry frag_main -o $@
+	@$(SLANG) $< -target spirv -profile spirv_1_4 -emit-spirv-directly -matrix-layout-column-major -fvk-use-entrypoint-name -entry vert_main -entry frag_main -o $@

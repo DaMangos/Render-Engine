@@ -10,11 +10,20 @@ struct output
     float3 colour;
 };
 
+struct uniform_buffer
+{
+    float4x4 model;
+    float4x4 view;
+    float4x4 proj;
+};
+
+ConstantBuffer<uniform_buffer> ubo;
+
 [shader("vertex")]
 output vert_main(input in)
 {
   output output;
-  output.pos    = float4(in.pos, 0.0, 1.0);
+  output.pos    = mul(ubo.proj, mul(ubo.view, mul(ubo.model, float4(in.pos, 0.0, 1.0))));
   output.colour = in.colour;
   return output;
 }
