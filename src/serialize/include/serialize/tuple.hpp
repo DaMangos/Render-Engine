@@ -1,22 +1,5 @@
 #pragma once
 
-/*
-synopsis
-
-
-namespace serialize
-{
-inline namespace tuple
-{
-template <class Stream, class Tuple>
-Stream && operator<<(Stream && out, Tuple && tuple)
-  requires(tuple::tuple_like<Tuple>
-           and not serializable_range<Tuple, Stream::char_type, Stream::char_type> ...);
-}
-}
-
-*/
-
 #include <serialize/serializable_range.hpp>
 #include <tuple/tuple_like.hpp>
 

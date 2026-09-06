@@ -1,17 +1,5 @@
 #pragma once
 
-/*
-synopsis
-
-
-namespace serialize
-{
-template <class Range, class CharT, class Traits>
-concept serializable_range;
-}
-
-*/
-
 #include <concepts>
 #include <ranges>
 #include <string>

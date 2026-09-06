@@ -12,6 +12,190 @@
   M    [M-1][ 0 ]  [M-1][ 1 ]  [M-1][ 2 ]  .  .  .  [M-1][N-1]
 
        [ i ][ j ]  [ i ][ j ]  [ i ][ j ]          [ i ][ j ]
+
+
+       synopsis
+
+namespace maths
+{
+template <class Arithmetic, std::size_t ColumnSize, std::size_t RowSize, layout Layout = layout::column_major>
+requires(std::is_arithmetic_v<Arithmetic> and ColumnSize > 0uz and RowSize > 0uz
+         and (Layout == layout::row_major or Layout == layout::column_major))
+class matrix
+{
+  public:
+    using value_type         = Arithmetic;
+    using reference          = Arithmetic &;
+    using const_reference    = Arithmetic const &;
+    using pointer            = Arithmetic *;
+    using const_pointer      = Arithmetic const *;
+    using size_type          = std::size_t;
+    using difference_type    = std::ptrdiff_t;
+    using row_view           = basic_row_view<pointer, ColumnSize, RowSize, Layout>;
+    using const_row_view     = basic_row_view<const_pointer, ColumnSize, RowSize, Layout>;
+    using column_view        = basic_column_view<pointer, ColumnSize, RowSize, Layout>;
+    using const_column_view  = basic_column_view<const_pointer, ColumnSize, RowSize, Layout>;
+    using row_views          = basic_row_views<matrix>;
+    using const_row_views    = basic_row_views<matrix const>;
+    using column_views       = basic_column_views<matrix>;
+    using const_column_views = basic_column_views<matrix const>;
+
+    constexpr matrix() noexcept = default;
+
+    template <class Iter, std::sentinel_for<Iter> Sent>
+    constexpr matrix(Iter first, Sent last);
+
+    template <std::ranges::input_range Range>
+    constexpr matrix(std::from_range_t, Range && range);
+
+    constexpr matrix(std::initializer_list<Arithmetic> const & list) noexcept;
+
+    template <class OtherArithmetic, class Extents, class AccessorPolicy>
+    constexpr matrix(std::mdspan<OtherArithmetic, Extents, std::layout_left, AccessorPolicy> const & md) noexcept
+      requires(Extents::static_extent(0) == ColumnSize and Extents::static_extent(1) == RowSize);
+
+    template <class OtherArithmetic, class Extents, class AccessorPolicy>
+    constexpr matrix(std::mdspan<OtherArithmetic, Extents, std::layout_right, AccessorPolicy> const & md) noexcept
+      requires(Extents::static_extent(0) == ColumnSize and Extents::static_extent(1) == RowSize);
+
+    constexpr matrix(row_view const & view) noexcept requires(ColumnSize == 1);
+
+    constexpr matrix(const_row_view const & view) noexcept requires(ColumnSize == 1);
+
+    constexpr matrix(column_view const & view) noexcept requires(RowSize == 1);
+
+    constexpr matrix(const_column_view const & view) noexcept requires(RowSize == 1);
+
+    constexpr matrix(Arithmetic value) noexcept requires(ColumnSize == 1 and RowSize == 1);
+
+    template <class OtherArithmetic, layout OtherLayout>
+    constexpr matrix(matrix<OtherArithmetic, ColumnSize, RowSize, OtherLayout> const & other) noexcept;
+
+    constexpr matrix & operator=(std::initializer_list<Arithmetic> const & list) noexcept;
+
+    template <class Extents, class AccessorPolicy>
+    constexpr matrix & operator=(std::mdspan<Arithmetic, Extents, std::layout_left, AccessorPolicy> const & md) noexcept
+      requires(Extents::static_extent(0) == ColumnSize and Extents::static_extent(1) == RowSize);
+
+    template <class Extents, class AccessorPolicy>
+    constexpr matrix & operator=(std::mdspan<Arithmetic, Extents, std::layout_right, AccessorPolicy> const & md) noexcept
+      requires(Extents::static_extent(0) == ColumnSize and Extents::static_extent(1) == RowSize);
+
+    constexpr matrix & operator=(const_row_view const & view) noexcept requires(ColumnSize == 1);
+
+    constexpr matrix & operator=(const_column_view const & view) noexcept requires(RowSize == 1);
+
+    template <class OtherArithmetic, layout OtherLayout>
+    constexpr matrix & operator=(matrix<OtherArithmetic, ColumnSize, RowSize, OtherLayout> const & other) noexcept;
+
+    [[nodiscard]]
+    constexpr operator std::mdspan<Arithmetic, std::extents<std::size_t, ColumnSize, RowSize>, std::layout_right>() & noexcept
+      requires(Layout == layout::row_major);
+
+    [[nodiscard]]
+    constexpr operator std::mdspan<Arithmetic, std::extents<std::size_t, ColumnSize, RowSize>, std::layout_left>() & noexcept
+      requires(Layout == layout::column_major);
+
+    [[nodiscard]]
+    constexpr operator std::mdspan<Arithmetic, std::extents<std::size_t, ColumnSize, RowSize>, std::layout_right>() && noexcept
+      requires(Layout == layout::row_major)
+      = delete;
+
+    [[nodiscard]]
+    constexpr operator std::mdspan<Arithmetic, std::extents<std::size_t, ColumnSize, RowSize>, std::layout_left>() && noexcept
+      requires(Layout == layout::column_major)
+      = delete;
+
+    [[nodiscard]]
+    constexpr operator std::mdspan<Arithmetic const, std::extents<std::size_t, ColumnSize, RowSize>, std::layout_right>()
+      const & noexcept requires(Layout == layout::row_major);
+
+    [[nodiscard]]
+    constexpr operator std::mdspan<Arithmetic const, std::extents<std::size_t, ColumnSize, RowSize>, std::layout_left>()
+      const & noexcept requires(Layout == layout::column_major);
+
+    [[nodiscard]]
+    constexpr operator Arithmetic() && noexcept requires(ColumnSize == 1uz and RowSize == 1uz);
+
+    [[nodiscard]]
+    constexpr operator Arithmetic &() & noexcept requires(ColumnSize == 1uz and RowSize == 1uz);
+
+    [[nodiscard]]
+    constexpr operator Arithmetic const &() const & noexcept requires(ColumnSize == 1uz and RowSize == 1uz);
+
+    template <class Iter, std::sentinel_for<Iter> Sent>
+    constexpr void assign(Iter first, Sent last);
+
+    template <std::ranges::input_range Range>
+    constexpr void assign(std::from_range_t, Range && range);
+
+    [[nodiscard]]
+    static constexpr layout layout() noexcept;
+
+    [[nodiscard]]
+    constexpr pointer data() noexcept;
+
+    [[nodiscard]]
+    constexpr const_pointer data() const noexcept;
+
+    [[nodiscard]]
+    static constexpr size_type size() noexcept;
+
+    [[nodiscard]]
+    static constexpr difference_type ssize() noexcept;
+
+    [[nodiscard]]
+    static constexpr size_type column_size() noexcept;
+
+    [[nodiscard]]
+    static constexpr size_type row_size() noexcept;
+
+    [[nodiscard]]
+    static constexpr difference_type column_ssize() noexcept;
+
+    [[nodiscard]]
+    static constexpr difference_type row_ssize() noexcept;
+
+    [[nodiscard]]
+    static constexpr difference_type column_stride() noexcept;
+
+    [[nodiscard]]
+    static constexpr difference_type row_stride() noexcept;
+
+    [[nodiscard]]
+    constexpr row_views rows() noexcept;
+
+    [[nodiscard]]
+    constexpr const_row_views rows() const noexcept;
+
+    [[nodiscard]]
+    constexpr column_views columns() noexcept;
+
+    [[nodiscard]]
+    constexpr const_column_views columns() const noexcept;
+
+    [[nodiscard]]
+    constexpr row_view row(difference_type j) noexcept;
+
+    [[nodiscard]]
+    constexpr const_row_view row(difference_type j) const noexcept;
+
+    [[nodiscard]]
+    constexpr column_view column(difference_type i) noexcept;
+
+    [[nodiscard]]
+    constexpr const_column_view column(difference_type i) const noexcept;
+
+    [[nodiscard]]
+    constexpr row_view operator[](difference_type i) noexcept;
+
+    [[nodiscard]]
+    constexpr const_row_view operator[](difference_type i) const noexcept;
+
+    [[nodiscard]]
+    constexpr matrix operator-() noexcept;
+};
+}
 */
 
 #include <iterator/strided_iterator.hpp>
@@ -22,6 +206,7 @@
 #include <initializer_list>
 #include <iterator>
 #include <mdspan>
+#include <numeric>
 #include <ranges>
 #include <type_traits>
 #include <utility>
@@ -565,13 +750,6 @@ class matrix
       return *this;
     }
 
-    constexpr matrix & operator=(Arithmetic const value) noexcept requires(ColumnSize == 1 and RowSize == 1)
-    {
-      elements = {value};
-
-      return *this;
-    }
-
     template <class OtherArithmetic, layout OtherLayout>
     constexpr matrix & operator=(matrix<OtherArithmetic, ColumnSize, RowSize, OtherLayout> const & other) noexcept
     {
@@ -580,28 +758,60 @@ class matrix
       return *this;
     }
 
-    constexpr operator std::mdspan<Arithmetic, std::extents<std::size_t, ColumnSize, RowSize>, std::layout_right>() noexcept
+    [[nodiscard]]
+    constexpr operator std::mdspan<Arithmetic, std::extents<std::size_t, ColumnSize, RowSize>, std::layout_right>() & noexcept
       requires(Layout == layout::row_major)
     {
       return {data()};
     }
 
-    constexpr operator std::mdspan<Arithmetic, std::extents<std::size_t, ColumnSize, RowSize>, std::layout_left>() noexcept
+    [[nodiscard]]
+    constexpr operator std::mdspan<Arithmetic, std::extents<std::size_t, ColumnSize, RowSize>, std::layout_left>() & noexcept
       requires(Layout == layout::column_major)
     {
       return {data()};
     }
 
+    [[nodiscard]]
+    constexpr operator std::mdspan<Arithmetic, std::extents<std::size_t, ColumnSize, RowSize>, std::layout_right>() && noexcept
+      requires(Layout == layout::row_major)
+      = delete;
+
+    [[nodiscard]]
+    constexpr operator std::mdspan<Arithmetic, std::extents<std::size_t, ColumnSize, RowSize>, std::layout_left>() && noexcept
+      requires(Layout == layout::column_major)
+      = delete;
+
+    [[nodiscard]]
     constexpr operator std::mdspan<Arithmetic const, std::extents<std::size_t, ColumnSize, RowSize>, std::layout_right>()
-      const noexcept requires(Layout == layout::row_major)
+      const & noexcept requires(Layout == layout::row_major)
     {
       return {data()};
     }
 
+    [[nodiscard]]
     constexpr operator std::mdspan<Arithmetic const, std::extents<std::size_t, ColumnSize, RowSize>, std::layout_left>()
-      const noexcept requires(Layout == layout::column_major)
+      const & noexcept requires(Layout == layout::column_major)
     {
       return {data()};
+    }
+
+    [[nodiscard]]
+    constexpr operator Arithmetic() && noexcept requires(ColumnSize == 1uz and RowSize == 1uz)
+    {
+      return *data();
+    }
+
+    [[nodiscard]]
+    constexpr operator Arithmetic &() & noexcept requires(ColumnSize == 1uz and RowSize == 1uz)
+    {
+      return *data();
+    }
+
+    [[nodiscard]]
+    constexpr operator Arithmetic const &() const & noexcept requires(ColumnSize == 1uz and RowSize == 1uz)
+    {
+      return *data();
     }
 
     template <class Iter, std::sentinel_for<Iter> Sent>
@@ -768,6 +978,33 @@ class matrix
   private:
     Arithmetic elements[ColumnSize * RowSize] = {};
 };
+
+template <class Arithmetic, std::size_t ColumnSize, std::size_t RowSize, layout Layout>
+constexpr decltype(auto) decay(matrix<Arithmetic, ColumnSize, RowSize, Layout> & mat) noexcept
+{
+  if constexpr(ColumnSize == 1uz and RowSize == 1uz)
+    return static_cast<Arithmetic &>(mat);
+  else
+    return mat;
+}
+
+template <class Arithmetic, std::size_t ColumnSize, std::size_t RowSize, layout Layout>
+constexpr auto decay(matrix<Arithmetic, ColumnSize, RowSize, Layout> && mat) noexcept
+{
+  if constexpr(ColumnSize == 1uz and RowSize == 1uz)
+    return static_cast<Arithmetic>(mat);
+  else
+    return mat;
+}
+
+template <class Arithmetic, std::size_t ColumnSize, std::size_t RowSize, layout Layout>
+constexpr decltype(auto) decay(matrix<Arithmetic, ColumnSize, RowSize, Layout> const & mat) noexcept
+{
+  if constexpr(ColumnSize == 1uz and RowSize == 1uz)
+    return static_cast<Arithmetic const &>(mat);
+  else
+    return mat;
+}
 
 template <class LhsArithmetic,
           class RhsArithmetic,
@@ -965,11 +1202,11 @@ template <class LhsArithmetic,
           std::size_t RowSize,
           layout      LhsLayout,
           layout      RhsLayout>
-constexpr matrix<LhsArithmetic, ColumnSize, RowSize, LhsLayout> && operator+=(
+constexpr matrix<LhsArithmetic, ColumnSize, RowSize, LhsLayout> operator+=(
   matrix<LhsArithmetic, ColumnSize, RowSize, LhsLayout> &&      lhs,
   matrix<RhsArithmetic, ColumnSize, RowSize, RhsLayout> const & rhs) noexcept
 {
-  return std::move(lhs += rhs);
+  return lhs += rhs;
 }
 
 template <class LhsIter,
@@ -1012,11 +1249,11 @@ constexpr matrix<Arithmetic, ColumnSize, 1uz, LhsLayout> & operator+=(
 }
 
 template <class Arithmetic, std::size_t ColumnSize, layout LhsLayout, class Iter, std::size_t RowSize, layout RhsLayout>
-constexpr matrix<Arithmetic, ColumnSize, 1uz, LhsLayout> && operator+=(
+constexpr matrix<Arithmetic, ColumnSize, 1uz, LhsLayout> operator+=(
   matrix<Arithmetic, ColumnSize, 1uz, LhsLayout> &&               lhs,
   basic_column_view<Iter, ColumnSize, RowSize, RhsLayout> const & rhs) noexcept
 {
-  return std::move(lhs += rhs);
+  return lhs += rhs;
 }
 
 template <class LhsIter,
@@ -1059,11 +1296,11 @@ constexpr matrix<Arithmetic, 1uz, RowSize, LhsLayout> & operator+=(
 }
 
 template <class Arithmetic, std::size_t RowSize, layout LhsLayout, class Iter, std::size_t ColumnSize, layout RhsLayout>
-constexpr matrix<Arithmetic, 1uz, RowSize, LhsLayout> && operator+=(
+constexpr matrix<Arithmetic, 1uz, RowSize, LhsLayout> operator+=(
   matrix<Arithmetic, 1uz, RowSize, LhsLayout> &&               lhs,
   basic_row_view<Iter, ColumnSize, RowSize, RhsLayout> const & rhs) noexcept
 {
-  return std::move(lhs += rhs);
+  return lhs += rhs;
 }
 
 template <class LhsArithmetic,
@@ -1177,11 +1414,11 @@ template <class LhsArithmetic,
           std::size_t RowSize,
           layout      LhsLayout,
           layout      RhsLayout>
-constexpr matrix<LhsArithmetic, ColumnSize, RowSize, LhsLayout> && operator-=(
+constexpr matrix<LhsArithmetic, ColumnSize, RowSize, LhsLayout> operator-=(
   matrix<LhsArithmetic, ColumnSize, RowSize, LhsLayout> &&      lhs,
   matrix<RhsArithmetic, ColumnSize, RowSize, RhsLayout> const & rhs) noexcept
 {
-  return std::move(lhs -= rhs);
+  return lhs -= rhs;
 }
 
 template <class LhsIter,
@@ -1224,11 +1461,11 @@ constexpr matrix<Arithmetic, ColumnSize, 1uz, LhsLayout> & operator-=(
 }
 
 template <class Arithmetic, std::size_t ColumnSize, layout LhsLayout, class Iter, std::size_t RowSize, layout RhsLayout>
-constexpr matrix<Arithmetic, ColumnSize, 1uz, LhsLayout> && operator-=(
+constexpr matrix<Arithmetic, ColumnSize, 1uz, LhsLayout> operator-=(
   matrix<Arithmetic, ColumnSize, 1uz, LhsLayout> &&               lhs,
   basic_column_view<Iter, ColumnSize, RowSize, RhsLayout> const & rhs) noexcept
 {
-  return std::move(lhs -= rhs);
+  return lhs -= rhs;
 }
 
 template <class LhsIter,
@@ -1271,11 +1508,11 @@ constexpr matrix<Arithmetic, 1uz, RowSize, LhsLayout> & operator-=(
 }
 
 template <class Arithmetic, std::size_t RowSize, layout LhsLayout, class Iter, std::size_t ColumnSize, layout RhsLayout>
-constexpr matrix<Arithmetic, 1uz, RowSize, LhsLayout> && operator-=(
+constexpr matrix<Arithmetic, 1uz, RowSize, LhsLayout> operator-=(
   matrix<Arithmetic, 1uz, RowSize, LhsLayout> &&               lhs,
   basic_row_view<Iter, ColumnSize, RowSize, RhsLayout> const & rhs) noexcept
 {
-  return std::move(lhs -= rhs);
+  return lhs -= rhs;
 }
 
 template <class LhsArithmetic,
@@ -1378,17 +1615,309 @@ template <class LhsArithmetic,
 constexpr auto operator*(matrix<LhsArithmetic, M, N, LhsLayout> const & lhs,
                          matrix<RhsArithmetic, N, P, RhsLayout> const & rhs) noexcept
 {
-  using difference_type = std::common_type_t<
-    typename matrix<LhsArithmetic, M, N, LhsLayout>::difference_type,
-    typename matrix<RhsArithmetic, N, P, RhsLayout>::difference_type,
-    typename matrix<std::common_type_t<LhsArithmetic, RhsArithmetic>, M, P, LhsLayout>::difference_type>;
+  using value_type = std::common_type_t<LhsArithmetic, RhsArithmetic>;
 
-  matrix<std::common_type_t<LhsArithmetic, RhsArithmetic>, M, P, LhsLayout> result;
+  matrix<value_type, M, P, LhsLayout> result;
+
+  using difference_type = std::common_type_t<typename std::decay_t<decltype(lhs)>::difference_type,
+                                             typename std::decay_t<decltype(rhs)>::difference_type,
+                                             typename decltype(result)::difference_type>;
 
   for(difference_type i = 0; i < static_cast<difference_type>(M); ++i)
     for(difference_type j = 0; j < static_cast<difference_type>(P); ++j)
       for(difference_type k = 0; k < static_cast<difference_type>(N); ++k)
         result[i][j] += lhs[i][k] * rhs[k][j];
+
+  return decay(result);
+}
+
+template <class LhsIter,
+          class RhsIter,
+          std::size_t LhsColumnSize,
+          std::size_t RhsColumnSize,
+          std::size_t LhsRowSize,
+          std::size_t RhsRowSize,
+          layout      LhsLayout,
+          layout      RhsLayout>
+[[nodiscard]]
+constexpr auto operator*(basic_column_view<LhsIter, LhsColumnSize, LhsRowSize, LhsLayout> const & lhs,
+                         basic_row_view<RhsIter, RhsColumnSize, RhsRowSize, RhsLayout> const &    rhs) noexcept
+{
+  using value_type = std::common_type_t<std::ranges::range_value_t<std::decay_t<decltype(lhs)>>,
+                                        std::ranges::range_value_t<std::decay_t<decltype(rhs)>>>;
+
+  matrix<value_type, LhsColumnSize, RhsRowSize, LhsLayout> result;
+
+  using difference_type = std::common_type_t<std::ranges::range_difference_t<std::decay_t<decltype(lhs)>>,
+                                             std::ranges::range_difference_t<std::decay_t<decltype(rhs)>>,
+                                             typename decltype(result)::difference_type>;
+
+  for(difference_type i = 0; i < static_cast<difference_type>(LhsColumnSize); ++i)
+    for(difference_type j = 0; j < static_cast<difference_type>(RhsRowSize); ++j)
+      result[i][j] += lhs[i] * rhs[j];
+
+  return decay(result);
+}
+
+template <class Arithmetic,
+          class Iter,
+          std::size_t LhsColumnSize,
+          std::size_t RhsColumnSize,
+          std::size_t RowSize,
+          layout      LhsLayout,
+          layout      RhsLayout>
+[[nodiscard]]
+constexpr auto operator*(matrix<Arithmetic, LhsColumnSize, 1uz, LhsLayout> const &       lhs,
+                         basic_row_view<Iter, RhsColumnSize, RowSize, RhsLayout> const & rhs) noexcept
+{
+  return lhs.column(0) * rhs;
+}
+
+template <class Iter,
+          class Arithmetic,
+          std::size_t ColumnSize,
+          std::size_t LhsRowSize,
+          std::size_t RhsRowSize,
+          layout      LhsLayout,
+          layout      RhsLayout>
+[[nodiscard]]
+constexpr auto operator*(basic_column_view<Iter, ColumnSize, LhsRowSize, LhsLayout> const & lhs,
+                         matrix<Arithmetic, 1uz, RhsRowSize, RhsLayout> const &             rhs) noexcept
+{
+  return lhs * rhs.row(0);
+}
+
+template <class LhsIter,
+          class RhsIter,
+          std::size_t ColumnSize,
+          std::size_t Size,
+          std::size_t RowSize,
+          layout      LhsLayout,
+          layout      RhsLayout>
+[[nodiscard]]
+constexpr auto operator*(basic_row_view<RhsIter, ColumnSize, Size, LhsLayout> const & lhs,
+                         basic_column_view<LhsIter, Size, RowSize, RhsLayout> const & rhs) noexcept
+{
+  using value_type = std::common_type_t<std::ranges::range_value_t<std::decay_t<decltype(lhs)>>,
+                                        std::ranges::range_value_t<std::decay_t<decltype(rhs)>>>;
+
+  return std::inner_product(lhs.begin(), lhs.end(), rhs.begin(), value_type{0});
+}
+
+template <class Arithmetic, class Iter, std::size_t Size, std::size_t RowSize, layout LhsLayout, layout RhsLayout>
+[[nodiscard]]
+constexpr auto operator*(matrix<Arithmetic, 1uz, Size, LhsLayout> const &          lhs,
+                         basic_column_view<Iter, Size, RowSize, RhsLayout> const & rhs) noexcept
+{
+  return lhs.row(0) * rhs;
+}
+
+template <class Iter, class Arithmetic, std::size_t ColumnSize, std::size_t Size, layout LhsLayout, layout RhsLayout>
+[[nodiscard]]
+constexpr auto operator*(basic_row_view<Iter, ColumnSize, Size, LhsLayout> const & lhs,
+                         matrix<Arithmetic, Size, 1uz, RhsLayout> const &          rhs) noexcept
+{
+  return lhs * rhs.column(0);
+}
+
+template <class LhsArithmetic, class RhsArithmetic, std::size_t ColumnSize, std::size_t RowSize, layout Layout>
+[[nodiscard]]
+constexpr auto operator*(matrix<LhsArithmetic, ColumnSize, RowSize, Layout> const & lhs, RhsArithmetic const rhs) noexcept
+  requires(std::is_arithmetic_v<RhsArithmetic>)
+{
+  matrix<std::common_type_t<LhsArithmetic, RhsArithmetic>, ColumnSize, RowSize, Layout> result;
+
+  for(auto [to, lhs_from] : std::views::zip(result.rows() | std::views::join, lhs.rows() | std::views::join))
+    to = lhs_from * rhs;
+
+  return result;
+}
+
+template <class LhsArithmetic, class RhsArithmetic, std::size_t ColumnSize, std::size_t RowSize, layout Layout>
+[[nodiscard]]
+constexpr auto operator*(LhsArithmetic const lhs, matrix<RhsArithmetic, ColumnSize, RowSize, Layout> const & rhs) noexcept
+  requires(std::is_arithmetic_v<LhsArithmetic>)
+{
+  return rhs * lhs;
+}
+
+template <class Iter, class Arithmetic, std::size_t ColumnSize, std::size_t RowSize, layout Layout>
+[[nodiscard]]
+constexpr auto operator*(basic_column_view<Iter, ColumnSize, RowSize, Layout> const & lhs, Arithmetic const rhs) noexcept
+  requires(std::is_arithmetic_v<Arithmetic>)
+{
+  matrix<std::common_type_t<std::ranges::range_value_t<std::decay_t<decltype(lhs)>>, Arithmetic>, ColumnSize, 1uz, Layout>
+    result;
+
+  for(auto [to, lhs_from] : std::views::zip(result.column(0), lhs))
+    to = lhs_from * rhs;
+
+  return result;
+}
+
+template <class Iter, class Arithmetic, std::size_t ColumnSize, std::size_t RowSize, layout Layout>
+[[nodiscard]]
+constexpr auto operator*(Arithmetic const lhs, basic_column_view<Iter, ColumnSize, RowSize, Layout> const & rhs) noexcept
+  requires(std::is_arithmetic_v<Arithmetic>)
+{
+  return rhs * lhs;
+}
+
+template <class Iter, class Arithmetic, std::size_t ColumnSize, std::size_t RowSize, layout Layout>
+[[nodiscard]]
+constexpr auto operator*(basic_row_view<Iter, ColumnSize, RowSize, Layout> const & lhs, Arithmetic const rhs) noexcept
+  requires(std::is_arithmetic_v<Arithmetic>)
+{
+  matrix<std::common_type_t<std::ranges::range_value_t<std::decay_t<decltype(lhs)>>, Arithmetic>, 1uz, RowSize, Layout> result;
+
+  for(auto [to, lhs_from] : std::views::zip(result.row(0), lhs))
+    to = lhs_from * rhs;
+
+  return result;
+}
+
+template <class Iter, class Arithmetic, std::size_t ColumnSize, std::size_t RowSize, layout Layout>
+[[nodiscard]]
+constexpr auto operator*(Arithmetic const lhs, basic_row_view<Iter, ColumnSize, RowSize, Layout> const & rhs) noexcept
+  requires(std::is_arithmetic_v<Arithmetic>)
+{
+  return rhs * lhs;
+}
+
+template <class LhsArithmetic, class RhsArithmetic, std::size_t Size, layout LhsLayout, layout RhsLayout>
+constexpr matrix<LhsArithmetic, Size, Size, LhsLayout> & operator*=(
+  matrix<LhsArithmetic, Size, Size, LhsLayout> &       lhs,
+  matrix<RhsArithmetic, Size, Size, RhsLayout> const & rhs) noexcept
+{
+  return lhs = lhs * rhs;
+}
+
+template <class LhsArithmetic, class RhsArithmetic, std::size_t Size, layout LhsLayout, layout RhsLayout>
+constexpr matrix<LhsArithmetic, Size, Size, LhsLayout> operator*=(
+  matrix<LhsArithmetic, Size, Size, LhsLayout> &&      lhs,
+  matrix<RhsArithmetic, Size, Size, RhsLayout> const & rhs) noexcept
+{
+  return lhs *= rhs;
+}
+
+template <class LhsArithmetic, class RhsArithmetic, std::size_t ColumnSize, std::size_t RowSize, layout Layout>
+constexpr matrix<LhsArithmetic, ColumnSize, RowSize, Layout> & operator*=(
+  matrix<LhsArithmetic, ColumnSize, RowSize, Layout> & lhs,
+  RhsArithmetic const                                  rhs) noexcept requires(std::is_arithmetic_v<RhsArithmetic>)
+{
+  for(auto & to : lhs.rows() | std::views::join)
+    to *= rhs;
+
+  return lhs;
+}
+
+template <class LhsArithmetic, class RhsArithmetic, std::size_t ColumnSize, std::size_t RowSize, layout Layout>
+constexpr matrix<LhsArithmetic, ColumnSize, RowSize, Layout> operator*=(
+  matrix<LhsArithmetic, ColumnSize, RowSize, Layout> && lhs,
+  RhsArithmetic const                                   rhs) noexcept requires(std::is_arithmetic_v<RhsArithmetic>)
+{
+  return lhs *= rhs;
+}
+
+template <class Iter, class Arithmetic, std::size_t ColumnSize, std::size_t RowSize, layout Layout>
+constexpr basic_column_view<Iter, ColumnSize, RowSize, Layout> operator*=(
+  basic_column_view<Iter, ColumnSize, RowSize, Layout> const & lhs,
+  Arithmetic const                                             rhs) noexcept requires(std::is_arithmetic_v<Arithmetic>)
+{
+  for(auto & to : lhs)
+    to *= rhs;
+
+  return lhs;
+}
+
+template <class Iter, class Arithmetic, std::size_t ColumnSize, std::size_t RowSize, layout Layout>
+constexpr basic_row_view<Iter, ColumnSize, RowSize, Layout> operator*=(
+  basic_row_view<Iter, ColumnSize, RowSize, Layout> const & lhs,
+  Arithmetic const                                          rhs) noexcept requires(std::is_arithmetic_v<Arithmetic>)
+{
+  for(auto & to : lhs)
+    to *= rhs;
+
+  return lhs;
+}
+
+template <class LhsArithmetic, class RhsArithmetic, std::size_t ColumnSize, std::size_t RowSize, layout Layout>
+constexpr matrix<LhsArithmetic, ColumnSize, RowSize, Layout> & operator/=(
+  matrix<LhsArithmetic, ColumnSize, RowSize, Layout> & lhs,
+  RhsArithmetic const                                  rhs) noexcept requires(std::is_arithmetic_v<RhsArithmetic>)
+{
+  for(auto & to : lhs.rows() | std::views::join)
+    to /= rhs;
+
+  return lhs;
+}
+
+template <class LhsArithmetic, class RhsArithmetic, std::size_t ColumnSize, std::size_t RowSize, layout Layout>
+constexpr matrix<LhsArithmetic, ColumnSize, RowSize, Layout> operator/=(
+  matrix<LhsArithmetic, ColumnSize, RowSize, Layout> && lhs,
+  RhsArithmetic const                                   rhs) noexcept requires(std::is_arithmetic_v<RhsArithmetic>)
+{
+  return lhs /= rhs;
+}
+
+template <class Iter, class Arithmetic, std::size_t ColumnSize, std::size_t RowSize, layout Layout>
+constexpr basic_column_view<Iter, ColumnSize, RowSize, Layout> operator/=(
+  basic_column_view<Iter, ColumnSize, RowSize, Layout> const & lhs,
+  Arithmetic const                                             rhs) noexcept requires(std::is_arithmetic_v<Arithmetic>)
+{
+  for(auto & to : lhs)
+    to /= rhs;
+
+  return lhs;
+}
+
+template <class Iter, class Arithmetic, std::size_t ColumnSize, std::size_t RowSize, layout Layout>
+constexpr basic_row_view<Iter, ColumnSize, RowSize, Layout> operator/=(
+  basic_row_view<Iter, ColumnSize, RowSize, Layout> const & lhs,
+  Arithmetic const                                          rhs) noexcept requires(std::is_arithmetic_v<Arithmetic>)
+{
+  for(auto & to : lhs)
+    to /= rhs;
+
+  return lhs;
+}
+
+template <class LhsArithmetic, class RhsArithmetic, std::size_t ColumnSize, std::size_t RowSize, layout Layout>
+[[nodiscard]]
+constexpr auto operator/(matrix<LhsArithmetic, ColumnSize, RowSize, Layout> const & lhs, RhsArithmetic const rhs) noexcept
+  requires(std::is_arithmetic_v<RhsArithmetic>)
+{
+  matrix<std::common_type_t<LhsArithmetic, RhsArithmetic>, ColumnSize, RowSize, Layout> result;
+
+  for(auto [to, lhs_from] : std::views::zip(result.rows() | std::views::join, lhs.rows() | std::views::join))
+    to = lhs_from / rhs;
+
+  return result;
+}
+
+template <class Iter, class Arithmetic, std::size_t ColumnSize, std::size_t RowSize, layout Layout>
+[[nodiscard]]
+constexpr auto operator/(basic_column_view<Iter, ColumnSize, RowSize, Layout> const & lhs, Arithmetic const rhs) noexcept
+  requires(std::is_arithmetic_v<Arithmetic>)
+{
+  matrix<std::common_type_t<std::ranges::range_value_t<std::decay_t<decltype(lhs)>>, Arithmetic>, ColumnSize, 1uz, Layout>
+    result;
+
+  for(auto [to, lhs_from] : std::views::zip(result.column(0), lhs))
+    to = lhs_from / rhs;
+
+  return result;
+}
+
+template <class Iter, class Arithmetic, std::size_t ColumnSize, std::size_t RowSize, layout Layout>
+[[nodiscard]]
+constexpr auto operator/(basic_row_view<Iter, ColumnSize, RowSize, Layout> const & lhs, Arithmetic const rhs) noexcept
+  requires(std::is_arithmetic_v<Arithmetic>)
+{
+  matrix<std::common_type_t<std::ranges::range_value_t<std::decay_t<decltype(lhs)>>, Arithmetic>, 1uz, RowSize, Layout> result;
+
+  for(auto [to, lhs_from] : std::views::zip(result.row(0), lhs))
+    to = lhs_from / rhs;
 
   return result;
 }

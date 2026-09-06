@@ -2,10 +2,6 @@
 
 #include <gtest/gtest.h>
 
-#include <forward_list>
-#include <mdspan>
-#include <vector>
-
 namespace
 {
 TEST(ColumnViewEquality, RowMajorColumnViewCompareRowMajorColumnView)

@@ -2,13 +2,9 @@
 
 #include <gtest/gtest.h>
 
-#include <forward_list>
-#include <mdspan>
-#include <vector>
-
 namespace
 {
-TEST(RowViewEquality, RowMajorColumnViewCompareRowMajorColumnView)
+TEST(RowViewEquality, RowMajorRowViewCompareRowMajorRowView)
 {
   maths::matrix<int, 3, 3, maths::layout::row_major> x;
 
@@ -27,7 +23,7 @@ TEST(RowViewEquality, RowMajorColumnViewCompareRowMajorColumnView)
   EXPECT_TRUE(x.row(1) != y.row(0));
 }
 
-TEST(RowViewEquality, ColumnMajorColumnViewCompareRowMajorColumnView)
+TEST(RowViewEquality, ColumnMajorRowViewCompareRowMajorRowView)
 {
   maths::matrix<int, 3, 3, maths::layout::column_major> x;
 
@@ -46,7 +42,7 @@ TEST(RowViewEquality, ColumnMajorColumnViewCompareRowMajorColumnView)
   EXPECT_TRUE(x.row(1) != y.row(0));
 }
 
-TEST(RowViewEquality, RowMajorColumnViewCompareColumnMajorColumnView)
+TEST(RowViewEquality, RowMajorRowViewCompareColumnMajorRowView)
 {
   maths::matrix<int, 3, 3, maths::layout::row_major> x;
 
@@ -65,7 +61,7 @@ TEST(RowViewEquality, RowMajorColumnViewCompareColumnMajorColumnView)
   EXPECT_TRUE(x.row(1) != y.row(0));
 }
 
-TEST(RowViewEquality, ColumnMajorColumnViewCompareColumnMajorColumnView)
+TEST(RowViewEquality, ColumnMajorRowViewCompareColumnMajorRowView)
 {
   maths::matrix<int, 3, 3, maths::layout::column_major> x;
 
@@ -84,7 +80,7 @@ TEST(RowViewEquality, ColumnMajorColumnViewCompareColumnMajorColumnView)
   EXPECT_TRUE(x.row(1) != y.row(0));
 }
 
-TEST(RowViewEquality, RowMajorMatrixCompareRowMajorColumnView)
+TEST(RowViewEquality, RowMajorMatrixCompareRowMajorRowView)
 {
   maths::matrix<int, 1, 3, maths::layout::column_major> x;
 
@@ -102,7 +98,7 @@ TEST(RowViewEquality, RowMajorMatrixCompareRowMajorColumnView)
   EXPECT_TRUE(y.row(1) != x);
 }
 
-TEST(RowViewEquality, ColumnMajorMatrixCompareRowMajorColumnView)
+TEST(RowViewEquality, ColumnMajorMatrixCompareRowMajorRowView)
 {
   maths::matrix<int, 1, 3, maths::layout::column_major> x;
 
@@ -120,7 +116,7 @@ TEST(RowViewEquality, ColumnMajorMatrixCompareRowMajorColumnView)
   EXPECT_TRUE(y.row(1) != x);
 }
 
-TEST(RowViewEquality, RowMajorMatrixCompareColumnMajorColumnView)
+TEST(RowViewEquality, RowMajorMatrixCompareColumnMajorRowView)
 {
   maths::matrix<int, 1, 3, maths::layout::column_major> x;
 
@@ -138,7 +134,7 @@ TEST(RowViewEquality, RowMajorMatrixCompareColumnMajorColumnView)
   EXPECT_TRUE(y.row(1) != x);
 }
 
-TEST(RowViewEquality, ColumnMajorMatrixCompareColumnMajorColumnView)
+TEST(RowViewEquality, ColumnMajorMatrixCompareColumnMajorRowView)
 {
   maths::matrix<int, 1, 3, maths::layout::column_major> x;
 
