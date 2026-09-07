@@ -6,33 +6,43 @@ namespace
 {
 TEST(RowViewsEquality, RowMajorMatrixCompareRowMajorMatrix)
 {
-  maths::matrix<int, 3, 3, maths::layout::row_major> x;
+  constexpr auto x = []()
+  {
+    maths::matrix<int, 3, 3, maths::layout::row_major> x;
 
-  x[0][0] = 1, x[0][1] = 4, x[0][2] = 7;
-  x[1][0] = 2, x[1][1] = 5, x[1][2] = 8;
-  x[2][0] = 3, x[2][1] = 6, x[2][2] = 9;
+    x[0][0] = 1, x[0][1] = 4, x[0][2] = 7;
+    x[1][0] = 2, x[1][1] = 5, x[1][2] = 8;
+    x[2][0] = 3, x[2][1] = 6, x[2][2] = 9;
 
-  maths::matrix<long, 3, 3, maths::layout::row_major> y;
+    return x;
+  }();
 
-  EXPECT_TRUE(x.rows() == x.rows());
-  EXPECT_TRUE(x.rows() != y.rows());
-  EXPECT_TRUE(y.rows() != x.rows());
-  EXPECT_TRUE(y.rows() == y.rows());
+  constexpr maths::matrix<long, 3, 3, maths::layout::row_major> y;
+
+  static_assert(x.rows() == x.rows());
+  static_assert(x.rows() != y.rows());
+  static_assert(y.rows() != x.rows());
+  static_assert(y.rows() == y.rows());
 }
 
 TEST(RowViewsEquality, ColumnMajorMatrixCompareRowMajorMatrix)
 {
-  maths::matrix<int, 3, 3, maths::layout::column_major> x;
+  constexpr auto x = []()
+  {
+    maths::matrix<int, 3, 3, maths::layout::column_major> x;
 
-  x[0][0] = 1, x[0][1] = 4, x[0][2] = 7;
-  x[1][0] = 2, x[1][1] = 5, x[1][2] = 8;
-  x[2][0] = 3, x[2][1] = 6, x[2][2] = 9;
+    x[0][0] = 1, x[0][1] = 4, x[0][2] = 7;
+    x[1][0] = 2, x[1][1] = 5, x[1][2] = 8;
+    x[2][0] = 3, x[2][1] = 6, x[2][2] = 9;
 
-  maths::matrix<long, 3, 3, maths::layout::row_major> y;
+    return x;
+  }();
 
-  EXPECT_TRUE(x.rows() == x.rows());
-  EXPECT_TRUE(x.rows() != y.rows());
-  EXPECT_TRUE(y.rows() != x.rows());
-  EXPECT_TRUE(y.rows() == y.rows());
+  constexpr maths::matrix<long, 3, 3, maths::layout::row_major> y;
+
+  static_assert(x.rows() == x.rows());
+  static_assert(x.rows() != y.rows());
+  static_assert(y.rows() != x.rows());
+  static_assert(y.rows() == y.rows());
 }
 }

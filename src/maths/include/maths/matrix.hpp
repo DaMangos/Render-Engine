@@ -918,39 +918,39 @@ class matrix
     }
 
     [[nodiscard]]
-    constexpr row_view row(difference_type const j) noexcept
+    constexpr row_view row(difference_type const i) noexcept
     {
-      assert(0 <= j and j < column_ssize());
+      assert(0 <= i and i < column_ssize());
 
       static constexpr auto stride = Layout == layout::row_major ? row_ssize() : 1;
-      return row_view{std::ranges::next(data(), j * stride)};
+      return row_view{std::ranges::next(data(), i * stride)};
     }
 
     [[nodiscard]]
-    constexpr const_row_view row(difference_type const j) const noexcept
+    constexpr const_row_view row(difference_type const i) const noexcept
     {
-      assert(0 <= j and j < column_ssize());
+      assert(0 <= i and i < column_ssize());
 
       static constexpr auto stride = Layout == layout::row_major ? row_ssize() : 1;
-      return const_row_view{std::ranges::next(data(), j * stride)};
+      return const_row_view{std::ranges::next(data(), i * stride)};
     }
 
     [[nodiscard]]
-    constexpr column_view column(difference_type const i) noexcept
+    constexpr column_view column(difference_type const j) noexcept
     {
-      assert(0 <= i and i < row_ssize());
+      assert(0 <= j and j < row_ssize());
 
       static constexpr auto stride = Layout == layout::column_major ? column_ssize() : 1;
-      return column_view{std::ranges::next(data(), i * stride)};
+      return column_view{std::ranges::next(data(), j * stride)};
     }
 
     [[nodiscard]]
-    constexpr const_column_view column(difference_type const i) const noexcept
+    constexpr const_column_view column(difference_type const j) const noexcept
     {
-      assert(0 <= i and i < row_ssize());
+      assert(0 <= j and j < row_ssize());
 
       static constexpr auto stride = Layout == layout::column_major ? column_ssize() : 1;
-      return const_column_view{std::ranges::next(data(), i * stride)};
+      return const_column_view{std::ranges::next(data(), j * stride)};
     }
 
     [[nodiscard]]

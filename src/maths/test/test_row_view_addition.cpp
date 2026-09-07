@@ -8,149 +8,189 @@ namespace
 {
 TEST(RowViewAddition, RowMajorRowViewAddRowMajorRowView)
 {
-  maths::matrix<int, 2, 3, maths::layout::row_major> x;
+  constexpr auto x = []()
+  {
+    maths::matrix<int, 2, 3, maths::layout::row_major> x;
 
-  x[0][0] = 1, x[0][1] = 2, x[0][2] = 3;
-  x[1][0] = 4, x[1][1] = 5, x[1][2] = 6;
+    x[0][0] = 1, x[0][1] = 2, x[0][2] = 3;
+    x[1][0] = 4, x[1][1] = 5, x[1][2] = 6;
 
-  maths::matrix<long, 2, 3, maths::layout::row_major> y;
+    return x;
+  }();
 
-  y[0][0] = 1, y[0][1] = 2, y[0][2] = 3;
-  y[1][0] = 4, y[1][1] = 5, y[1][2] = 6;
+  constexpr auto y = []()
+  {
+    maths::matrix<long, 2, 3, maths::layout::row_major> y;
 
-  auto result = x.row(0) + y.row(0);
+    y[0][0] = 1, y[0][1] = 2, y[0][2] = 3;
+    y[1][0] = 4, y[1][1] = 5, y[1][2] = 6;
 
-  static_assert(std::same_as<decltype(result), maths::matrix<long, 1, 3, maths::layout::row_major>>);
+    return y;
+  }();
 
-  EXPECT_EQ(result[0][0], 2);
-  EXPECT_EQ(result[0][1], 4);
-  EXPECT_EQ(result[0][2], 6);
+  constexpr auto result = x.row(0) + y.row(0);
 
-  EXPECT_EQ(x[0][0], 1);
-  EXPECT_EQ(x[0][1], 2);
-  EXPECT_EQ(x[0][2], 3);
+  static_assert(std::same_as<decltype(result), maths::matrix<long, 1, 3, maths::layout::row_major> const>);
 
-  EXPECT_EQ(x[1][0], 4);
-  EXPECT_EQ(x[1][1], 5);
-  EXPECT_EQ(x[1][2], 6);
+  static_assert(result[0][0] == 2);
+  static_assert(result[0][1] == 4);
+  static_assert(result[0][2] == 6);
 
-  EXPECT_EQ(y[0][0], 1);
-  EXPECT_EQ(y[0][1], 2);
-  EXPECT_EQ(y[0][2], 3);
+  static_assert(x[0][0] == 1);
+  static_assert(x[0][1] == 2);
+  static_assert(x[0][2] == 3);
 
-  EXPECT_EQ(y[1][0], 4);
-  EXPECT_EQ(y[1][1], 5);
-  EXPECT_EQ(y[1][2], 6);
+  static_assert(x[1][0] == 4);
+  static_assert(x[1][1] == 5);
+  static_assert(x[1][2] == 6);
+
+  static_assert(y[0][0] == 1);
+  static_assert(y[0][1] == 2);
+  static_assert(y[0][2] == 3);
+
+  static_assert(y[1][0] == 4);
+  static_assert(y[1][1] == 5);
+  static_assert(y[1][2] == 6);
 }
 
 TEST(RowViewAddition, ColumnMajorRowViewAddRowMajorRowView)
 {
-  maths::matrix<int, 2, 3, maths::layout::column_major> x;
+  constexpr auto x = []()
+  {
+    maths::matrix<int, 2, 3, maths::layout::column_major> x;
 
-  x[0][0] = 1, x[0][1] = 2, x[0][2] = 3;
-  x[1][0] = 4, x[1][1] = 5, x[1][2] = 6;
+    x[0][0] = 1, x[0][1] = 2, x[0][2] = 3;
+    x[1][0] = 4, x[1][1] = 5, x[1][2] = 6;
 
-  maths::matrix<long, 2, 3, maths::layout::row_major> y;
+    return x;
+  }();
 
-  y[0][0] = 1, y[0][1] = 2, y[0][2] = 3;
-  y[1][0] = 4, y[1][1] = 5, y[1][2] = 6;
+  constexpr auto y = []()
+  {
+    maths::matrix<long, 2, 3, maths::layout::row_major> y;
 
-  auto result = x.row(0) + y.row(0);
+    y[0][0] = 1, y[0][1] = 2, y[0][2] = 3;
+    y[1][0] = 4, y[1][1] = 5, y[1][2] = 6;
 
-  static_assert(std::same_as<decltype(result), maths::matrix<long, 1, 3, maths::layout::column_major>>);
+    return y;
+  }();
 
-  EXPECT_EQ(result[0][0], 2);
-  EXPECT_EQ(result[0][1], 4);
-  EXPECT_EQ(result[0][2], 6);
+  constexpr auto result = x.row(0) + y.row(0);
 
-  EXPECT_EQ(x[0][0], 1);
-  EXPECT_EQ(x[0][1], 2);
-  EXPECT_EQ(x[0][2], 3);
+  static_assert(std::same_as<decltype(result), maths::matrix<long, 1, 3, maths::layout::column_major> const>);
 
-  EXPECT_EQ(x[1][0], 4);
-  EXPECT_EQ(x[1][1], 5);
-  EXPECT_EQ(x[1][2], 6);
+  static_assert(result[0][0] == 2);
+  static_assert(result[0][1] == 4);
+  static_assert(result[0][2] == 6);
 
-  EXPECT_EQ(y[0][0], 1);
-  EXPECT_EQ(y[0][1], 2);
-  EXPECT_EQ(y[0][2], 3);
+  static_assert(x[0][0] == 1);
+  static_assert(x[0][1] == 2);
+  static_assert(x[0][2] == 3);
 
-  EXPECT_EQ(y[1][0], 4);
-  EXPECT_EQ(y[1][1], 5);
-  EXPECT_EQ(y[1][2], 6);
+  static_assert(x[1][0] == 4);
+  static_assert(x[1][1] == 5);
+  static_assert(x[1][2] == 6);
+
+  static_assert(y[0][0] == 1);
+  static_assert(y[0][1] == 2);
+  static_assert(y[0][2] == 3);
+
+  static_assert(y[1][0] == 4);
+  static_assert(y[1][1] == 5);
+  static_assert(y[1][2] == 6);
 }
 
 TEST(RowViewAddition, RowMajorRowViewAddColumnMajorRowView)
 {
-  maths::matrix<int, 2, 3, maths::layout::row_major> x;
+  constexpr auto x = []()
+  {
+    maths::matrix<int, 2, 3, maths::layout::row_major> x;
 
-  x[0][0] = 1, x[0][1] = 2, x[0][2] = 3;
-  x[1][0] = 4, x[1][1] = 5, x[1][2] = 6;
+    x[0][0] = 1, x[0][1] = 2, x[0][2] = 3;
+    x[1][0] = 4, x[1][1] = 5, x[1][2] = 6;
 
-  maths::matrix<long, 2, 3, maths::layout::column_major> y;
+    return x;
+  }();
 
-  y[0][0] = 1, y[0][1] = 2, y[0][2] = 3;
-  y[1][0] = 4, y[1][1] = 5, y[1][2] = 6;
+  constexpr auto y = []()
+  {
+    maths::matrix<long, 2, 3, maths::layout::column_major> y;
 
-  auto result = x.row(0) + y.row(0);
+    y[0][0] = 1, y[0][1] = 2, y[0][2] = 3;
+    y[1][0] = 4, y[1][1] = 5, y[1][2] = 6;
 
-  static_assert(std::same_as<decltype(result), maths::matrix<long, 1, 3, maths::layout::row_major>>);
+    return y;
+  }();
 
-  EXPECT_EQ(result[0][0], 2);
-  EXPECT_EQ(result[0][1], 4);
-  EXPECT_EQ(result[0][2], 6);
+  constexpr auto result = x.row(0) + y.row(0);
 
-  EXPECT_EQ(x[0][0], 1);
-  EXPECT_EQ(x[0][1], 2);
-  EXPECT_EQ(x[0][2], 3);
+  static_assert(std::same_as<decltype(result), maths::matrix<long, 1, 3, maths::layout::row_major> const>);
 
-  EXPECT_EQ(x[1][0], 4);
-  EXPECT_EQ(x[1][1], 5);
-  EXPECT_EQ(x[1][2], 6);
+  static_assert(result[0][0] == 2);
+  static_assert(result[0][1] == 4);
+  static_assert(result[0][2] == 6);
 
-  EXPECT_EQ(y[0][0], 1);
-  EXPECT_EQ(y[0][1], 2);
-  EXPECT_EQ(y[0][2], 3);
+  static_assert(x[0][0] == 1);
+  static_assert(x[0][1] == 2);
+  static_assert(x[0][2] == 3);
 
-  EXPECT_EQ(y[1][0], 4);
-  EXPECT_EQ(y[1][1], 5);
-  EXPECT_EQ(y[1][2], 6);
+  static_assert(x[1][0] == 4);
+  static_assert(x[1][1] == 5);
+  static_assert(x[1][2] == 6);
+
+  static_assert(y[0][0] == 1);
+  static_assert(y[0][1] == 2);
+  static_assert(y[0][2] == 3);
+
+  static_assert(y[1][0] == 4);
+  static_assert(y[1][1] == 5);
+  static_assert(y[1][2] == 6);
 }
 
 TEST(RowViewAddition, ColumnMajorRowViewAddColumnMajorRowView)
 {
-  maths::matrix<int, 2, 3, maths::layout::column_major> x;
+  constexpr auto x = []()
+  {
+    maths::matrix<int, 2, 3, maths::layout::column_major> x;
 
-  x[0][0] = 1, x[0][1] = 2, x[0][2] = 3;
-  x[1][0] = 4, x[1][1] = 5, x[1][2] = 6;
+    x[0][0] = 1, x[0][1] = 2, x[0][2] = 3;
+    x[1][0] = 4, x[1][1] = 5, x[1][2] = 6;
 
-  maths::matrix<long, 2, 3, maths::layout::column_major> y;
+    return x;
+  }();
 
-  y[0][0] = 1, y[0][1] = 2, y[0][2] = 3;
-  y[1][0] = 4, y[1][1] = 5, y[1][2] = 6;
+  constexpr auto y = []()
+  {
+    maths::matrix<long, 2, 3, maths::layout::column_major> y;
 
-  auto result = x.row(0) + y.row(0);
+    y[0][0] = 1, y[0][1] = 2, y[0][2] = 3;
+    y[1][0] = 4, y[1][1] = 5, y[1][2] = 6;
 
-  static_assert(std::same_as<decltype(result), maths::matrix<long, 1, 3, maths::layout::column_major>>);
+    return y;
+  }();
 
-  EXPECT_EQ(result[0][0], 2);
-  EXPECT_EQ(result[0][1], 4);
-  EXPECT_EQ(result[0][2], 6);
+  constexpr auto result = x.row(0) + y.row(0);
 
-  EXPECT_EQ(x[0][0], 1);
-  EXPECT_EQ(x[0][1], 2);
-  EXPECT_EQ(x[0][2], 3);
+  static_assert(std::same_as<decltype(result), maths::matrix<long, 1, 3, maths::layout::column_major> const>);
 
-  EXPECT_EQ(x[1][0], 4);
-  EXPECT_EQ(x[1][1], 5);
-  EXPECT_EQ(x[1][2], 6);
+  static_assert(result[0][0] == 2);
+  static_assert(result[0][1] == 4);
+  static_assert(result[0][2] == 6);
 
-  EXPECT_EQ(y[0][0], 1);
-  EXPECT_EQ(y[0][1], 2);
-  EXPECT_EQ(y[0][2], 3);
+  static_assert(x[0][0] == 1);
+  static_assert(x[0][1] == 2);
+  static_assert(x[0][2] == 3);
 
-  EXPECT_EQ(y[1][0], 4);
-  EXPECT_EQ(y[1][1], 5);
-  EXPECT_EQ(y[1][2], 6);
+  static_assert(x[1][0] == 4);
+  static_assert(x[1][1] == 5);
+  static_assert(x[1][2] == 6);
+
+  static_assert(y[0][0] == 1);
+  static_assert(y[0][1] == 2);
+  static_assert(y[0][2] == 3);
+
+  static_assert(y[1][0] == 4);
+  static_assert(y[1][1] == 5);
+  static_assert(y[1][2] == 6);
 }
 }
