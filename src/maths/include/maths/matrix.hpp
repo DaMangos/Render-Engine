@@ -1,23 +1,183 @@
 #pragma once
 
 /*
-           1           2           3       .  .  .      N
-
-  1    [ 0 ][ 0 ]  [ 0 ][ 1 ]  [ 0 ][ 2 ]  .  .  .  [ 0 ][N-1]
-  2    [ 1 ][ 0 ]  [ 1 ][ 1 ]  [ 1 ][ 2 ]  .  .  .  [ 1 ][N-1]
-  3    [ 2 ][ 0 ]  [ 2 ][ 1 ]  [ 2 ][ 2 ]  .  .  .  [ 2 ][N-1]
-  .        .           .           .                    .
-  .        .           .           .                    .
-  .        .           .           .                    .
-  M    [M-1][ 0 ]  [M-1][ 1 ]  [M-1][ 2 ]  .  .  .  [M-1][N-1]
-
-       [ i ][ j ]  [ i ][ j ]  [ i ][ j ]          [ i ][ j ]
-
-
        synopsis
 
 namespace maths
 {
+enum class layout
+{
+  row_major,
+  column_major
+};
+
+template <class Iter, std::size_t ColumnSize, std::size_t RowSize, layout Layout>
+class basic_column_view : public std::ranges::view_interface<basic_column_view<Iter, ColumnSize, RowSize, Layout>>
+{
+  public:
+    template <class OtherIter>
+    explicit constexpr basic_column_view(OtherIter iter) noexcept requires(std::convertible_to<OtherIter, Iter>);
+
+    constexpr basic_column_view(basic_column_view const & other) noexcept;
+
+    template <class OtherIter, std::size_t>
+    constexpr basic_column_view(basic_column_view<OtherIter, ColumnSize, RowSize, Layout> const & other) noexcept
+      requires(std::convertible_to<Iter, OtherIter>);
+
+    template <class OtherIter, std::size_t OtherRowSize, layout OtherLayout>
+    constexpr basic_column_view & operator=(
+      basic_column_view<OtherIter, ColumnSize, OtherRowSize, OtherLayout> const &) noexcept;
+
+    template <class OtherMatrix>
+    constexpr basic_column_view & operator=(OtherMatrix const & mat) noexcept;
+
+    constexpr basic_column_view & operator=(std::initializer_list<std::remove_const_t<std::iter_value_t<Iter>>>) noexcept;
+
+    template <class OtherIter, std::sentinel_for<OtherIter> OtherSent>
+    constexpr void assign(OtherIter first, OtherSent last);
+
+    template <std::ranges::input_range Range>
+    constexpr void assign(std::from_range_t, Range && range);
+
+    [[nodiscard]]
+    constexpr auto begin() const noexcept;
+
+    [[nodiscard]]
+    constexpr auto end() const noexcept;
+
+    [[nodiscard]]
+    constexpr bool operator==(basic_column_view const & other) const noexcept;
+
+    [[nodiscard]]
+    constexpr bool operator!=(basic_column_view const & other) const noexcept;
+};
+
+template <class Matrix>
+class basic_column_views : public std::ranges::view_interface<basic_column_views<Matrix>>
+{
+  public:
+    explicit constexpr basic_column_views(Matrix & mat) noexcept;
+
+    constexpr basic_column_views(basic_column_views const & other) noexcept;
+
+    template <class OtherMatrix>
+    constexpr basic_column_views(basic_column_views<OtherMatrix> const & other) noexcept;
+
+    constexpr basic_column_views & operator=(basic_column_views const & other) noexcept;
+
+    template <class OtherMatrix>
+    constexpr basic_column_views & operator=(basic_column_views<OtherMatrix> const & other) noexcept
+      requires(std::convertible_to<OtherMatrix, Matrix>);
+
+    template <class OtherMatrix>
+    constexpr basic_column_views & operator=(OtherMatrix const & other_mat) noexcept
+      requires(std::convertible_to<OtherMatrix, Matrix>);
+
+    template <class Range = std::array<typename Matrix::value_type, Matrix::row_size()>>
+    constexpr basic_column_views & operator=(std::initializer_list<Range> list) noexcept;
+
+    template <class Iter, std::sentinel_for<Iter> Sent>
+    constexpr void assign(Iter first, Sent last);
+
+    template <std::ranges::input_range Range>
+    constexpr void assign(std::from_range_t, Range && range);
+
+    [[nodiscard]]
+    constexpr auto begin() const noexcept;
+
+    [[nodiscard]]
+    constexpr auto end() const noexcept;
+
+    [[nodiscard]]
+    constexpr bool operator==(basic_column_views const & other) const noexcept;
+
+    [[nodiscard]]
+    constexpr bool operator!=(basic_column_views const & other) const noexcept;
+};
+
+template <class Iter, std::size_t ColumnSize, std::size_t RowSize, layout Layout>
+class basic_row_view : public std::ranges::view_interface<basic_row_view<Iter, ColumnSize, RowSize, Layout>>
+{
+  public:
+    template <class OtherIter>
+    explicit constexpr basic_row_view(OtherIter iter) noexcept requires(std::convertible_to<OtherIter, Iter>);
+
+    constexpr basic_row_view(basic_row_view const & other) noexcept;
+
+    template <class OtherIter>
+    constexpr basic_row_view(basic_row_view<OtherIter, ColumnSize, RowSize, Layout> const & other) noexcept
+      requires(std::convertible_to<Iter, OtherIter>);
+
+    template <class OtherIter, std::size_t OtherColumnSize, layout OtherLayout>
+    constexpr basic_row_view & operator=(basic_row_view<OtherIter, OtherColumnSize, RowSize, OtherLayout> const &) noexcept;
+
+    template <class OtherMatrix>
+    constexpr basic_row_view & operator=(OtherMatrix const & mat) noexcept;
+
+    constexpr basic_row_view & operator=(std::initializer_list<std::remove_const_t<std::iter_value_t<Iter>>>) noexcept;
+
+    template <class OtherIter, std::sentinel_for<OtherIter> OtherSent>
+    constexpr void assign(OtherIter first, OtherSent last);
+
+    template <std::ranges::input_range Range>
+    constexpr void assign(std::from_range_t, Range && range);
+
+    [[nodiscard]]
+    constexpr auto begin() const noexcept;
+
+    [[nodiscard]]
+    constexpr auto end() const noexcept;
+
+    [[nodiscard]]
+    constexpr bool operator==(basic_row_view const & other) const noexcept;
+
+    [[nodiscard]]
+    constexpr bool operator!=(basic_row_view const & other) const noexcept;
+};
+
+template <class Matrix>
+class basic_row_views : public std::ranges::view_interface<basic_row_views<Matrix>>
+{
+  public:
+    explicit constexpr basic_row_views(Matrix & mat) noexcept;
+
+    constexpr basic_row_views(basic_row_views const & other) noexcept;
+
+    template <class OtherMatrix>
+    constexpr basic_row_views(basic_row_views<OtherMatrix> const & other) noexcept;
+
+    constexpr basic_row_views & operator=(basic_row_views const & other) noexcept;
+
+    template <class OtherMatrix>
+    constexpr basic_row_views & operator=(basic_row_views<OtherMatrix> const & other) noexcept
+      requires(std::convertible_to<OtherMatrix, Matrix>);
+
+    template <class OtherMatrix>
+    constexpr basic_row_views & operator=(OtherMatrix const & other_mat) noexcept
+      requires(std::convertible_to<OtherMatrix, Matrix>);
+
+    template <class Range = std::array<typename Matrix::value_type, Matrix::row_size()>>
+    constexpr basic_row_views & operator=(std::initializer_list<Range> list) noexcept;
+
+    template <class Iter, std::sentinel_for<Iter> Sent>
+    constexpr void assign(Iter first, Sent last);
+
+    template <std::ranges::input_range Range>
+    constexpr void assign(std::from_range_t, Range && range);
+
+    [[nodiscard]]
+    constexpr auto begin() const noexcept;
+
+    [[nodiscard]]
+    constexpr auto end() const noexcept;
+
+    [[nodiscard]]
+    constexpr bool operator==(basic_row_views const & other) const noexcept;
+
+    [[nodiscard]]
+    constexpr bool operator!=(basic_row_views const & other) const noexcept;
+};
+
 template <class Arithmetic, std::size_t ColumnSize, std::size_t RowSize, layout Layout = layout::column_major>
 requires(std::is_arithmetic_v<Arithmetic> and ColumnSize > 0uz and RowSize > 0uz
          and (Layout == layout::row_major or Layout == layout::column_major))
@@ -48,7 +208,7 @@ class matrix
     template <std::ranges::input_range Range>
     constexpr matrix(std::from_range_t, Range && range);
 
-    constexpr matrix(std::initializer_list<Arithmetic> const & list) noexcept;
+    constexpr matrix(std::initializer_list<Arithmetic> list) noexcept;
 
     template <class OtherArithmetic, class Extents, class AccessorPolicy>
     constexpr matrix(std::mdspan<OtherArithmetic, Extents, std::layout_left, AccessorPolicy> const & md) noexcept
@@ -71,7 +231,7 @@ class matrix
     template <class OtherArithmetic, layout OtherLayout>
     constexpr matrix(matrix<OtherArithmetic, ColumnSize, RowSize, OtherLayout> const & other) noexcept;
 
-    constexpr matrix & operator=(std::initializer_list<Arithmetic> const & list) noexcept;
+    constexpr matrix & operator=(std::initializer_list<Arithmetic> list) noexcept;
 
     template <class Extents, class AccessorPolicy>
     constexpr matrix & operator=(std::mdspan<Arithmetic, Extents, std::layout_left, AccessorPolicy> const & md) noexcept
@@ -96,12 +256,10 @@ class matrix
     constexpr operator std::mdspan<Arithmetic, std::extents<std::size_t, ColumnSize, RowSize>, std::layout_left>() & noexcept
       requires(Layout == layout::column_major);
 
-    [[nodiscard]]
     constexpr operator std::mdspan<Arithmetic, std::extents<std::size_t, ColumnSize, RowSize>, std::layout_right>() && noexcept
       requires(Layout == layout::row_major)
       = delete;
 
-    [[nodiscard]]
     constexpr operator std::mdspan<Arithmetic, std::extents<std::size_t, ColumnSize, RowSize>, std::layout_left>() && noexcept
       requires(Layout == layout::column_major)
       = delete;
@@ -175,16 +333,16 @@ class matrix
     constexpr const_column_views columns() const noexcept;
 
     [[nodiscard]]
-    constexpr row_view row(difference_type j) noexcept;
+    constexpr row_view row(difference_type i) noexcept;
 
     [[nodiscard]]
-    constexpr const_row_view row(difference_type j) const noexcept;
+    constexpr const_row_view row(difference_type i) const noexcept;
 
     [[nodiscard]]
-    constexpr column_view column(difference_type i) noexcept;
+    constexpr column_view column(difference_type j) noexcept;
 
     [[nodiscard]]
-    constexpr const_column_view column(difference_type i) const noexcept;
+    constexpr const_column_view column(difference_type j) const noexcept;
 
     [[nodiscard]]
     constexpr row_view operator[](difference_type i) noexcept;
@@ -653,7 +811,7 @@ class matrix
       assign(std::from_range, std::forward<Range>(range));
     }
 
-    constexpr matrix(std::initializer_list<Arithmetic> const & list) noexcept
+    constexpr matrix(std::initializer_list<Arithmetic> const list) noexcept
     : matrix(std::from_range, list)
     {
     }
@@ -772,12 +930,10 @@ class matrix
       return {data()};
     }
 
-    [[nodiscard]]
     constexpr operator std::mdspan<Arithmetic, std::extents<std::size_t, ColumnSize, RowSize>, std::layout_right>() && noexcept
       requires(Layout == layout::row_major)
       = delete;
 
-    [[nodiscard]]
     constexpr operator std::mdspan<Arithmetic, std::extents<std::size_t, ColumnSize, RowSize>, std::layout_left>() && noexcept
       requires(Layout == layout::column_major)
       = delete;
