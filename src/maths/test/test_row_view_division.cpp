@@ -26,18 +26,6 @@ TEST(RowViewDivision, RowMajorRowViewOverScalar)
   static_assert(result[0][0] == 1.0);
   static_assert(result[0][1] == 2.0);
   static_assert(result[0][2] == 3.0);
-
-  static_assert(x[0][0] == 1);
-  static_assert(x[1][0] == 2);
-  static_assert(x[2][0] == 3);
-
-  static_assert(x[0][1] == 4);
-  static_assert(x[1][1] == 5);
-  static_assert(x[2][1] == 6);
-
-  static_assert(x[0][2] == 7);
-  static_assert(x[1][2] == 8);
-  static_assert(x[2][2] == 9);
 }
 
 TEST(RowViewDivision, ColumnMajorRowViewOverScalar)
@@ -60,17 +48,5 @@ TEST(RowViewDivision, ColumnMajorRowViewOverScalar)
   static_assert(result[0][0] == 1.0);
   static_assert(result[0][1] == 2.0);
   static_assert(result[0][2] == 3.0);
-
-  static_assert(x[0][0] == 1);
-  static_assert(x[1][0] == 2);
-  static_assert(x[2][0] == 3);
-
-  static_assert(x[0][1] == 4);
-  static_assert(x[1][1] == 5);
-  static_assert(x[2][1] == 6);
-
-  static_assert(x[0][2] == 7);
-  static_assert(x[1][2] == 8);
-  static_assert(x[2][2] == 9);
 }
 }

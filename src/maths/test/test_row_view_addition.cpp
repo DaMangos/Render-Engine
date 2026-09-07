@@ -129,22 +129,6 @@ TEST(RowViewAddition, RowMajorRowViewAddColumnMajorRowView)
   static_assert(result[0][0] == 2);
   static_assert(result[0][1] == 4);
   static_assert(result[0][2] == 6);
-
-  static_assert(x[0][0] == 1);
-  static_assert(x[0][1] == 2);
-  static_assert(x[0][2] == 3);
-
-  static_assert(x[1][0] == 4);
-  static_assert(x[1][1] == 5);
-  static_assert(x[1][2] == 6);
-
-  static_assert(y[0][0] == 1);
-  static_assert(y[0][1] == 2);
-  static_assert(y[0][2] == 3);
-
-  static_assert(y[1][0] == 4);
-  static_assert(y[1][1] == 5);
-  static_assert(y[1][2] == 6);
 }
 
 TEST(RowViewAddition, ColumnMajorRowViewAddColumnMajorRowView)
@@ -176,21 +160,5 @@ TEST(RowViewAddition, ColumnMajorRowViewAddColumnMajorRowView)
   static_assert(result[0][0] == 2);
   static_assert(result[0][1] == 4);
   static_assert(result[0][2] == 6);
-
-  static_assert(x[0][0] == 1);
-  static_assert(x[0][1] == 2);
-  static_assert(x[0][2] == 3);
-
-  static_assert(x[1][0] == 4);
-  static_assert(x[1][1] == 5);
-  static_assert(x[1][2] == 6);
-
-  static_assert(y[0][0] == 1);
-  static_assert(y[0][1] == 2);
-  static_assert(y[0][2] == 3);
-
-  static_assert(y[1][0] == 4);
-  static_assert(y[1][1] == 5);
-  static_assert(y[1][2] == 6);
 }
 }

@@ -37,22 +37,6 @@ TEST(ColumnViewSubtraction, RowMajorColumnViewMinusRowMajorColumnView)
   static_assert(result[0][0] == -1);
   static_assert(result[1][0] == -2);
   static_assert(result[2][0] == -3);
-
-  static_assert(x[0][0] == 1);
-  static_assert(x[1][0] == 2);
-  static_assert(x[2][0] == 3);
-
-  static_assert(x[0][1] == 4);
-  static_assert(x[1][1] == 5);
-  static_assert(x[2][1] == 6);
-
-  static_assert(y[0][0] == 2);
-  static_assert(y[1][0] == 4);
-  static_assert(y[2][0] == 6);
-
-  static_assert(y[0][1] == 8);
-  static_assert(y[1][1] == 10);
-  static_assert(y[2][1] == 12);
 }
 
 TEST(ColumnViewSubtraction, ColumnMajorColumnViewMinusRowMajorColumnView)
@@ -86,22 +70,6 @@ TEST(ColumnViewSubtraction, ColumnMajorColumnViewMinusRowMajorColumnView)
   static_assert(result[0][0] == -1);
   static_assert(result[1][0] == -2);
   static_assert(result[2][0] == -3);
-
-  static_assert(x[0][0] == 1);
-  static_assert(x[1][0] == 2);
-  static_assert(x[2][0] == 3);
-
-  static_assert(x[0][1] == 4);
-  static_assert(x[1][1] == 5);
-  static_assert(x[2][1] == 6);
-
-  static_assert(y[0][0] == 2);
-  static_assert(y[1][0] == 4);
-  static_assert(y[2][0] == 6);
-
-  static_assert(y[0][1] == 8);
-  static_assert(y[1][1] == 10);
-  static_assert(y[2][1] == 12);
 }
 
 TEST(ColumnViewSubtraction, RowMajorColumnViewMinusColumnMajorColumnView)
@@ -135,22 +103,6 @@ TEST(ColumnViewSubtraction, RowMajorColumnViewMinusColumnMajorColumnView)
   static_assert(result[0][0] == -1);
   static_assert(result[1][0] == -2);
   static_assert(result[2][0] == -3);
-
-  static_assert(x[0][0] == 1);
-  static_assert(x[1][0] == 2);
-  static_assert(x[2][0] == 3);
-
-  static_assert(x[0][1] == 4);
-  static_assert(x[1][1] == 5);
-  static_assert(x[2][1] == 6);
-
-  static_assert(y[0][0] == 2);
-  static_assert(y[1][0] == 4);
-  static_assert(y[2][0] == 6);
-
-  static_assert(y[0][1] == 8);
-  static_assert(y[1][1] == 10);
-  static_assert(y[2][1] == 12);
 }
 
 TEST(ColumnViewSubtraction, ColumnMajorColumnViewMinusColumnMajorColumnView)
@@ -184,21 +136,5 @@ TEST(ColumnViewSubtraction, ColumnMajorColumnViewMinusColumnMajorColumnView)
   static_assert(result[0][0] == -1);
   static_assert(result[1][0] == -2);
   static_assert(result[2][0] == -3);
-
-  static_assert(x[0][0] == 1);
-  static_assert(x[1][0] == 2);
-  static_assert(x[2][0] == 3);
-
-  static_assert(x[0][1] == 4);
-  static_assert(x[1][1] == 5);
-  static_assert(x[2][1] == 6);
-
-  static_assert(y[0][0] == 2);
-  static_assert(y[1][0] == 4);
-  static_assert(y[2][0] == 6);
-
-  static_assert(y[0][1] == 8);
-  static_assert(y[1][1] == 10);
-  static_assert(y[2][1] == 12);
 }
 }

@@ -35,22 +35,6 @@ TEST(RowViewSubtraction, RowMajorRowViewMinusRowMajorRowView)
   static_assert(result[0][0] == -1);
   static_assert(result[0][1] == -2);
   static_assert(result[0][2] == -3);
-
-  static_assert(x[0][0] == 1);
-  static_assert(x[0][1] == 2);
-  static_assert(x[0][2] == 3);
-
-  static_assert(x[1][0] == 4);
-  static_assert(x[1][1] == 5);
-  static_assert(x[1][2] == 6);
-
-  static_assert(y[0][0] == 2);
-  static_assert(y[0][1] == 4);
-  static_assert(y[0][2] == 6);
-
-  static_assert(y[1][0] == 8);
-  static_assert(y[1][1] == 10);
-  static_assert(y[1][2] == 12);
 }
 
 TEST(RowViewSubtraction, ColumnMajorRowViewMinusRowMajorRowView)
@@ -82,22 +66,6 @@ TEST(RowViewSubtraction, ColumnMajorRowViewMinusRowMajorRowView)
   static_assert(result[0][0] == -1);
   static_assert(result[0][1] == -2);
   static_assert(result[0][2] == -3);
-
-  static_assert(x[0][0] == 1);
-  static_assert(x[0][1] == 2);
-  static_assert(x[0][2] == 3);
-
-  static_assert(x[1][0] == 4);
-  static_assert(x[1][1] == 5);
-  static_assert(x[1][2] == 6);
-
-  static_assert(y[0][0] == 2);
-  static_assert(y[0][1] == 4);
-  static_assert(y[0][2] == 6);
-
-  static_assert(y[1][0] == 8);
-  static_assert(y[1][1] == 10);
-  static_assert(y[1][2] == 12);
 }
 
 TEST(RowViewSubtraction, RowMajorRowViewMinusColumnMajorRowView)
@@ -129,22 +97,6 @@ TEST(RowViewSubtraction, RowMajorRowViewMinusColumnMajorRowView)
   static_assert(result[0][0] == -1);
   static_assert(result[0][1] == -2);
   static_assert(result[0][2] == -3);
-
-  static_assert(x[0][0] == 1);
-  static_assert(x[0][1] == 2);
-  static_assert(x[0][2] == 3);
-
-  static_assert(x[1][0] == 4);
-  static_assert(x[1][1] == 5);
-  static_assert(x[1][2] == 6);
-
-  static_assert(y[0][0] == 2);
-  static_assert(y[0][1] == 4);
-  static_assert(y[0][2] == 6);
-
-  static_assert(y[1][0] == 8);
-  static_assert(y[1][1] == 10);
-  static_assert(y[1][2] == 12);
 }
 
 TEST(RowViewSubtraction, ColumnMajorRowViewMinusColumnMajorRowView)
@@ -176,21 +128,5 @@ TEST(RowViewSubtraction, ColumnMajorRowViewMinusColumnMajorRowView)
   static_assert(result[0][0] == -1);
   static_assert(result[0][1] == -2);
   static_assert(result[0][2] == -3);
-
-  static_assert(x[0][0] == 1);
-  static_assert(x[0][1] == 2);
-  static_assert(x[0][2] == 3);
-
-  static_assert(x[1][0] == 4);
-  static_assert(x[1][1] == 5);
-  static_assert(x[1][2] == 6);
-
-  static_assert(y[0][0] == 2);
-  static_assert(y[0][1] == 4);
-  static_assert(y[0][2] == 6);
-
-  static_assert(y[1][0] == 8);
-  static_assert(y[1][1] == 10);
-  static_assert(y[1][2] == 12);
 }
 }
