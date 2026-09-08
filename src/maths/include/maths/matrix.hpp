@@ -2077,4 +2077,352 @@ constexpr auto operator/(basic_row_view<Iter, ColumnSize, RowSize, Layout> const
 
   return result;
 }
+
+namespace row_major
+{
+using short1x2 = matrix<short, 1, 2, layout::row_major>;
+using short1x3 = matrix<short, 1, 3, layout::row_major>;
+using short1x4 = matrix<short, 1, 4, layout::row_major>;
+
+using short2   = matrix<short, 2, 1, layout::row_major>;
+using short2x2 = matrix<short, 2, 2, layout::row_major>;
+using short2x3 = matrix<short, 2, 3, layout::row_major>;
+using short2x4 = matrix<short, 2, 4, layout::row_major>;
+
+using short3   = matrix<short, 3, 1, layout::row_major>;
+using short3x2 = matrix<short, 3, 2, layout::row_major>;
+using short3x3 = matrix<short, 3, 3, layout::row_major>;
+using short3x4 = matrix<short, 3, 4, layout::row_major>;
+
+using short4   = matrix<short, 4, 1, layout::row_major>;
+using short4x2 = matrix<short, 4, 2, layout::row_major>;
+using short4x3 = matrix<short, 4, 3, layout::row_major>;
+using short4x4 = matrix<short, 4, 4, layout::row_major>;
+
+using unsigned_short1x2 = matrix<unsigned short, 1, 2, layout::row_major>;
+using unsigned_short1x3 = matrix<unsigned short, 1, 3, layout::row_major>;
+using unsigned_short1x4 = matrix<unsigned short, 1, 4, layout::row_major>;
+
+using unsigned_short2   = matrix<unsigned short, 2, 1, layout::row_major>;
+using unsigned_short2x2 = matrix<unsigned short, 2, 2, layout::row_major>;
+using unsigned_short2x3 = matrix<unsigned short, 2, 3, layout::row_major>;
+using unsigned_short2x4 = matrix<unsigned short, 2, 4, layout::row_major>;
+
+using unsigned_short3   = matrix<unsigned short, 3, 1, layout::row_major>;
+using unsigned_short3x2 = matrix<unsigned short, 3, 2, layout::row_major>;
+using unsigned_short3x3 = matrix<unsigned short, 3, 3, layout::row_major>;
+using unsigned_short3x4 = matrix<unsigned short, 3, 4, layout::row_major>;
+
+using unsigned_short4   = matrix<unsigned short, 4, 1, layout::row_major>;
+using unsigned_short4x2 = matrix<unsigned short, 4, 2, layout::row_major>;
+using unsigned_short4x3 = matrix<unsigned short, 4, 3, layout::row_major>;
+using unsigned_short4x4 = matrix<unsigned short, 4, 4, layout::row_major>;
+
+using int1x2 = matrix<int, 1, 2, layout::row_major>;
+using int1x3 = matrix<int, 1, 3, layout::row_major>;
+using int1x4 = matrix<int, 1, 4, layout::row_major>;
+
+using int2   = matrix<int, 2, 1, layout::row_major>;
+using int2x2 = matrix<int, 2, 2, layout::row_major>;
+using int2x3 = matrix<int, 2, 3, layout::row_major>;
+using int2x4 = matrix<int, 2, 4, layout::row_major>;
+
+using int3   = matrix<int, 3, 1, layout::row_major>;
+using int3x2 = matrix<int, 3, 2, layout::row_major>;
+using int3x3 = matrix<int, 3, 3, layout::row_major>;
+using int3x4 = matrix<int, 3, 4, layout::row_major>;
+
+using int4   = matrix<int, 4, 1, layout::row_major>;
+using int4x2 = matrix<int, 4, 2, layout::row_major>;
+using int4x3 = matrix<int, 4, 3, layout::row_major>;
+using int4x4 = matrix<int, 4, 4, layout::row_major>;
+
+using unsigned_int1x2 = matrix<unsigned int, 1, 2, layout::row_major>;
+using unsigned_int1x3 = matrix<unsigned int, 1, 3, layout::row_major>;
+using unsigned_int1x4 = matrix<unsigned int, 1, 4, layout::row_major>;
+
+using unsigned_int2   = matrix<unsigned int, 2, 1, layout::row_major>;
+using unsigned_int2x2 = matrix<unsigned int, 2, 2, layout::row_major>;
+using unsigned_int2x3 = matrix<unsigned int, 2, 3, layout::row_major>;
+using unsigned_int2x4 = matrix<unsigned int, 2, 4, layout::row_major>;
+
+using unsigned_int3   = matrix<unsigned int, 3, 1, layout::row_major>;
+using unsigned_int3x2 = matrix<unsigned int, 3, 2, layout::row_major>;
+using unsigned_int3x3 = matrix<unsigned int, 3, 3, layout::row_major>;
+using unsigned_int3x4 = matrix<unsigned int, 3, 4, layout::row_major>;
+
+using unsigned_int4   = matrix<unsigned int, 4, 1, layout::row_major>;
+using unsigned_int4x2 = matrix<unsigned int, 4, 2, layout::row_major>;
+using unsigned_int4x3 = matrix<unsigned int, 4, 3, layout::row_major>;
+using unsigned_int4x4 = matrix<unsigned int, 4, 4, layout::row_major>;
+
+using long1x2 = matrix<long, 1, 2, layout::row_major>;
+using long1x3 = matrix<long, 1, 3, layout::row_major>;
+using long1x4 = matrix<long, 1, 4, layout::row_major>;
+
+using long2   = matrix<long, 2, 1, layout::row_major>;
+using long2x2 = matrix<long, 2, 2, layout::row_major>;
+using long2x3 = matrix<long, 2, 3, layout::row_major>;
+using long2x4 = matrix<long, 2, 4, layout::row_major>;
+
+using long3   = matrix<long, 3, 1, layout::row_major>;
+using long3x2 = matrix<long, 3, 2, layout::row_major>;
+using long3x3 = matrix<long, 3, 3, layout::row_major>;
+using long3x4 = matrix<long, 3, 4, layout::row_major>;
+
+using long4   = matrix<long, 4, 1, layout::row_major>;
+using long4x2 = matrix<long, 4, 2, layout::row_major>;
+using long4x3 = matrix<long, 4, 3, layout::row_major>;
+using long4x4 = matrix<long, 4, 4, layout::row_major>;
+
+using unsigned_long1x2 = matrix<unsigned long, 1, 2, layout::row_major>;
+using unsigned_long1x3 = matrix<unsigned long, 1, 3, layout::row_major>;
+using unsigned_long1x4 = matrix<unsigned long, 1, 4, layout::row_major>;
+
+using unsigned_long2   = matrix<unsigned long, 2, 1, layout::row_major>;
+using unsigned_long2x2 = matrix<unsigned long, 2, 2, layout::row_major>;
+using unsigned_long2x3 = matrix<unsigned long, 2, 3, layout::row_major>;
+using unsigned_long2x4 = matrix<unsigned long, 2, 4, layout::row_major>;
+
+using unsigned_long3   = matrix<unsigned long, 3, 1, layout::row_major>;
+using unsigned_long3x2 = matrix<unsigned long, 3, 2, layout::row_major>;
+using unsigned_long3x3 = matrix<unsigned long, 3, 3, layout::row_major>;
+using unsigned_long3x4 = matrix<unsigned long, 3, 4, layout::row_major>;
+
+using unsigned_long4   = matrix<unsigned long, 4, 1, layout::row_major>;
+using unsigned_long4x2 = matrix<unsigned long, 4, 2, layout::row_major>;
+using unsigned_long4x3 = matrix<unsigned long, 4, 3, layout::row_major>;
+using unsigned_long4x4 = matrix<unsigned long, 4, 4, layout::row_major>;
+
+using unsigned_long_long1x2 = matrix<unsigned long long, 1, 2, layout::row_major>;
+using unsigned_long_long1x3 = matrix<unsigned long long, 1, 3, layout::row_major>;
+using unsigned_long_long1x4 = matrix<unsigned long long, 1, 4, layout::row_major>;
+
+using unsigned_long_long2   = matrix<unsigned long long, 2, 1, layout::row_major>;
+using unsigned_long_long2x2 = matrix<unsigned long long, 2, 2, layout::row_major>;
+using unsigned_long_long2x3 = matrix<unsigned long long, 2, 3, layout::row_major>;
+using unsigned_long_long2x4 = matrix<unsigned long long, 2, 4, layout::row_major>;
+
+using unsigned_long_long3   = matrix<unsigned long long, 3, 1, layout::row_major>;
+using unsigned_long_long3x2 = matrix<unsigned long long, 3, 2, layout::row_major>;
+using unsigned_long_long3x3 = matrix<unsigned long long, 3, 3, layout::row_major>;
+using unsigned_long_long3x4 = matrix<unsigned long long, 3, 4, layout::row_major>;
+
+using unsigned_long_long4   = matrix<unsigned long long, 4, 1, layout::row_major>;
+using unsigned_long_long4x2 = matrix<unsigned long long, 4, 2, layout::row_major>;
+using unsigned_long_long4x3 = matrix<unsigned long long, 4, 3, layout::row_major>;
+using unsigned_long_long4x4 = matrix<unsigned long long, 4, 4, layout::row_major>;
+
+using float1x2 = matrix<float, 1, 2, layout::row_major>;
+using float1x3 = matrix<float, 1, 3, layout::row_major>;
+using float1x4 = matrix<float, 1, 4, layout::row_major>;
+
+using float2   = matrix<float, 2, 1, layout::row_major>;
+using float2x2 = matrix<float, 2, 2, layout::row_major>;
+using float2x3 = matrix<float, 2, 3, layout::row_major>;
+using float2x4 = matrix<float, 2, 4, layout::row_major>;
+
+using float3   = matrix<float, 3, 1, layout::row_major>;
+using float3x2 = matrix<float, 3, 2, layout::row_major>;
+using float3x3 = matrix<float, 3, 3, layout::row_major>;
+using float3x4 = matrix<float, 3, 4, layout::row_major>;
+
+using float4   = matrix<float, 4, 1, layout::row_major>;
+using float4x2 = matrix<float, 4, 2, layout::row_major>;
+using float4x3 = matrix<float, 4, 3, layout::row_major>;
+using float4x4 = matrix<float, 4, 4, layout::row_major>;
+
+using double1x2 = matrix<double, 1, 2, layout::row_major>;
+using double1x3 = matrix<double, 1, 3, layout::row_major>;
+using double1x4 = matrix<double, 1, 4, layout::row_major>;
+
+using double2   = matrix<double, 2, 1, layout::row_major>;
+using double2x2 = matrix<double, 2, 2, layout::row_major>;
+using double2x3 = matrix<double, 2, 3, layout::row_major>;
+using double2x4 = matrix<double, 2, 4, layout::row_major>;
+
+using double3   = matrix<double, 3, 1, layout::row_major>;
+using double3x2 = matrix<double, 3, 2, layout::row_major>;
+using double3x3 = matrix<double, 3, 3, layout::row_major>;
+using double3x4 = matrix<double, 3, 4, layout::row_major>;
+
+using double4   = matrix<double, 4, 1, layout::row_major>;
+using double4x2 = matrix<double, 4, 2, layout::row_major>;
+using double4x3 = matrix<double, 4, 3, layout::row_major>;
+using double4x4 = matrix<double, 4, 4, layout::row_major>;
+}
+
+inline namespace column_major
+{
+using short1x2 = matrix<short, 1, 2, layout::column_major>;
+using short1x3 = matrix<short, 1, 3, layout::column_major>;
+using short1x4 = matrix<short, 1, 4, layout::column_major>;
+
+using short2   = matrix<short, 2, 1, layout::column_major>;
+using short2x2 = matrix<short, 2, 2, layout::column_major>;
+using short2x3 = matrix<short, 2, 3, layout::column_major>;
+using short2x4 = matrix<short, 2, 4, layout::column_major>;
+
+using short3   = matrix<short, 3, 1, layout::column_major>;
+using short3x2 = matrix<short, 3, 2, layout::column_major>;
+using short3x3 = matrix<short, 3, 3, layout::column_major>;
+using short3x4 = matrix<short, 3, 4, layout::column_major>;
+
+using short4   = matrix<short, 4, 1, layout::column_major>;
+using short4x2 = matrix<short, 4, 2, layout::column_major>;
+using short4x3 = matrix<short, 4, 3, layout::column_major>;
+using short4x4 = matrix<short, 4, 4, layout::column_major>;
+
+using unsigned_short1x2 = matrix<unsigned short, 1, 2, layout::column_major>;
+using unsigned_short1x3 = matrix<unsigned short, 1, 3, layout::column_major>;
+using unsigned_short1x4 = matrix<unsigned short, 1, 4, layout::column_major>;
+
+using unsigned_short2   = matrix<unsigned short, 2, 1, layout::column_major>;
+using unsigned_short2x2 = matrix<unsigned short, 2, 2, layout::column_major>;
+using unsigned_short2x3 = matrix<unsigned short, 2, 3, layout::column_major>;
+using unsigned_short2x4 = matrix<unsigned short, 2, 4, layout::column_major>;
+
+using unsigned_short3   = matrix<unsigned short, 3, 1, layout::column_major>;
+using unsigned_short3x2 = matrix<unsigned short, 3, 2, layout::column_major>;
+using unsigned_short3x3 = matrix<unsigned short, 3, 3, layout::column_major>;
+using unsigned_short3x4 = matrix<unsigned short, 3, 4, layout::column_major>;
+
+using unsigned_short4   = matrix<unsigned short, 4, 1, layout::column_major>;
+using unsigned_short4x2 = matrix<unsigned short, 4, 2, layout::column_major>;
+using unsigned_short4x3 = matrix<unsigned short, 4, 3, layout::column_major>;
+using unsigned_short4x4 = matrix<unsigned short, 4, 4, layout::column_major>;
+
+using int1x2 = matrix<int, 1, 2, layout::column_major>;
+using int1x3 = matrix<int, 1, 3, layout::column_major>;
+using int1x4 = matrix<int, 1, 4, layout::column_major>;
+
+using int2   = matrix<int, 2, 1, layout::column_major>;
+using int2x2 = matrix<int, 2, 2, layout::column_major>;
+using int2x3 = matrix<int, 2, 3, layout::column_major>;
+using int2x4 = matrix<int, 2, 4, layout::column_major>;
+
+using int3   = matrix<int, 3, 1, layout::column_major>;
+using int3x2 = matrix<int, 3, 2, layout::column_major>;
+using int3x3 = matrix<int, 3, 3, layout::column_major>;
+using int3x4 = matrix<int, 3, 4, layout::column_major>;
+
+using int4   = matrix<int, 4, 1, layout::column_major>;
+using int4x2 = matrix<int, 4, 2, layout::column_major>;
+using int4x3 = matrix<int, 4, 3, layout::column_major>;
+using int4x4 = matrix<int, 4, 4, layout::column_major>;
+
+using unsigned_int1x2 = matrix<unsigned int, 1, 2, layout::column_major>;
+using unsigned_int1x3 = matrix<unsigned int, 1, 3, layout::column_major>;
+using unsigned_int1x4 = matrix<unsigned int, 1, 4, layout::column_major>;
+
+using unsigned_int2   = matrix<unsigned int, 2, 1, layout::column_major>;
+using unsigned_int2x2 = matrix<unsigned int, 2, 2, layout::column_major>;
+using unsigned_int2x3 = matrix<unsigned int, 2, 3, layout::column_major>;
+using unsigned_int2x4 = matrix<unsigned int, 2, 4, layout::column_major>;
+
+using unsigned_int3   = matrix<unsigned int, 3, 1, layout::column_major>;
+using unsigned_int3x2 = matrix<unsigned int, 3, 2, layout::column_major>;
+using unsigned_int3x3 = matrix<unsigned int, 3, 3, layout::column_major>;
+using unsigned_int3x4 = matrix<unsigned int, 3, 4, layout::column_major>;
+
+using unsigned_int4   = matrix<unsigned int, 4, 1, layout::column_major>;
+using unsigned_int4x2 = matrix<unsigned int, 4, 2, layout::column_major>;
+using unsigned_int4x3 = matrix<unsigned int, 4, 3, layout::column_major>;
+using unsigned_int4x4 = matrix<unsigned int, 4, 4, layout::column_major>;
+
+using long1x2 = matrix<long, 1, 2, layout::column_major>;
+using long1x3 = matrix<long, 1, 3, layout::column_major>;
+using long1x4 = matrix<long, 1, 4, layout::column_major>;
+
+using long2   = matrix<long, 2, 1, layout::column_major>;
+using long2x2 = matrix<long, 2, 2, layout::column_major>;
+using long2x3 = matrix<long, 2, 3, layout::column_major>;
+using long2x4 = matrix<long, 2, 4, layout::column_major>;
+
+using long3   = matrix<long, 3, 1, layout::column_major>;
+using long3x2 = matrix<long, 3, 2, layout::column_major>;
+using long3x3 = matrix<long, 3, 3, layout::column_major>;
+using long3x4 = matrix<long, 3, 4, layout::column_major>;
+
+using long4   = matrix<long, 4, 1, layout::column_major>;
+using long4x2 = matrix<long, 4, 2, layout::column_major>;
+using long4x3 = matrix<long, 4, 3, layout::column_major>;
+using long4x4 = matrix<long, 4, 4, layout::column_major>;
+
+using unsigned_long1x2 = matrix<unsigned long, 1, 2, layout::column_major>;
+using unsigned_long1x3 = matrix<unsigned long, 1, 3, layout::column_major>;
+using unsigned_long1x4 = matrix<unsigned long, 1, 4, layout::column_major>;
+
+using unsigned_long2   = matrix<unsigned long, 2, 1, layout::column_major>;
+using unsigned_long2x2 = matrix<unsigned long, 2, 2, layout::column_major>;
+using unsigned_long2x3 = matrix<unsigned long, 2, 3, layout::column_major>;
+using unsigned_long2x4 = matrix<unsigned long, 2, 4, layout::column_major>;
+
+using unsigned_long3   = matrix<unsigned long, 3, 1, layout::column_major>;
+using unsigned_long3x2 = matrix<unsigned long, 3, 2, layout::column_major>;
+using unsigned_long3x3 = matrix<unsigned long, 3, 3, layout::column_major>;
+using unsigned_long3x4 = matrix<unsigned long, 3, 4, layout::column_major>;
+
+using unsigned_long4   = matrix<unsigned long, 4, 1, layout::column_major>;
+using unsigned_long4x2 = matrix<unsigned long, 4, 2, layout::column_major>;
+using unsigned_long4x3 = matrix<unsigned long, 4, 3, layout::column_major>;
+using unsigned_long4x4 = matrix<unsigned long, 4, 4, layout::column_major>;
+
+using unsigned_long_long1x2 = matrix<unsigned long long, 1, 2, layout::column_major>;
+using unsigned_long_long1x3 = matrix<unsigned long long, 1, 3, layout::column_major>;
+using unsigned_long_long1x4 = matrix<unsigned long long, 1, 4, layout::column_major>;
+
+using unsigned_long_long2   = matrix<unsigned long long, 2, 1, layout::column_major>;
+using unsigned_long_long2x2 = matrix<unsigned long long, 2, 2, layout::column_major>;
+using unsigned_long_long2x3 = matrix<unsigned long long, 2, 3, layout::column_major>;
+using unsigned_long_long2x4 = matrix<unsigned long long, 2, 4, layout::column_major>;
+
+using unsigned_long_long3   = matrix<unsigned long long, 3, 1, layout::column_major>;
+using unsigned_long_long3x2 = matrix<unsigned long long, 3, 2, layout::column_major>;
+using unsigned_long_long3x3 = matrix<unsigned long long, 3, 3, layout::column_major>;
+using unsigned_long_long3x4 = matrix<unsigned long long, 3, 4, layout::column_major>;
+
+using unsigned_long_long4   = matrix<unsigned long long, 4, 1, layout::column_major>;
+using unsigned_long_long4x2 = matrix<unsigned long long, 4, 2, layout::column_major>;
+using unsigned_long_long4x3 = matrix<unsigned long long, 4, 3, layout::column_major>;
+using unsigned_long_long4x4 = matrix<unsigned long long, 4, 4, layout::column_major>;
+
+using float1x2 = matrix<float, 1, 2, layout::column_major>;
+using float1x3 = matrix<float, 1, 3, layout::column_major>;
+using float1x4 = matrix<float, 1, 4, layout::column_major>;
+
+using float2   = matrix<float, 2, 1, layout::column_major>;
+using float2x2 = matrix<float, 2, 2, layout::column_major>;
+using float2x3 = matrix<float, 2, 3, layout::column_major>;
+using float2x4 = matrix<float, 2, 4, layout::column_major>;
+
+using float3   = matrix<float, 3, 1, layout::column_major>;
+using float3x2 = matrix<float, 3, 2, layout::column_major>;
+using float3x3 = matrix<float, 3, 3, layout::column_major>;
+using float3x4 = matrix<float, 3, 4, layout::column_major>;
+
+using float4   = matrix<float, 4, 1, layout::column_major>;
+using float4x2 = matrix<float, 4, 2, layout::column_major>;
+using float4x3 = matrix<float, 4, 3, layout::column_major>;
+using float4x4 = matrix<float, 4, 4, layout::column_major>;
+
+using double1x2 = matrix<double, 1, 2, layout::column_major>;
+using double1x3 = matrix<double, 1, 3, layout::column_major>;
+using double1x4 = matrix<double, 1, 4, layout::column_major>;
+
+using double2   = matrix<double, 2, 1, layout::column_major>;
+using double2x2 = matrix<double, 2, 2, layout::column_major>;
+using double2x3 = matrix<double, 2, 3, layout::column_major>;
+using double2x4 = matrix<double, 2, 4, layout::column_major>;
+
+using double3   = matrix<double, 3, 1, layout::column_major>;
+using double3x2 = matrix<double, 3, 2, layout::column_major>;
+using double3x3 = matrix<double, 3, 3, layout::column_major>;
+using double3x4 = matrix<double, 3, 4, layout::column_major>;
+
+using double4   = matrix<double, 4, 1, layout::column_major>;
+using double4x2 = matrix<double, 4, 2, layout::column_major>;
+using double4x3 = matrix<double, 4, 3, layout::column_major>;
+using double4x4 = matrix<double, 4, 4, layout::column_major>;
+}
 }

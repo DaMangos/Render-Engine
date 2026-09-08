@@ -10,14 +10,14 @@ struct output
     float3 colour;
 };
 
-struct uniform_buffer
+struct uniform_buffer_object
 {
     float4x4 model;
     float4x4 view;
     float4x4 proj;
 };
 
-ConstantBuffer<uniform_buffer> ubo;
+ConstantBuffer<uniform_buffer_object> ubo;
 
 [shader("vertex")]
 output vert_main(input in)

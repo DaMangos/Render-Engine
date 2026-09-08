@@ -1,6 +1,7 @@
 #pragma once
 
-#include <array>
+#include <maths/matrix.hpp>
+
 #include <memory>
 
 namespace khronos
@@ -10,15 +11,15 @@ class graphics_pipeline
   public:
     struct vertex
     {
-        std::array<float, 2> pos;
-        std::array<float, 3> colour;
+        maths::column_major::float3 pos;
+        maths::column_major::float3 colour;
     };
 
     struct uniform_buffer_object
     {
-        std::array<std::array<float, 4>, 4> model;
-        std::array<std::array<float, 4>, 4> view;
-        std::array<std::array<float, 4>, 4> proj;
+        maths::column_major::float4x4 model;
+        maths::column_major::float4x4 view;
+        maths::column_major::float4x4 proj;
     };
 
     explicit graphics_pipeline(class graphical_device const & graphical_device);
