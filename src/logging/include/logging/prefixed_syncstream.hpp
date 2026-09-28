@@ -35,7 +35,7 @@ class basic_prefixed_syncstream : public std::basic_ostream<CharT, Traits>
   public:
     explicit basic_prefixed_syncstream(std::nullptr_t) noexcept
     : std::basic_ostream<CharT, Traits>(nullptr),
-      buf(nullptr, [](void *) {})
+      buf(nullptr)
     {
     }
 
@@ -43,17 +43,12 @@ class basic_prefixed_syncstream : public std::basic_ostream<CharT, Traits>
     explicit basic_prefixed_syncstream(
       std::unique_ptr<basic_prefixed_syncbuf<Function, CharT, Traits, Allocator>> && buf) noexcept
     : std::basic_ostream<CharT, Traits>(buf.get()),
-      buf(buf.release(),
-          [](void * ptr)
-          {
-            std::default_delete<basic_prefixed_syncbuf<Function, CharT, Traits, Allocator>>{}(
-              static_cast<basic_prefixed_syncbuf<Function, CharT, Traits, Allocator> *>(ptr));
-          })
+      buf(std::move(buf))
     {
     }
 
   private:
-    std::unique_ptr<void, void (*)(void *)> buf;
+    std::unique_ptr<std::basic_streambuf<CharT, Traits>> buf;
 };
 
 using prefixed_syncstream  = basic_prefixed_syncstream<char>;

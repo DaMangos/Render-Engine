@@ -1,13 +1,13 @@
 #include <glfw/library.hpp>
-#include <khronos/draw_command.hpp>
-#include <khronos/graphical_device.hpp>
-#include <khronos/graphics_pipeline.hpp>
-#include <khronos/library.hpp>
-#include <khronos/present_window.hpp>
-#include <khronos/render_window.hpp>
-#include <khronos/staging_buffer.hpp>
-#include <khronos/transfer_buffer.hpp>
-#include <khronos/transfer_command.hpp>
+#include <graphics/draw_command.hpp>
+#include <graphics/graphical_device.hpp>
+#include <graphics/graphics_pipeline.hpp>
+#include <graphics/library.hpp>
+#include <graphics/present_window.hpp>
+#include <graphics/render_window.hpp>
+#include <graphics/staging_buffer.hpp>
+#include <graphics/transfer_buffer.hpp>
+#include <graphics/transfer_command.hpp>
 #include <logging/logging.hpp>
 #include <serialize/ranges.hpp>
 #include <serialize/tuple.hpp>
@@ -235,37 +235,42 @@ int main(int const argc, char const * const * const args) noexcept
       logging::default_error_out = file->second;
 
     std::array vertices = {
-      khronos::graphics_pipeline::vertex{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-      khronos::graphics_pipeline::vertex{ {0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-      khronos::graphics_pipeline::vertex{  {0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-      khronos::graphics_pipeline::vertex{ {-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+      graphics::graphics_pipeline::vertex{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+      graphics::graphics_pipeline::vertex{ {0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+      graphics::graphics_pipeline::vertex{  {0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+      graphics::graphics_pipeline::vertex{ {-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
     };
 
     std::array<std::uint32_t, 6> const indices = {0, 1, 2, 2, 3, 0};
 
-    auto library = khronos::library{arg_files["vk-verbose"],
-                                    arg_files["vk-info"],
-                                    arg_files["vk-warning"],
-                                    arg_files["vk-error"]};
+    auto library = graphics::library{arg_files["vk-verbose"],
+                                     arg_files["vk-info"],
+                                     arg_files["vk-warning"],
+                                     arg_files["vk-error"]};
 
-    auto window = glfw::default_library.create_window({.height = 500, .width = 500}, "demo");
+    auto window = glfw::default_library.create_window({.width = 500, .height = 500}, "demo");
 
-    auto present_window    = khronos::present_window{std::move(window), library};
-    auto graphical_device  = khronos::graphical_device{present_window};
-    auto render_window     = khronos::render_window{std::move(present_window), graphical_device};
-    auto graphics_pipeline = khronos::graphics_pipeline{graphical_device};
+    auto present_window    = graphics::present_window{std::move(window), library};
+    auto graphical_device  = graphics::graphical_device{present_window};
+    auto render_window     = graphics::render_window{std::move(present_window), graphical_device};
+    auto graphics_pipeline = graphics::graphics_pipeline{graphical_device};
 
     auto const buffer_size = std::span{vertices}.size_bytes() + std::span{indices}.size_bytes();
 
-    auto staging_buffer  = khronos::staging_buffer{graphical_device, buffer_size};
-    auto transfer_buffer = khronos::transfer_buffer{graphical_device, buffer_size};
-    auto draw            = khronos::draw_command{graphical_device, render_window, 2};
-    auto transfer        = khronos::transfer_command{graphical_device, 2};
+    auto staging_buffer  = graphics::staging_buffer{graphical_device, buffer_size};
+    auto transfer_buffer = graphics::transfer_buffer{graphical_device, buffer_size};
+
+    constexpr auto frames_in_flight = 2;
+
+    auto draw     = graphics::draw_command{graphical_device, render_window, frames_in_flight};
+    auto transfer = graphics::transfer_command{graphical_device, frames_in_flight};
 
     staging_buffer.memcpy(vertices);
     staging_buffer.memcpy(indices);
 
     transfer(staging_buffer, transfer_buffer);
+
+    transfer.wait();
 
     while(not render_window.should_close())
     {
