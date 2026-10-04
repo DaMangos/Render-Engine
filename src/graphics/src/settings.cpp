@@ -2,14 +2,11 @@
 
 #include <glfw/library.hpp>
 
-#include <vulkan/vulkan.hpp>
-#include <vulkan/vulkan_raii.hpp>
-
 #include <ranges>
 #include <vector>
 
 std::vector<char const *> graphics::find_unavailable_extension(std::span<vk::ExtensionProperties const> const properties,
-                                                               std::span<char const * const> const extensions) noexcept
+                                                               std::span<char const * const> const            extensions) noexcept
 {
   auto const is_extension_unavailable = [=](std::string_view const extension)
   {
@@ -87,8 +84,7 @@ bool graphics::is_layer_available(std::span<vk::LayerProperties const> const pro
   return std::ranges::any_of(properties, [=](auto const & property) { return property.layerName == layer; });
 }
 
-bool graphics::is_available(vk::PhysicalDeviceFeatures2 const & supported,
-                            vk::PhysicalDeviceFeatures2 const & requested) noexcept
+bool graphics::is_available(vk::PhysicalDeviceFeatures2 const & supported, vk::PhysicalDeviceFeatures2 const & requested) noexcept
 {
   return tuple::inner_product(supported.features.reflect(),
                               requested.features.reflect(),

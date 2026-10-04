@@ -21,7 +21,6 @@ class graphical_device
 
   private:
     friend class graphics_pipeline;
-    friend class draw_command;
     friend class render_window;
     friend class mesh_buffer;
 

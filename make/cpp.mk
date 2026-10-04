@@ -5,6 +5,7 @@ CPPFLAGS =                                                          \
 	-DGLFW_INCLUDE_VULKAN                                           \
 	-DVK_ENABLE_BETA_EXTENSIONS                                     \
 	-DVULKAN_HPP_ENABLE_DYNAMIC_LOADER_TOOL                         \
+	-DVULKAN_HPP_HANDLE_ERROR_OUT_OF_DATE_AS_SUCCESS                \
 	-DVULKAN_HPP_USE_REFLECT
 
 CXXFLAGS =       \
@@ -15,7 +16,8 @@ CXXFLAGS =       \
 	-Wpedantic   \
 	-Wshadow     \
 	-Wconversion \
-	-Werror
+	-Werror      \
+	-fexperimental-library
 
 
 LDLIBS =
@@ -31,31 +33,45 @@ ifeq ($(BUILD_MODE), release/build)
 endif
 
 ifeq ($(BUILD_MODE), debug/test)
-	SRCS := $(shell find -L $(ROOTDIR)/src -name "*.cpp" -not -path "*/main.cpp")
+	SRCS := $(shell find -L $(ROOTDIR)/src -name "*.cpp" -not -path "*/benchmark/*" -not -path "*/main.cpp")
 	CPPFLAGS += `pkg-config --cflags gtest_main`
 	CXXFLAGS += -UNDEBUG -g
 	LDLIBS += `pkg-config --static --libs gtest_main`
 endif
 
 ifeq ($(BUILD_MODE), release/test)
-	SRCS := $(shell find -L $(ROOTDIR)/src -name "*.cpp" -not -path "*/main.cpp")
+	SRCS := $(shell find -L $(ROOTDIR)/src -name "*.cpp" -not -path "*/benchmark/*" -not -path "*/main.cpp")
 	CPPFLAGS += `pkg-config --cflags gtest_main`
 	CXXFLAGS += -DNDEBUG
 	LDLIBS += `pkg-config --static --libs gtest_main`
+endif
+
+ifeq ($(BUILD_MODE), debug/benchmark)
+	SRCS := $(shell find -L $(ROOTDIR)/src -name "*.cpp" -not -path "*/test/*" -not -path "*/main.cpp")
+	CPPFLAGS += `pkg-config --cflags benchmark_main`
+	CXXFLAGS += -UNDEBUG -g -DBENCHMARK_STATIC_DEFINE
+	LDLIBS += `pkg-config --static --libs benchmark_main`
+endif
+
+ifeq ($(BUILD_MODE), release/benchmark)
+	SRCS := $(shell find -L $(ROOTDIR)/src -name "*.cpp" -not -path "*/test/*" -not -path "*/main.cpp")
+	CPPFLAGS += `pkg-config --cflags benchmark_main`
+	CXXFLAGS += -DNDEBUG -DBENCHMARK_STATIC_DEFINE
+	LDLIBS += `pkg-config --static --libs benchmark_main`
 endif
 
 ifeq ($(BUILD_MODE), compile_commands_release)
 	SRCS := $(shell find -L $(ROOTDIR)/src -name "*.cpp" )
-	CPPFLAGS += `pkg-config --cflags gtest_main`
-	CXXFLAGS += -DNDEBUG
-	LDLIBS += `pkg-config --static --libs gtest_main`
+	CPPFLAGS += `pkg-config --cflags gtest_main` `pkg-config --cflags benchmark_main`
+	CXXFLAGS += -DNDEBUG -DBENCHMARK_STATIC_DEFINE
+	LDLIBS += `pkg-config --static --libs gtest_main` `pkg-config --static --libs benchmark_main`
 endif
 
 ifeq ($(BUILD_MODE), compile_commands_debug)
 	SRCS := $(shell find -L $(ROOTDIR)/src -name "*.cpp" )
-	CPPFLAGS += `pkg-config --cflags gtest_main`
-	CXXFLAGS += -UNDEBUG -g
-	LDLIBS += `pkg-config --static --libs gtest_main`
+	CPPFLAGS += `pkg-config --cflags gtest_main` `pkg-config --cflags benchmark_main`
+	CXXFLAGS += -UNDEBUG -g -DBENCHMARK_STATIC_DEFINE
+	LDLIBS += `pkg-config --static --libs gtest_main` `pkg-config --static --libs benchmark_main`
 endif
 
 define pkg_config_cflags

@@ -134,28 +134,23 @@ static graphics::render_window_impl create_render_window_impl(glfw::dimensions<i
 
   auto swapchain = graphics::vulkan::swapchain{wait_for_queue_no_throw,
                                                swapchain_dependencies,
-                                               queue.template get_dependency<vk::raii::Device>(),
+                                               queue.get_dependency<vk::raii::Device>(),
                                                swapchain_create_info.get()};
 
   auto images = swapchain.get().getImages();
 
   auto image_views = graphics::vulkan::image_views{
     swapchain.as_dependencies(),
-    create_image_views(queue.template get_dependency<vk::raii::Device>(), images, swapchain_create_info.get())};
+    create_image_views(queue.get_dependency<vk::raii::Device>(), images, swapchain_create_info.get())};
 
-  return {std::move(surface_capabilities),
-          std::move(swapchain_create_info),
-          std::move(swapchain),
-          std::move(images),
-          std::move(image_views)};
+  return {surface_capabilities, std::move(swapchain_create_info), std::move(swapchain), images, std::move(image_views)};
 }
 }
 
 graphics::render_window::render_window(present_window && window, graphical_device const & graphical_device)
 : present_window(std::move(window)),
-  self(std::make_unique<render_window_impl>(create_render_window_impl(glfw::window::get_framebuffer_size(),
-                                                                      present_window::self->surface,
-                                                                      graphical_device.self->queue)))
+  self(std::make_unique<render_window_impl>(
+    create_render_window_impl(glfw::window::get_framebuffer_size(), present_window::self->surface, graphical_device.self->queue)))
 {
 }
 
@@ -166,9 +161,9 @@ void graphics::render_window::when_framebuffer_resized(glfw::dimensions<int, 2> 
   self->swapchain_create_info
     .get() = get_swapchain_create_info(size, self->surface_capabilities, self->swapchain_create_info.get(), self->swapchain);
 
-  self->swapchain.template get_dependency<vk::raii::Queue>().waitIdle();
+  self->swapchain.get_dependency<vk::raii::Queue>().waitIdle();
 
-  self->swapchain.get() = {self->swapchain.template get_dependency<vk::raii::Device>(), self->swapchain_create_info.get()};
+  self->swapchain.get() = {self->swapchain.get_dependency<vk::raii::Device>(), self->swapchain_create_info.get()};
 
   self->images = self->swapchain.get().getImages();
 

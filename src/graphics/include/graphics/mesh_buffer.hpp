@@ -1,45 +1,65 @@
 #pragma once
 
+#include <graphics/detail/mesh_buffer_iterator.hpp>
 #include <maths/matrix.hpp>
 
 #include <cstddef>
 #include <memory>
+#include <ranges>
+#include <span>
 #include <vector>
 
 namespace graphics
 {
-class mesh_buffer
+struct vertex
+{
+    alignas(16) maths::column_major::float3 pos;
+    alignas(16) maths::column_major::float3 uv;
+};
+
+struct mesh_view
+{
+    std::span<vertex>        vertices;
+    std::span<std::uint32_t> indices;
+    std::span<std::byte>     texture;
+};
+
+struct const_mesh_view
+{
+    std::span<vertex const>        vertices;
+    std::span<std::uint32_t const> indices;
+    std::span<std::byte const>     texture;
+};
+
+struct mesh
+{
+    std::vector<vertex>        vertices;
+    std::vector<std::uint32_t> indices;
+    std::vector<std::byte>     texture;
+
+    [[nodiscard]]
+    constexpr operator mesh_view() & noexcept
+    {
+      return {vertices, indices, texture};
+    }
+
+    constexpr operator mesh_view() && noexcept = delete;
+
+    [[nodiscard]]
+    constexpr operator const_mesh_view() const & noexcept
+    {
+      return {vertices, indices, texture};
+    }
+
+    constexpr operator const_mesh_view() && noexcept = delete;
+};
+
+class mesh_buffer : std::ranges::view_interface<mesh_buffer>
 {
   public:
-    struct vertex
-    {
-        alignas(16) maths::column_major::float3 pos;
-        alignas(16) maths::column_major::float3 uv;
-    };
-
-    struct mesh
-    {
-        std::uint32_t              id;
-        std::vector<vertex>        vertices;
-        std::vector<std::uint32_t> indices;
-        std::vector<std::byte>     texture;
-    };
-
-    struct mesh_view
-    {
-        std::uint32_t            id;
-        std::span<vertex>        vertices;
-        std::span<std::uint32_t> indices;
-        std::span<std::byte>     texture;
-    };
-
-    struct const_mesh_view
-    {
-        std::uint32_t                  id;
-        std::span<vertex const>        vertices;
-        std::span<std::uint32_t const> indices;
-        std::span<std::byte const>     texture;
-    };
+    using value_type     = mesh;
+    using iterator       = detail::mesh_buffer_iterator<false>;
+    using const_iterator = detail::mesh_buffer_iterator<true>;
 
     mesh_buffer(class graphical_device const & graphical_device);
 
@@ -53,19 +73,15 @@ class mesh_buffer
 
     ~mesh_buffer() noexcept;
 
+    void emplace_back(std::span<vertex const> const        vertices,
+                      std::span<std::uint32_t const> const indices,
+                      std::span<std::byte const> const     texture);
+
     void push_back(mesh const & mesh);
 
     void pop_back() noexcept;
 
     void clear() noexcept;
-
-    std::size_t size() const noexcept;
-
-    std::size_t byte_size() const noexcept;
-
-    bool empty() const noexcept;
-
-    void flush();
 
     void reserve_vertices(std::size_t const size);
 
@@ -73,20 +89,56 @@ class mesh_buffer
 
     void reserve_texture(std::size_t const size);
 
-    mesh_view operator[](std::size_t const index) noexcept;
+    [[nodiscard]]
+    iterator begin();
 
-    const_mesh_view operator[](std::size_t const index) const noexcept;
+    [[nodiscard]]
+    const_iterator cbegin() const;
 
-    mesh_view at(std::size_t const index);
+    [[nodiscard]]
+    iterator end();
 
-    const_mesh_view at(std::size_t const index) const;
+    [[nodiscard]]
+    const_iterator cend() const;
 
-    mesh_view find(std::uint32_t const id);
+    [[nodiscard]]
+    std::span<vertex> vertices();
 
-    const_mesh_view find(std::uint32_t const id) const;
+    [[nodiscard]]
+    std::span<vertex const> vertices() const noexcept;
+
+    [[nodiscard]]
+    std::span<vertex> vertices(std::size_t const mesh_index);
+
+    [[nodiscard]]
+    std::span<vertex const> vertices(std::size_t const mesh_index) const noexcept;
+
+    [[nodiscard]]
+    std::span<std::uint32_t> indices() noexcept;
+
+    [[nodiscard]]
+    std::span<std::uint32_t const> indices() const noexcept;
+
+    [[nodiscard]]
+    std::span<std::uint32_t> indices(std::size_t const mesh_index) noexcept;
+
+    [[nodiscard]]
+    std::span<std::uint32_t const> indices(std::size_t const mesh_index) const noexcept;
+
+    [[nodiscard]]
+    std::span<std::byte> texture() noexcept;
+
+    [[nodiscard]]
+    std::span<std::byte const> texture() const noexcept;
+
+    [[nodiscard]]
+    std::span<std::byte> texture(std::size_t const mesh_index) noexcept;
+
+    [[nodiscard]]
+    std::span<std::byte const> texture(std::size_t const mesh_index) const noexcept;
 
   private:
-    friend class transfer_command;
+    friend class graphics_pipeline;
 
     std::unique_ptr<struct mesh_buffer_impl> self;
 };

@@ -86,6 +86,14 @@ using fences = dependent<std::list<vk::raii::Fence>,             //
                                       vk::raii::Context,         //
                                       user_data>>;
 
+using semaphore = dependent<vk::raii::Semaphore,                    //
+                            dependencies<vk::raii::Queue,           //
+                                         vk::raii::Device,          //
+                                         vk::raii::PhysicalDevice,  //
+                                         vk::raii::Instance,        //
+                                         vk::raii::Context,         //
+                                         user_data>>;
+
 using semaphores = dependent<std::list<vk::raii::Semaphore>,         //
                              dependencies<vk::raii::Queue,           //
                                           vk::raii::Device,          //
@@ -156,13 +164,11 @@ using buffer = dependent<vk::raii::Buffer,                       //
                                       vk::raii::Context,         //
                                       user_data>>;
 
-using buffers = dependent<std::list<vk::raii::Buffer>,              //
-                          dependencies<std::list<vk::raii::Fence>,  //
-                                       vk::raii::Queue,             //
-                                       vk::raii::Device,            //
-                                       vk::raii::PhysicalDevice,    //
-                                       vk::raii::Instance,          //
-                                       vk::raii::Context,           //
+using buffers = dependent<std::vector<vk::raii::Buffer>,          //
+                          dependencies<vk::raii::Device,          //
+                                       vk::raii::PhysicalDevice,  //
+                                       vk::raii::Instance,        //
+                                       vk::raii::Context,         //
                                        user_data>>;
 
 using device_memory = dependent<vk::raii::DeviceMemory,                 //
@@ -173,15 +179,13 @@ using device_memory = dependent<vk::raii::DeviceMemory,                 //
                                              vk::raii::Context,         //
                                              user_data>>;
 
-using device_memories = dependent<std::list<vk::raii::DeviceMemory>,         //
-                                  dependencies<std::list<vk::raii::Buffer>,  //
-                                               std::list<vk::raii::Fence>,   //
-                                               vk::raii::Queue,              //
-                                               vk::raii::Device,             //
-                                               vk::raii::PhysicalDevice,     //
-                                               vk::raii::Instance,           //
-                                               vk::raii::Context,            //
-                                               user_data>>;
+using multi_purpose_device_memory = dependent<vk::raii::DeviceMemory,                      //
+                                              dependencies<std::vector<vk::raii::Buffer>,  //
+                                                           vk::raii::Device,               //
+                                                           vk::raii::PhysicalDevice,       //
+                                                           vk::raii::Instance,             //
+                                                           vk::raii::Context,              //
+                                                           user_data>>;
 
 using descriptor_pool = dependent<vk::raii::DescriptorPool,               //
                                   dependencies<vk::raii::Device,          //

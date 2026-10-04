@@ -1,5 +1,7 @@
 #pragma once
 
+#include "graphics/graphics_pipeline.hpp"
+
 #include <graphics/present_window.hpp>
 
 namespace graphics
@@ -20,11 +22,11 @@ class render_window : public present_window
     ~render_window() noexcept override;
 
   protected:
-    friend class draw_command;
-
     void when_framebuffer_resized(glfw::dimensions<int, 2> const & size) override;
 
   private:
+    friend graphics_pipeline;
+
     std::unique_ptr<struct render_window_impl> self;
 };
 }

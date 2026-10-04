@@ -115,7 +115,8 @@ class strided_iterator
 
     template <class OtherIter>
     [[nodiscard]]
-    constexpr difference_type operator-(strided_iterator<OtherIter, Stride> const & other) const noexcept
+    constexpr std::common_type_t<difference_type, typename strided_iterator<OtherIter, Stride>::difference_type> operator-(
+      strided_iterator<OtherIter, Stride> const & other) const noexcept
     {
       return (offset - other.offset) / Stride;
     }
@@ -128,14 +129,18 @@ class strided_iterator
     Iter            first  = {};
     difference_type offset = {};
 
-    // We keep a iterator and an offset and when we call operator* or operator-> we use increment
-    // the iterator by the offset then return it. Furthermore, calls to operator++ operator-- etc
-    // just increment the offset and leave the iterator untouched. This is because if we have a
-    // range with 9 elements and our stride is 3 and we want to iterate over the 2nd, 5th, 8th
-    // element, our end iterator would be the theoretical 11th element. In a constexpr environment
-    // this is unacceptable and when we try and construct the end iterator get the complier error
-    // (constexpr_var_requires_const_init) with the message:
-    //    "Cannot refer to element 11 of array of 9 elements in a constant expression".
+    /*
+
+    We keep a iterator and an offset and when we call operator* or operator-> we use increment
+    the iterator by the offset then return it. Furthermore, calls to operator++ operator-- etc
+    just increment the offset and leave the iterator untouched. This is because if we have a
+    range with 9 elements and our stride is 3 and we want to iterate over the 2nd, 5th, 8th
+    element, our end iterator would be the theoretical 11th element. In a constexpr environment
+    this is unacceptable and when we try and construct the end iterator get the complier error
+    (constexpr_var_requires_const_init) with the message:
+       "Cannot refer to element 11 of array of 9 elements in a constant expression".
+
+    */
 };
 
 template <class Iter, typename std::iterator_traits<Iter>::difference_type Stride>
@@ -162,13 +167,5 @@ constexpr strided_iterator<Iter, Stride> operator-(strided_iterator<Iter, Stride
                                                    typename strided_iterator<Iter, Stride>::difference_type i) noexcept
 {
   return iter + (-i);
-}
-
-template <class LhsIter, class RhsIter, typename std::iterator_traits<LhsIter>::difference_type Stride>
-[[nodiscard]]
-constexpr auto operator<=>(strided_iterator<LhsIter, Stride> const & lhs,
-                           strided_iterator<RhsIter, Stride> const & rhs) noexcept
-{
-  return lhs.base() <=> rhs.base();
 }
 }

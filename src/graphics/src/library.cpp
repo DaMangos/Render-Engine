@@ -8,8 +8,6 @@
 #include <serialize/ranges.hpp>
 #include <serialize/tuple.hpp>
 
-#include <vulkan/vulkan.hpp>
-#include <vulkan/vulkan_raii.hpp>
 #include <vulkan/vulkan_to_string.hpp>
 
 #include <algorithm>
@@ -70,8 +68,7 @@ static vk::Bool32 user_callback(vk::DebugUtilsMessageSeverityFlagBitsEXT       s
 }
 
 [[nodiscard]]
-static constexpr vk::InstanceCreateFlagBits get_instance_creat_info_flags(
-  std::span<char const * const> const extensions) noexcept
+static constexpr vk::InstanceCreateFlagBits get_instance_creat_info_flags(std::span<char const * const> const extensions) noexcept
 {
   return std::ranges::contains(extensions, std::string_view{vk::KHRPortabilityEnumerationExtensionName})
          ? vk::InstanceCreateFlagBits::eEnumeratePortabilityKHR

@@ -19,9 +19,13 @@ class graphics_pipeline
 
     ~graphics_pipeline() noexcept;
 
-  private:
-    friend class draw_command;
+    void attach(class mesh_buffer const & mesh_buffer);
 
+    void attach(class camera const & camera);
+
+    void draw(class render_window & render_window);
+
+  private:
     std::unique_ptr<struct graphics_pipeline_impl> self;
 };
 }

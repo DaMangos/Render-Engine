@@ -11,8 +11,8 @@ TEST(StridedIterator, Increment)
 {
   std::array values = {1, 2, 3, 4, 5, 6};
 
-  iterator::strided_iterator<std::array<int, 6>::iterator, 2> first{values.begin()};
-  iterator::strided_iterator<std::array<int, 6>::iterator, 2> last = std::ranges::next(first, 3);
+  iterator::strided_iterator<std::array<int, 6>::iterator, 2>       first{values.begin()};
+  iterator::strided_iterator<std::array<int, 6>::const_iterator, 2> last = std::ranges::next(first, 3);
 
   EXPECT_EQ(*first, 1);
 
@@ -34,7 +34,7 @@ TEST(StridedIterator, Dincrement)
   std::array values = {1, 2, 3, 4, 5, 6};
 
   iterator::strided_iterator<std::array<int, 6>::iterator, 2> const first{values.begin()};
-  iterator::strided_iterator<std::array<int, 6>::iterator, 2>       last = std::ranges::next(first, 3);
+  iterator::strided_iterator<std::array<int, 6>::const_iterator, 2> last = std::ranges::next(first, 3);
 
   last--;
 
@@ -66,8 +66,8 @@ TEST(StridedIterator, Distance)
 {
   std::array values = {1, 2, 3, 4, 5, 6};
 
-  iterator::strided_iterator<std::array<int, 6>::iterator, 2> first{values.begin()};
-  iterator::strided_iterator<std::array<int, 6>::iterator, 2> last = std::ranges::next(first, 3);
+  iterator::strided_iterator<std::array<int, 6>::iterator, 2>       first{values.begin()};
+  iterator::strided_iterator<std::array<int, 6>::const_iterator, 2> last = std::ranges::next(first, 3);
 
   EXPECT_EQ(std::ranges::distance(first, last), 3);
   EXPECT_EQ(last - first, 3);

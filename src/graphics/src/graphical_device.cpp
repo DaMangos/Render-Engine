@@ -91,9 +91,8 @@ static physical_device_type get_physical_device_type(vk::raii::SurfaceKHR const 
                        << vk::apiVersionMajor(get_api_version(device_properties)) << '.'
                        << vk::apiVersionMinor(get_api_version(device_properties)) << '.'
                        << vk::apiVersionPatch(get_api_version(device_properties)) << " and we require "
-                       << vk::apiVersionMajor(graphics::min_api_version) << '.'
-                       << vk::apiVersionMinor(graphics::min_api_version) << '.'
-                       << vk::apiVersionPatch(graphics::min_api_version);
+                       << vk::apiVersionMajor(graphics::min_api_version) << '.' << vk::apiVersionMinor(graphics::min_api_version)
+                       << '.' << vk::apiVersionPatch(graphics::min_api_version);
 
     return physical_device_type::not_suitable;
   }
@@ -138,8 +137,7 @@ static physical_device_type get_physical_device_type(vk::raii::SurfaceKHR const 
   if(not unavailable_capability_names.empty())
   {
     logging::warning() << get_fancy_device_name(device_properties)
-                       << " is not suitable because it's missing required surface capabilities  "
-                       << unavailable_capability_names;
+                       << " is not suitable because it's missing required surface capabilities  " << unavailable_capability_names;
 
     return physical_device_type::not_suitable;
   }
@@ -179,32 +177,30 @@ static physical_device_type get_physical_device_type(vk::raii::SurfaceKHR const 
 }
 
 [[nodiscard]]
-static vk::raii::PhysicalDevice find_physical_device(vk::raii::Instance const & instance, vk::raii::SurfaceKHR const & surface)
+static graphics::vulkan::physical_device find_physical_device(graphics::vulkan::surface const & surface)
 {
-  std::unordered_map<physical_device_type, vk::raii::PhysicalDevice> physical_devices;
+  std::unordered_map<physical_device_type, graphics::vulkan::physical_device> physical_devices;
 
-  for(auto const & physical_device : instance.enumeratePhysicalDevices())
-    physical_devices.try_emplace(get_physical_device_type(surface, physical_device), physical_device);
+  for(auto const & physical_device : surface.get_dependency<vk::raii::Instance>().enumeratePhysicalDevices())
+    physical_devices[get_physical_device_type(surface, physical_device)] = {surface.as_dependencies(), physical_device};
 
   auto const conformant_physical_device = physical_devices.find(physical_device_type::conformant);
 
   if(conformant_physical_device != physical_devices.end())
-    return conformant_physical_device->second;
+    return std::move(conformant_physical_device->second);
 
   auto const non_conformant_physical_device = physical_devices.find(physical_device_type::conformant);
 
   if(non_conformant_physical_device != physical_devices.end())
-    return non_conformant_physical_device->second;
+    return std::move(non_conformant_physical_device->second);
 
   throw std::runtime_error("there are no suitable physical devices");
 }
 
 [[nodiscard]]
-static graphics::graphical_device_impl create_graphical_device_impl(graphics::vulkan::surface const & surface)
+static graphics::graphical_device_impl make_graphical_device_impl(graphics::vulkan::surface const & surface)
 {
-  auto physical_device = graphics::vulkan::physical_device(
-    surface.get_dependencies(),
-    find_physical_device(surface.get_dependency<vk::raii::Instance>(), surface.get()));
+  auto physical_device = find_physical_device(surface);
 
   auto const queue_family_properties = physical_device.get().getQueueFamilyProperties2();
 
@@ -243,7 +239,7 @@ static graphics::graphical_device_impl create_graphical_device_impl(graphics::vu
 }
 
 graphics::graphical_device::graphical_device(present_window const & present_window)
-: self(std::make_unique<graphical_device_impl>(create_graphical_device_impl(present_window.self->surface)))
+: self(std::make_unique<graphical_device_impl>(make_graphical_device_impl(present_window.self->surface)))
 {
 }
 

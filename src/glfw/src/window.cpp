@@ -50,8 +50,8 @@ void glfw::window::set_icon(std::span<image> const images)
 
   for(auto & image : images)
     glfw_images.push_back({
-      .height = image.size.height,
       .width  = image.size.width,
+      .height = image.size.height,
       .pixels = reinterpret_cast<unsigned char *>(image.pixels.data()),
     });
 

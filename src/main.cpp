@@ -1,13 +1,12 @@
+#include "graphics/camera.hpp"
+
 #include <glfw/library.hpp>
-#include <graphics/draw_command.hpp>
 #include <graphics/graphical_device.hpp>
 #include <graphics/graphics_pipeline.hpp>
 #include <graphics/library.hpp>
+#include <graphics/mesh_buffer.hpp>
 #include <graphics/present_window.hpp>
 #include <graphics/render_window.hpp>
-#include <graphics/staging_buffer.hpp>
-#include <graphics/transfer_buffer.hpp>
-#include <graphics/transfer_command.hpp>
 #include <logging/logging.hpp>
 #include <serialize/ranges.hpp>
 #include <serialize/tuple.hpp>
@@ -49,23 +48,17 @@ static constexpr char const * const
              "--no-error               - Suppresses the error logs.\n\n";
 }
 
-std::ofstream & create_file(std::filesystem::path const & path)
-{
-  static std::map<std::filesystem::path, std::ofstream> files;
-
-  std::filesystem::create_directories(path.parent_path());
-
-  auto [file, _] = files.try_emplace(path, path, std::ios::out);
-
-  auto & [name, stream] = *file;
-
-  return stream;
-}
-
 [[nodiscard]]
 int main(int const argc, char const * const * const args) noexcept
 {
   using namespace std::literals;
+
+  auto create_file = [files = std::map<std::filesystem::path, std::ofstream>{}](std::filesystem::path const & path) mutable
+  {
+    std::filesystem::create_directories(path.parent_path());
+
+    return &files.try_emplace(path, path, std::ios::out).first->second;
+  };
 
   try
   {
@@ -88,7 +81,7 @@ int main(int const argc, char const * const * const args) noexcept
       }
       else if(arg.starts_with("--vk-verbose="))
       {
-        auto const [_, inserted] = arg_files.try_emplace("vk-verbose", &create_file(arg.substr(arg.find_first_of('=') + 1)));
+        auto const [_, inserted] = arg_files.try_emplace("vk-verbose", create_file(arg.substr(arg.find_first_of('=') + 1)));
 
         if(not inserted)
           throw std::invalid_argument("duplicate: --vk-verbose");
@@ -102,7 +95,7 @@ int main(int const argc, char const * const * const args) noexcept
       }
       else if(arg.starts_with("--vk-info="))
       {
-        auto const [_, inserted] = arg_files.try_emplace("vk-info", &create_file(arg.substr(arg.find_first_of('=') + 1)));
+        auto const [_, inserted] = arg_files.try_emplace("vk-info", create_file(arg.substr(arg.find_first_of('=') + 1)));
 
         if(not inserted)
           throw std::invalid_argument("duplicate: --vk-info");
@@ -116,7 +109,7 @@ int main(int const argc, char const * const * const args) noexcept
       }
       else if(arg.starts_with("--vk-warning="))
       {
-        auto const [_, inserted] = arg_files.try_emplace("vk-warning", &create_file(arg.substr(arg.find_first_of('=') + 1)));
+        auto const [_, inserted] = arg_files.try_emplace("vk-warning", create_file(arg.substr(arg.find_first_of('=') + 1)));
 
         if(not inserted)
           throw std::invalid_argument("duplicate: --vk-warning");
@@ -129,7 +122,7 @@ int main(int const argc, char const * const * const args) noexcept
       }
       else if(arg.starts_with("--vk-error="))
       {
-        auto const [_, inserted] = arg_files.try_emplace("vk-error", &create_file(arg.substr(arg.find_first_of('=') + 1)));
+        auto const [_, inserted] = arg_files.try_emplace("vk-error", create_file(arg.substr(arg.find_first_of('=') + 1)));
 
         if(not inserted)
           throw std::invalid_argument("duplicate: --vk-error");
@@ -143,7 +136,7 @@ int main(int const argc, char const * const * const args) noexcept
       }
       else if(arg.starts_with("--verbose="))
       {
-        auto const [_, inserted] = arg_files.try_emplace("verbose", &create_file(arg.substr(arg.find_first_of('=') + 1)));
+        auto const [_, inserted] = arg_files.try_emplace("verbose", create_file(arg.substr(arg.find_first_of('=') + 1)));
 
         if(not inserted)
           throw std::invalid_argument("duplicate: --verbose");
@@ -164,7 +157,7 @@ int main(int const argc, char const * const * const args) noexcept
       }
       else if(arg.starts_with("--info="))
       {
-        auto const [_, inserted] = arg_files.try_emplace("info", &create_file(arg.substr(arg.find_first_of('=') + 1)));
+        auto const [_, inserted] = arg_files.try_emplace("info", create_file(arg.substr(arg.find_first_of('=') + 1)));
 
         if(not inserted)
           throw std::invalid_argument("duplicate: --info");
@@ -185,7 +178,7 @@ int main(int const argc, char const * const * const args) noexcept
       }
       else if(arg.starts_with("--warning="))
       {
-        auto const [_, inserted] = arg_files.try_emplace("warning", &create_file(arg.substr(arg.find_first_of('=') + 1)));
+        auto const [_, inserted] = arg_files.try_emplace("warning", create_file(arg.substr(arg.find_first_of('=') + 1)));
 
         if(not inserted)
           throw std::invalid_argument("duplicate: --warning");
@@ -206,7 +199,7 @@ int main(int const argc, char const * const * const args) noexcept
       }
       else if(arg.starts_with("--error="))
       {
-        auto const [_, inserted] = arg_files.try_emplace("error", &create_file(arg.substr(arg.find_first_of('=') + 1)));
+        auto const [_, inserted] = arg_files.try_emplace("error", create_file(arg.substr(arg.find_first_of('=') + 1)));
 
         if(not inserted)
           throw std::invalid_argument("duplicate: --error");
@@ -234,43 +227,38 @@ int main(int const argc, char const * const * const args) noexcept
     if(auto file = arg_files.find("error"); file != arg_files.end())
       logging::default_error_out = file->second;
 
-    std::array vertices = {
-      graphics::graphics_pipeline::vertex{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-      graphics::graphics_pipeline::vertex{ {0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-      graphics::graphics_pipeline::vertex{  {0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-      graphics::graphics_pipeline::vertex{ {-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+    graphics::mesh cube = {
+      .vertices = {{{-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f, 0.0f}},  {{0.5f, -0.5f, 0.5f}, {1.0f, 0.0f, 0.0f}},
+                   {{0.5f, 0.5f, 0.5f}, {1.0f, 1.0f, 0.0f}},    {{-0.5f, 0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+                   {{0.5f, -0.5f, -0.5f}, {0.0f, 0.0f, 0.0f}},  {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+                   {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 0.0f}},  {{0.5f, 0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+                   {{-0.5f, 0.5f, 0.5f}, {0.0f, 0.0f, 0.0f}},   {{0.5f, 0.5f, 0.5f}, {1.0f, 0.0f, 0.0f}},
+                   {{0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 0.0f}},   {{-0.5f, 0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+                   {{-0.5f, -0.5f, -0.5f}, {0.0f, 0.0f, 0.0f}}, {{0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+                   {{0.5f, -0.5f, 0.5f}, {1.0f, 1.0f, 0.0f}},   {{-0.5f, -0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+                   {{0.5f, -0.5f, 0.5f}, {0.0f, 0.0f, 0.0f}},   {{0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+                   {{0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 0.0f}},   {{0.5f, 0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+                   {{-0.5f, -0.5f, -0.5f}, {0.0f, 0.0f, 0.0f}}, {{-0.5f, -0.5f, 0.5f}, {1.0f, 0.0f, 0.0f}},
+                   {{-0.5f, 0.5f, 0.5f}, {1.0f, 1.0f, 0.0f}},   {{-0.5f, 0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}}},
+      .indices  = {0,  1,  2,  2,  3,  0,  4,  5,  6,  6,  7,  4,  8,  9,  10, 10, 11, 8,
+                   12, 13, 14, 14, 15, 12, 16, 17, 18, 18, 19, 16, 20, 21, 22, 22, 23, 20}
     };
-
-    std::array<std::uint32_t, 6> const indices = {0, 1, 2, 2, 3, 0};
 
     auto library = graphics::library{arg_files["vk-verbose"],
                                      arg_files["vk-info"],
                                      arg_files["vk-warning"],
                                      arg_files["vk-error"]};
 
-    auto window = glfw::default_library.create_window({.width = 500, .height = 500}, "demo");
-
+    auto window            = glfw::default_library.create_window({.width = 500, .height = 500}, "demo");
     auto present_window    = graphics::present_window{std::move(window), library};
     auto graphical_device  = graphics::graphical_device{present_window};
     auto render_window     = graphics::render_window{std::move(present_window), graphical_device};
     auto graphics_pipeline = graphics::graphics_pipeline{graphical_device};
+    auto mesh_buffer       = graphics::mesh_buffer{graphical_device};
 
-    auto const buffer_size = std::span{vertices}.size_bytes() + std::span{indices}.size_bytes();
+    mesh_buffer.push_back(cube);
 
-    auto staging_buffer  = graphics::staging_buffer{graphical_device, buffer_size};
-    auto transfer_buffer = graphics::transfer_buffer{graphical_device, buffer_size};
-
-    constexpr auto frames_in_flight = 2;
-
-    auto draw     = graphics::draw_command{graphical_device, render_window, frames_in_flight};
-    auto transfer = graphics::transfer_command{graphical_device, frames_in_flight};
-
-    staging_buffer.memcpy(vertices);
-    staging_buffer.memcpy(indices);
-
-    transfer(staging_buffer, transfer_buffer);
-
-    transfer.wait();
+    graphics_pipeline.attach(mesh_buffer);
 
     while(not render_window.should_close())
     {
@@ -278,25 +266,22 @@ int main(int const argc, char const * const * const args) noexcept
 
       if(not render_window.is_minimized())
       {
-        draw(graphics_pipeline, transfer_buffer, render_window);
+        graphics_pipeline.draw(render_window);
       }
     }
   }
-
   catch(std::system_error const & error)
   {
     logging::error() << error.what();
 
     return error.code().value();
   }
-
   catch(std::runtime_error const & error)
   {
     logging::error() << error.what();
 
     return EXIT_FAILURE;
   }
-
   catch(std::invalid_argument const & error)
   {
     logging::error() << error.what();
@@ -305,7 +290,6 @@ int main(int const argc, char const * const * const args) noexcept
 
     return EXIT_FAILURE;
   }
-
   catch(std::exception const & error)
   {
     logging::error() << error.what();

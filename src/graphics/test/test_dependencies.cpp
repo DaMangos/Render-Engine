@@ -94,7 +94,7 @@ TEST(DependentTest, CleanUpInvokedWithDependenciesNoFirstArg)
   graphics::dependent<A> a;
 
   {
-    graphics::dependent<B, graphics::dependencies<A>>([&](A const &) { cleanup_invoked = true; }, a.as_dependencies(), );
+    graphics::dependent<B, graphics::dependencies<A>>([&](A const &) { cleanup_invoked = true; }, a.as_dependencies());
   }
 
   EXPECT_TRUE(cleanup_invoked);

@@ -67,7 +67,7 @@ std::vector<glfw::vidmode> glfw::monitor::get_video_modes() const
 
   for(auto const & glfw_vidmode : std::span{glfw_vidmodes, static_cast<std::size_t>(count)})
     vidmodes.push_back({
-      .size         = {.height = glfw_vidmode.height, .width = glfw_vidmode.width},
+      .size         = {.width = glfw_vidmode.width, .height = glfw_vidmode.height},
       .red_bits     = glfw_vidmode.redBits,
       .green_bits   = glfw_vidmode.greenBits,
       .blue_bits    = glfw_vidmode.blueBits,
@@ -84,7 +84,7 @@ glfw::vidmode glfw::monitor::get_current_video_mode() const
   assert(glfw_vidmode);
 
   return {
-    .size         = {.height = glfw_vidmode->height, .width = glfw_vidmode->width},
+    .size         = {.width = glfw_vidmode->width, .height = glfw_vidmode->height},
     .red_bits     = glfw_vidmode->redBits,
     .green_bits   = glfw_vidmode->greenBits,
     .blue_bits    = glfw_vidmode->blueBits,

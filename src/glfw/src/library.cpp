@@ -135,9 +135,7 @@ glfw::window glfw::library::create_window(dimensions<int, 2> const & size, std::
   return window({glfwCreateWindow(size.width, size.height, title.c_str(), nullptr, nullptr), glfwDestroyWindow});
 }
 
-glfw::window glfw::library::create_window(dimensions<int, 2> const & size,
-                                          std::string const &        title,
-                                          window const &             share) const
+glfw::window glfw::library::create_window(dimensions<int, 2> const & size, std::string const & title, window const & share) const
 {
   return window({glfwCreateWindow(size.width, size.height, title.c_str(), nullptr, share.ptr.get()), glfwDestroyWindow});
 }
@@ -179,8 +177,8 @@ glfw::monitor const & glfw::library::get_primary_monitor() const
 glfw::cursor glfw::library::create_cursor(image const & image, coordinates<int, 2> const & hotspot) const
 {
   GLFWimage glfw_image = {
-    .height = image.size.height,
     .width  = image.size.width,
+    .height = image.size.height,
     .pixels = reinterpret_cast<unsigned char *>(image.pixels.data()),
   };
 

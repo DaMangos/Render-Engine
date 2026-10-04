@@ -1,5 +1,5 @@
 .PHONY: all
-all: format release debug test
+all: format release debug test benchmark
 
 .PHONY: help
 help :
@@ -11,6 +11,9 @@ help :
 	@echo test
 	@echo test_release
 	@echo test_debug
+	@echo benchmark
+	@echo benchmark_release
+	@echo benchmark_debug
 	@echo shaders
 	@echo clean
 
@@ -51,7 +54,6 @@ test: shaders
 	@make -f $(CURDIR)/make/cpp.mk --warn-undefined-variables ROOTDIR="$(CURDIR)" BUILD_MODE="release/test"
 	@echo finished test
 
-
 .PHONY: test_release
 test_release: shaders
 	@make -f $(CURDIR)/make/cpp.mk --warn-undefined-variables ROOTDIR="$(CURDIR)" BUILD_MODE="release/test"
@@ -61,6 +63,22 @@ test_release: shaders
 test_debug: shaders
 	@make -f $(CURDIR)/make/cpp.mk --warn-undefined-variables ROOTDIR="$(CURDIR)" BUILD_MODE="debug/test"
 	@echo finished debug test
+
+.PHONY: benchmark
+benchmark: shaders
+	@make -f $(CURDIR)/make/cpp.mk --warn-undefined-variables ROOTDIR="$(CURDIR)" BUILD_MODE="debug/benchmark"
+	@make -f $(CURDIR)/make/cpp.mk --warn-undefined-variables ROOTDIR="$(CURDIR)" BUILD_MODE="release/benchmark"
+	@echo finished benchmark
+
+.PHONY: benchmark_release
+benchmark_release: shaders
+	@make -f $(CURDIR)/make/cpp.mk --warn-undefined-variables ROOTDIR="$(CURDIR)" BUILD_MODE="release/benchmark"
+	@echo finished release benchmark
+
+.PHONY: benchmark_debug
+benchmark_debug: shaders
+	@make -f $(CURDIR)/make/cpp.mk --warn-undefined-variables ROOTDIR="$(CURDIR)" BUILD_MODE="debug/benchmark"
+	@echo finished debug benchmark
 
 .PHONY: shaders
 shaders :

@@ -36,162 +36,6 @@ The "vk_physical_device" is essentially a "std::shared_ptr<vk::raii::PhysicalDev
 "std::shared_ptr<vk::raii::Instance>" and a "std::shared_ptr<vk::raii::Context>" imbedded in the deleter,
 and so on and so fourth. This chain of "std::shared_ptr"s guarantees that a "vk::raii::Instance" cannot be
 destroyed until every dependent has been destroyed.
-
-
-synopsis
-
-namespace graphics
-{
-template <class... Elements>
-requires(is-unique-types<Elements...>)
-class dependencies
-{
-  public:
-    using as_dependencies_type = decltype(std::declval<dependent>().as_dependencies());
-
-    template <class... OtherElement>
-    constexpr dependencies(dependencies<OtherElement...> const & other)
-      requires(sizeof...(Elements) == sizeof...(OtherElement));
-
-    template <class... OtherElement>
-    constexpr dependencies & operator=(dependencies<OtherElement...> const & other)
-      requires(sizeof...(Elements) == sizeof...(OtherElement));
-
-    [[nodiscard]]
-    constexpr auto operator<=>(dependencies const &) const noexcept;
-
-    template <class Dependency>
-    [[nodiscard]]
-    constexpr Dependency const & get() const noexcept;
-
-    template <std::size_t I>
-    [[nodiscard]]
-    constexpr auto const & get() const noexcept;
-};
-
-struct dependency-union-type
-{
-    template <class... LhsElements, class... RhsElements>
-    [[nodiscard]]
-    constexpr auto operator()(dependencies<LhsElements...> const & lhs,
-                              dependencies<RhsElements...> const & rhs) const;
-};
-
-inline constexpr dependency-union-type dependency_union;
-
-template <class LhsDependencies, class RhsLhsDependencies>
-using dependency_union_type = decltype(dependency_union(std::declval<LhsDependencies>(),
-                                                        std::declval<RhsLhsDependencies>()));
-
-template <class Element, class Dependencies = void>
-requires(not contains-dependency<Element, Dependencies>)
-class dependent
-{
-  public:
-    using element_type         = Element;
-    using dependencies_type    = Dependencies;
-    using as_dependencies_type = as-dependencies-type;
-
-    template <class FunctionLike, class... Args>
-    constexpr dependent(FunctionLike callback, Dependencies const & deps, Args &&... args);
-
-    template <class... Args>
-    constexpr dependent(Dependencies deps, Args &&... args);
-
-    constexpr dependent(dependent const &) noexcept = delete;
-
-    constexpr dependent(dependent && other) noexcept;
-
-    constexpr dependent & operator=(dependent const &) noexcept = delete;
-
-    constexpr dependent & operator=(dependent && other) noexcept;
-
-    template <class DependencyElement>
-    [[nodiscard]]
-    constexpr DependencyElement const & get_dependency() const noexcept;
-
-    template <std::size_t I>
-    [[nodiscard]]
-    constexpr auto const & get_dependency() const noexcept
-
-    [[nodiscard]]
-    constexpr dependencies_type get_dependencies() const noexcept
-
-    [[nodiscard]]
-    constexpr as_dependencies_type as_dependencies() const noexcept;
-
-    [[nodiscard]]
-    constexpr element_type & get() & noexcept;
-
-    [[nodiscard]]
-    constexpr element_type && get() && noexcept;
-
-    [[nodiscard]]
-    constexpr element_type const & get() const & noexcept;
-
-    [[nodiscard]]
-    constexpr operator element_type &() & noexcept;
-
-    [[nodiscard]]
-    constexpr operator element_type &&() && noexcept;
-
-    [[nodiscard]]
-    constexpr operator element_type const &() const & noexcept;
-
-    [[nodiscard]]
-    constexpr bool valueless_after_move() const noexcept;
-};
-
-template <class Element>
-class dependent<Element, void>
-{
-  public:
-    using element_type         = Element;
-    using as_dependencies_type = as-dependencies-type;
-
-    template <class FunctionLike, class... Args>
-    constexpr dependent(FunctionLike callback, Args &&... args)
-      requires(std::is_invocable_v<FunctionLike, Element &>);
-
-    template <class... Args>
-    constexpr dependent(Args &&... args);
-
-    constexpr dependent(dependent &&) noexcept;
-
-    constexpr dependent(dependent const &) noexcept = delete;
-
-    constexpr dependent & operator=(dependent &&) noexcept;
-
-    constexpr dependent & operator=(dependent const &) noexcept = delete;
-
-    [[nodiscard]]
-    constexpr as_dependencies_type as_dependencies() const noexcept;
-
-    [[nodiscard]]
-    constexpr element_type & get() & noexcept;
-
-    [[nodiscard]]
-    constexpr element_type && get() && noexcept;
-
-    [[nodiscard]]
-    constexpr element_type const & get() const & noexcept;
-
-    [[nodiscard]]
-    constexpr operator element_type &() & noexcept;
-
-    [[nodiscard]]
-    constexpr operator element_type &&() && noexcept;
-
-    [[nodiscard]]
-    constexpr operator element_type const &() const & noexcept;
-
-    [[nodiscard]]
-    constexpr bool valueless_after_move() const noexcept;
-};
-}
-
-template <std::size_t I, class... Elements>
-struct std::tuple_element<I, graphics::dependencies<Elements...>>;
 */
 
 #include <cassert>
@@ -258,15 +102,15 @@ requires(detail::is_unique_types_v<Elements...>)
 class dependencies
 {
   public:
-    template <class... OtherElement>
-    constexpr dependencies(dependencies<OtherElement...> const & other) requires(sizeof...(Elements) == sizeof...(OtherElement))
+    template <class... OtherElements>
+    constexpr dependencies(dependencies<OtherElements...> const & other) requires(sizeof...(OtherElements) >= sizeof...(Elements))
     : ptrs(std::get<std::shared_ptr<Elements const>>(other.ptrs)...)
     {
     }
 
-    template <class... OtherElement>
-    constexpr dependencies & operator=(dependencies<OtherElement...> const & other)
-      requires(sizeof...(Elements) == sizeof...(OtherElement))
+    template <class... OtherElements>
+    constexpr dependencies & operator=(dependencies<OtherElements...> const & other)
+      requires(sizeof...(OtherElements) >= sizeof...(Elements))
     {
       ptrs = std::make_tuple(std::get<std::shared_ptr<Elements const>>(other.ptrs)...);
 
@@ -440,16 +284,14 @@ class dependent
     struct deleter_with_callback : dependencies_type
     {
         constexpr deleter_with_callback(dependencies_type const & deps, FunctionLike callback)
-        : Dependencies(deps),
+        : dependencies_type(deps),
           callback(std::move(callback))
         {
         }
 
         constexpr void operator()(element_type * p) const noexcept
         {
-          // unlike std::unique_ptr, the deleter of std::shared_ptr is invoked even if the managed pointer is null.
-
-          if(p)
+          if(p)  // unlike std::unique_ptr, the deleter of std::shared_ptr is invoked even if the managed pointer is null.
           {
             [this, p]<std::size_t... I>(std::index_sequence<I...>)
             {
@@ -466,15 +308,25 @@ class dependent
         FunctionLike callback;
     };
 
-    struct deleter_without_callback : std::default_delete<Element>, Dependencies
+    struct deleter_without_callback : std::default_delete<Element>, dependencies_type
     {
-        constexpr deleter_without_callback(Dependencies const & deps)
-        : Dependencies(deps)
+        constexpr deleter_without_callback(dependencies_type const & deps)
+        : dependencies_type(deps)
         {
         }
     };
 
   public:
+    constexpr dependent(dependent &&) noexcept = default;
+
+    constexpr dependent(dependent const &) noexcept = delete;
+
+    constexpr dependent & operator=(dependent &&) noexcept = default;
+
+    constexpr dependent & operator=(dependent const &) noexcept = delete;
+
+    constexpr ~dependent() noexcept = default;
+
     template <class FunctionLike, class... Args>
     constexpr dependent(FunctionLike callback, dependencies_type const & deps, Args &&... args)
     : ptr(std::make_unique<element_type>(std::forward<Args>(args)...).release(),
@@ -484,28 +336,10 @@ class dependent
     }
 
     template <class... Args>
-    constexpr dependent(dependencies_type deps, Args &&... args)
+    constexpr dependent(dependencies_type const & deps, Args &&... args)
     : ptr(std::make_unique<element_type>(std::forward<Args>(args)...).release(), deleter_without_callback{deps}),
       deps(std::get_deleter<deleter_without_callback>(ptr))
     {
-    }
-
-    constexpr dependent(dependent const &) noexcept = delete;
-
-    constexpr dependent(dependent && other) noexcept
-    : ptr(std::move(other.ptr)),
-      deps(std::exchange(other.deps, nullptr))
-    {
-    }
-
-    constexpr dependent & operator=(dependent const &) noexcept = delete;
-
-    constexpr dependent & operator=(dependent && other) noexcept
-    {
-      ptr  = std::move(other.ptr);
-      deps = std::exchange(other.deps, nullptr);
-
-      return *this;
     }
 
     template <class DependencyElement>
@@ -592,16 +426,14 @@ class dependent<Element, void>
     template <class FunctionLike>
     struct deleter_with_callback
     {
-        constexpr deleter_with_callback(FunctionLike callback)
+        explicit constexpr deleter_with_callback(FunctionLike callback)
         : callback(std::move(callback))
         {
         }
 
         constexpr void operator()(element_type * p) const noexcept
         {
-          // unlike std::unique_ptr, the deleter of std::shared_ptr is invoked even if the managed pointer is null.
-
-          if(p)
+          if(p)  // unlike std::unique_ptr, the deleter of std::shared_ptr is invoked even if the managed pointer is null.
           {
             if constexpr(std::is_invocable_v<FunctionLike, element_type &>)
               callback(*p);
@@ -617,19 +449,6 @@ class dependent<Element, void>
     };
 
   public:
-    template <class FunctionLike, class... Args>
-    constexpr dependent(FunctionLike callback, Args &&... args)
-      requires(std::is_invocable_v<FunctionLike> or std::is_invocable_v<FunctionLike, element_type &>)
-    : ptr(std::make_unique<element_type>(std::forward<Args>(args)...).release(), deleter_with_callback<FunctionLike>{callback})
-    {
-    }
-
-    template <class... Args>
-    constexpr dependent(Args &&... args)
-    : ptr(std::make_shared<element_type>(std::forward<Args>(args)...))
-    {
-    }
-
     constexpr dependent(dependent &&) noexcept = default;
 
     constexpr dependent(dependent const &) noexcept = delete;
@@ -637,6 +456,21 @@ class dependent<Element, void>
     constexpr dependent & operator=(dependent &&) noexcept = default;
 
     constexpr dependent & operator=(dependent const &) noexcept = delete;
+
+    constexpr ~dependent() noexcept = default;
+
+    template <class FunctionLike, class... Args>
+    explicit constexpr dependent(FunctionLike callback, Args &&... args)
+      requires(std::is_invocable_v<FunctionLike> or std::is_invocable_v<FunctionLike, element_type &>)
+    : ptr(std::make_unique<element_type>(std::forward<Args>(args)...).release(), deleter_with_callback<FunctionLike>{callback})
+    {
+    }
+
+    template <class... Args>
+    explicit constexpr dependent(Args &&... args)
+    : ptr(std::make_shared<element_type>(std::forward<Args>(args)...))
+    {
+    }
 
     [[nodiscard]]
     constexpr as_dependencies_type as_dependencies() const noexcept
@@ -690,6 +524,13 @@ class dependent<Element, void>
     std::shared_ptr<element_type> ptr;
 };
 
+template <class LhsElement, class LhsDependencies, class RhsElement, class RhsDependencies>
+auto operator<=>(graphics::dependent<LhsElement, LhsDependencies> const & lhs,
+                 graphics::dependent<RhsElement, RhsDependencies> const & rhs)
+{
+  return lhs.get() <=> rhs.get();
+}
+
 template <class Element, class... Elements>
 [[nodiscard]]
 constexpr Element const & get(dependencies<Elements...> const & dependencies) noexcept
@@ -713,4 +554,14 @@ struct std::tuple_size<graphics::dependencies<Elements...>> : std::integral_cons
 template <std::size_t I, class... Elements>
 struct std::tuple_element<I, graphics::dependencies<Elements...>> : std::tuple_element<I, std::tuple<Elements const &...>>
 {
+};
+
+template <class Element, class Dependencies>
+struct std::hash<graphics::dependent<Element, Dependencies>>
+{
+    [[nodiscard]]
+    constexpr std::size_t operator()(graphics::dependent<Element, Dependencies> const & dep)
+    {
+      return std::hash<Element>(dep.get());
+    }
 };
