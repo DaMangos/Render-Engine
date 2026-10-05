@@ -14,9 +14,9 @@ TEST(TupleTransfrom, IntToString)
 
   static_assert(std::same_as<decltype(result), std::tuple<std::string, std::string, std::string>>);
 
-  EXPECT_EQ(std::get<0>(tuple), "2");
-  EXPECT_EQ(std::get<1>(tuple), "4");
-  EXPECT_EQ(std::get<2>(tuple), "6");
+  EXPECT_EQ(std::get<0>(result), "1");
+  EXPECT_EQ(std::get<1>(result), "2");
+  EXPECT_EQ(std::get<2>(result), "3");
 }
 
 TEST(TupleTransfrom, EmptyTuple)
