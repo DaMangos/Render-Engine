@@ -12,7 +12,10 @@ class device_memory_resource : public std::pmr::memory_resource
   public:
     using host_visible_buffer_type = HostVisibleBuffer;
 
-    device_memory_resource(vulkan::buffer::dependencies_type const & buffer_dependencies) noexcept;
+    device_memory_resource(vulkan::buffer::dependencies_type const & buffer_dependencies) noexcept
+    : buffer_dependencies(buffer_dependencies)
+    {
+    }
 
     [[nodiscard]]
     vulkan::buffer::dependencies_type const & get_buffer_dependencies() const noexcept
@@ -21,7 +24,7 @@ class device_memory_resource : public std::pmr::memory_resource
     }
 
     [[nodiscard]]
-    host_visible_buffer_type find_host_visible_buffer(void const * const ptr) const
+    host_visible_buffer_type const & find_host_visible_buffer(void const * const ptr) const
     {
       /*
 
@@ -74,11 +77,13 @@ class device_memory_resource : public std::pmr::memory_resource
     [[nodiscard]]
     void * do_allocate(std::size_t const size, std::size_t) override
     {
-      auto const allocation_region = host_visible_buffer_type{buffer_dependencies, size};
+      auto allocation_region = host_visible_buffer_type{buffer_dependencies, size};
 
-      host_visible_buffers.emplace(allocation_region.get_mapped_memory().data(), allocation_region);
+      void * const ptr = static_cast<void *>(allocation_region.get_mapped_memory().data());
 
-      return allocation_region.get_mapped_memory().data();
+      host_visible_buffers.emplace(ptr, std::move(allocation_region));
+
+      return ptr;
     }
 
     void do_deallocate(void * const ptr, std::size_t, std::size_t) override

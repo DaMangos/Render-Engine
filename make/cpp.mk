@@ -2,6 +2,7 @@ CXX = clang++
 
 CPPFLAGS =                                                          \
 	$(patsubst %, -I%, $(shell find -L $(ROOTDIR) -name "include")) \
+	-fexperimental-library                                          \
 	-DGLFW_INCLUDE_VULKAN                                           \
 	-DVK_ENABLE_BETA_EXTENSIONS                                     \
 	-DVULKAN_HPP_ENABLE_DYNAMIC_LOADER_TOOL                         \
@@ -16,19 +17,18 @@ CXXFLAGS =       \
 	-Wpedantic   \
 	-Wshadow     \
 	-Wconversion \
-	-Werror      \
-	-fexperimental-library
+	-Werror     
 
 
 LDLIBS =
 
 ifeq ($(BUILD_MODE), debug/build)
-	SRCS := $(shell find -L $(ROOTDIR)/src -name "*.cpp" -not -path "*/test/*")
+	SRCS := $(shell find -L $(ROOTDIR)/src -name "*.cpp" -not -path "*/benchmark/*" -not -path "*/test/*")
 	CXXFLAGS += -UNDEBUG -g
 endif 
 
 ifeq ($(BUILD_MODE), release/build)
-	SRCS := $(shell find -L $(ROOTDIR)/src -name "*.cpp" -not -path "*/test/*")
+	SRCS := $(shell find -L $(ROOTDIR)/src -name "*.cpp" -not -path "*/benchmark/*" -not -path "*/test/*")
 	CXXFLAGS += -DNDEBUG
 endif
 

@@ -46,34 +46,34 @@ void main(uint3                      dispatch_thread_id: SV_DispatchThreadID,
 {
   // find the plane-line intersection
 
-  uint vertex_count   = 4;
-  uint triangle_count = 2;
+  // uint vertex_count   = 4;
+  // uint triangle_count = 2;
 
-  SetMeshOutputCounts(vertex_count, triangle_count);
+  // SetMeshOutputCounts(vertex_count, triangle_count);
 
-  const float3 ray = camera.focal_point - vertex.pos;
+  // const float3 ray = camera.focal_point - vertex.pos;
 
-  const float lens_normal_dot_ray = dot(camera.lens_normal, ray);
+  // const float lens_normal_dot_ray = dot(camera.lens_normal, ray);
 
-  if(lens_normal_dot_ray == 0)
-    return {};
+  // if(lens_normal_dot_ray == 0)
+  //   return {};
 
-  const float t = dot(camera.lens_origin - vertex.pos, camera.lens_normal) / lens_normal_dot_ray;
+  // const float t = dot(camera.lens_origin - vertex.pos, camera.lens_normal) / lens_normal_dot_ray;
 
-  const float3 intersection = vertex.pos + (t * ray);
+  // const float3 intersection = vertex.pos + (t * ray);
 
-  // change of bases
+  // // change of bases
 
-  const float2 normalized_screen_coord = {
-    dot(intersection - camera.lens_origin, camera.lens_x_basis) / camera.screen_size.x,
-    dot(intersection - camera.lens_origin, camera.lens_y_basis) / camera.screen_size.y,
-  };
+  // const float2 normalized_screen_coord = {
+  //   dot(intersection - camera.lens_origin, camera.lens_x_basis) / camera.screen_size.x,
+  //   dot(intersection - camera.lens_origin, camera.lens_y_basis) / camera.screen_size.y,
+  // };
 
-  const float normalized_vertex_distance_from_focal_point = (length(ray) - camera.focal_length) / camera.render_distance;
+  // const float normalized_vertex_distance_from_focal_point = (length(ray) - camera.focal_length) / camera.render_distance;
 
-  return {
-    { normalized_screen_coord, normalized_vertex_distance_from_focal_point, 1.0 },
-    vertex.colour
-  };
+  // return {
+  //   { normalized_screen_coord, normalized_vertex_distance_from_focal_point, 1.0 },
+  //   vertex.colour
+  // };
 }
 

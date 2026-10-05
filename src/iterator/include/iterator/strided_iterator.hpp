@@ -29,7 +29,8 @@ class strided_iterator
     template <class OtherIter>
     constexpr strided_iterator(strided_iterator<OtherIter, Stride> const & other) noexcept
       requires(std::convertible_to<OtherIter, Iter>)
-    : first(other.first)
+    : first(other.first),
+      offset(other.offset)
     {
     }
 
@@ -38,7 +39,8 @@ class strided_iterator
       requires(std::convertible_to<OtherIter, Iter>)
 
     {
-      first = other.first;
+      first  = other.first;
+      offset = other.offset;
 
       return *this;
     }
@@ -70,7 +72,7 @@ class strided_iterator
 
     constexpr strided_iterator & operator--() noexcept
     {
-      *this += -1;
+      *this -= 1;
       return *this;
     }
 

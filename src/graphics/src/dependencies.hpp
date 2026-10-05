@@ -38,6 +38,8 @@ and so on and so fourth. This chain of "std::shared_ptr"s guarantees that a "vk:
 destroyed until every dependent has been destroyed.
 */
 
+#include <tuple/transfrom.hpp>
+
 #include <cassert>
 #include <memory>
 #include <stdexcept>
@@ -136,6 +138,9 @@ class dependencies
       return *std::get<I>(ptrs);
     }
 
+  protected:
+    std::tuple<std::shared_ptr<Elements const>...> ptrs;
+
   private:
     template <class... OtherElements>
     requires(detail::is_unique_types_v<OtherElements...>)
@@ -155,8 +160,6 @@ class dependencies
     {
       assert(std::apply([](auto const &... ptr) { return (ptr and ...); }, ptrs));
     }
-
-    std::tuple<std::shared_ptr<Elements const>...> ptrs;
 };
 
 namespace detail
@@ -295,10 +298,12 @@ class dependent
           {
             [this, p]<std::size_t... I>(std::index_sequence<I...>)
             {
-              auto args = std::tuple_cat(std::forward_as_tuple(*p), *this);
+              auto args = std::tuple_cat(
+                std::forward_as_tuple(*p, static_cast<element_type const &>(*p)),
+                tuple::forward_and_transfrom(this->ptrs, [](auto const ptr) -> auto const & { return *ptr; }));
 
-              callback(std::get<std::tuple_element_t<I + 1, typename function_traits<FunctionLike>::args_type>>(args)...);
-            }(std::make_index_sequence<function_traits<FunctionLike>::arg_size - 1>{});
+              callback(std::get<std::tuple_element_t<I, typename function_traits<FunctionLike>::args_type>>(args)...);
+            }(std::make_index_sequence<function_traits<FunctionLike>::arg_size>{});
 
             std::default_delete<element_type>{}(p);
           }

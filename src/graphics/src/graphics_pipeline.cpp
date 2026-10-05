@@ -316,21 +316,21 @@ void graphics::graphics_pipeline::attach(mesh_buffer const & mesh_buffer)
                   self->transfer_complete_fences.get().front());
 
   auto const staging_buffers = std::array{
-    mesh_buffer.self->device_memory_resource->find_host_visible_buffer(mesh_buffer.self->vertex_buffer.data()),
-    mesh_buffer.self->device_memory_resource->find_host_visible_buffer(mesh_buffer.self->index_buffer.data()),
-    mesh_buffer.self->device_memory_resource->find_host_visible_buffer(mesh_buffer.self->texture_buffer.data()),
+    std::cref(mesh_buffer.self->device_memory_resource->find_host_visible_buffer(mesh_buffer.self->vertex_buffer.data())),
+    std::cref(mesh_buffer.self->device_memory_resource->find_host_visible_buffer(mesh_buffer.self->index_buffer.data())),
+    std::cref(mesh_buffer.self->device_memory_resource->find_host_visible_buffer(mesh_buffer.self->texture_buffer.data())),
   };
 
   auto const allocation_sizes = std::array{
-    vk::DeviceSize{staging_buffers[0].get_mapped_memory().size()},
-    vk::DeviceSize{staging_buffers[1].get_mapped_memory().size()},
-    vk::DeviceSize{staging_buffers[2].get_mapped_memory().size()},
+    vk::DeviceSize{staging_buffers[0].get().get_mapped_memory().size()},
+    vk::DeviceSize{staging_buffers[1].get().get_mapped_memory().size()},
+    vk::DeviceSize{staging_buffers[2].get().get_mapped_memory().size()},
   };
 
   auto const src_buffers = std::array{
-    *staging_buffers[0].get_buffer().get(),
-    *staging_buffers[1].get_buffer().get(),
-    *staging_buffers[2].get_buffer().get(),
+    *staging_buffers[0].get().get_buffer().get(),
+    *staging_buffers[1].get().get_buffer().get(),
+    *staging_buffers[2].get().get_buffer().get(),
   };
 
   auto const & dst_buffers = self->transfer_buffers

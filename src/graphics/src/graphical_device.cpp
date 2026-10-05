@@ -182,7 +182,8 @@ static graphics::vulkan::physical_device find_physical_device(graphics::vulkan::
   std::unordered_map<physical_device_type, graphics::vulkan::physical_device> physical_devices;
 
   for(auto const & physical_device : surface.get_dependency<vk::raii::Instance>().enumeratePhysicalDevices())
-    physical_devices[get_physical_device_type(surface, physical_device)] = {surface.as_dependencies(), physical_device};
+    physical_devices.emplace(get_physical_device_type(surface, physical_device),
+                             graphics::vulkan::physical_device{surface.as_dependencies(), physical_device});
 
   auto const conformant_physical_device = physical_devices.find(physical_device_type::conformant);
 

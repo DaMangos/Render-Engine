@@ -61,8 +61,7 @@ std::vector<char const *> get_required_debug_instance_layers();
 std::vector<char const *> get_required_device_extensions(std::span<vk::ExtensionProperties const> const properties);
 
 [[nodiscard]]
-bool is_extension_available(std::span<vk::ExtensionProperties const> const properties,
-                            std::string_view const                         extension) noexcept;
+bool is_extension_available(std::span<vk::ExtensionProperties const> const properties, std::string_view const extension) noexcept;
 
 [[nodiscard]]
 bool is_layer_available(std::span<vk::LayerProperties const> const properties, std::string_view const layer) noexcept;
@@ -124,8 +123,7 @@ inline auto get_surface_capabilities_2(vk::raii::PhysicalDevice const & physical
 {
   return [&]<class... Capabilities>(vk::StructureChain<vk::SurfaceCapabilities2KHR, Capabilities...>)
   {
-    return physical_device.getSurfaceCapabilities2KHR<vk::SurfaceCapabilities2KHR, Capabilities...>(
-      std::forward<Args>(args)...);
+    return physical_device.getSurfaceCapabilities2KHR<vk::SurfaceCapabilities2KHR, Capabilities...>(std::forward<Args>(args)...);
   }(required_surface_capabilities);
 }
 }
