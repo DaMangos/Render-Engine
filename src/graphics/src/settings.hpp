@@ -16,7 +16,7 @@
 
 namespace graphics
 {
-static constexpr auto min_api_version = vk::ApiVersion14;
+static constexpr auto min_api_version = vk::ApiVersion13;
 
 static auto const required_device_features = vk::StructureChain{
   vk::PhysicalDeviceFeatures2{},                       //

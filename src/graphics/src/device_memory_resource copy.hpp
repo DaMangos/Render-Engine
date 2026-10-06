@@ -51,9 +51,7 @@ class device_memory_resource : public std::pmr::memory_resource
       auto const is_pointer_in_buffer = [ptr](typename std::list<Buffer>::iterator const buffer)
       {
         // No need for a execution policy, see benchmark/benchmark_pointer_in_range.cpp
-        auto const span = std::span{static_cast<std::byte const *>(buffer->data()), buffer->size()};
-
-        return std::ranges::any_of(span, [ptr](std::byte const & byte) { return &byte == ptr; });
+        return std::ranges::any_of(buffer->get_mapped_memory(), [ptr](std::byte const & byte) { return &byte == ptr; });
       };
 
       auto const lower_half_candidate_buffers = std::ranges::subrange(begin_ptrs.begin(),
@@ -73,12 +71,12 @@ class device_memory_resource : public std::pmr::memory_resource
     {
       emplace_front(buffers, size, alignment);
 
-      auto buffer = buffers.begin();
+      auto host_visible_buffer = buffers.begin();
 
-      std::byte * const ptr = static_cast<std::byte const *>(buffer->data());
+      std::byte * const ptr = host_visible_buffer->get_mapped_memory().data();
 
-      begin_ptrs.emplace(ptr, buffer);
-      end_ptrs.emplace(ptr + size, buffer` 11q);
+      begin_ptrs.emplace(ptr, host_visible_buffer);
+      end_ptrs.emplace(ptr + size, host_visible_buffer);
 
       return ptr;
     }
